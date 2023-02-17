@@ -1,0 +1,36 @@
+#configuration 
+omegaconf
+#email notifications
+google-auth 
+google-auth-oauthlib 
+google-auth-httplib2 
+google-api-python-client
+
+hydra-core==1.2.0
+joblib==1.1.0
+mlflow==1.26.1
+numpy==1.22.4
+omegaconf==2.2.2
+pandas==1.4.2
+prefect==2.6.6
+scikit_learn==1.1.1
+SQLAlchemy==1.4.37
+xgboost==1.6.1
+prefect-dbt==0.2.6
+dbt-core==1.2.3
+dbt-snowflake==1.2.0
+prefect-snowflake==0.2.2
+pyarrow==6.0.1
+sweetviz==2.1.4
+pandas-profiling==3.5.0
+dvc==2.37.0
+dvc-gs==2.20.0
+deepchecks==0.10.0
+evidently==0.2.1
+optuna==3.0.4
+alibi==0.8.0
+alibi[shap]
+yellowbrick==1.4
+aif360==0.5.0
+#aif360[all] #fails if R is not installed
+#continual>=2.0.0a8 
