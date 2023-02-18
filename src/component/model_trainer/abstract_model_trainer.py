@@ -43,6 +43,7 @@ class AbstractModelTrainer(AbstractComponent):
         metrics_out = {"train" : {}, "valid" : {}, "test" : {}}
 
         test_exists = data.get("X_test") is not None
+        valid_exists = data.get("X_valid") is not None
 
         if self.problem_type == "classification": 
             multi_class = False
@@ -55,33 +56,39 @@ class AbstractModelTrainer(AbstractComponent):
         for metric in metrics: 
             if metric == "accuracy": 
                 metrics_out["train"][metric] = sk_metrics.accuracy_score(data["y_train"], predictions["train"])
-                metrics_out["valid"][metric] = sk_metrics.accuracy_score(data["y_valid"], predictions["valid"])
+                if valid_exists: 
+                    metrics_out["valid"][metric] = sk_metrics.accuracy_score(data["y_valid"], predictions["valid"])
                 if test_exists:
                     metrics_out["test"][metric] = sk_metrics.accuracy_score(data["y_test"], predictions["test"])
             if metric == "f1": 
                 metrics_out["train"][metric] = sk_metrics.f1_score(data["y_train"], predictions["train"], average = average)
-                metrics_out["valid"][metric] = sk_metrics.f1_score(data["y_valid"], predictions["valid"], average = average)
+                if valid_exists: 
+                    metrics_out["valid"][metric] = sk_metrics.f1_score(data["y_valid"], predictions["valid"], average = average)
                 if test_exists:
                     metrics_out["test"][metric] = sk_metrics.f1_score(data["y_test"], predictions["test"], average = average)
             if metric == "rocauc": 
                 metrics_out["train"][metric] = sk_metrics.roc_auc_score(data["y_train"], predictions["train_proba"], average = average, multi_class = "ovr")
-                metrics_out["valid"][metric] = sk_metrics.roc_auc_score(data["y_valid"], predictions["valid_proba"], average = average, multi_class = "ovr")
+                if valid_exists: 
+                    metrics_out["valid"][metric] = sk_metrics.roc_auc_score(data["y_valid"], predictions["valid_proba"], average = average, multi_class = "ovr")
                 if test_exists:
                     metrics_out["test"][metric] = sk_metrics.roc_auc_score(data["y_test"], predictions["test_proba"], average = average, multi_class = "ovr")
             if metric == "prauc": 
                 if not multi_class: #only works for binary
                     metrics_out["train"][metric] = sk_metrics.average_precision_score(data["y_train"], predictions["train_proba"][:,1])
-                    metrics_out["valid"][metric] = sk_metrics.average_precision_score(data["y_valid"], predictions["valid_proba"][:,1])
+                    if valid_exists: 
+                        metrics_out["valid"][metric] = sk_metrics.average_precision_score(data["y_valid"], predictions["valid_proba"][:,1])
                     if test_exists:
                         metrics_out["test"][metric] = sk_metrics.average_precision_score(data["y_test"], predictions["test_proba"][:,1])
             if metric == "precision": 
                 metrics_out["train"][metric] = sk_metrics.precision_score(data["y_train"], predictions["train"], average = average)
-                metrics_out["valid"][metric] = sk_metrics.precision_score(data["y_valid"], predictions["valid"], average = average)
+                if valid_exists:
+                    metrics_out["valid"][metric] = sk_metrics.precision_score(data["y_valid"], predictions["valid"], average = average)
                 if test_exists:
                     metrics_out["test"][metric] = sk_metrics.precision_score(data["y_test"], predictions["test"], average = average)
             if metric == "recall": 
                 metrics_out["train"][metric] = sk_metrics.recall_score(data["y_train"], predictions["train"], average = average)
-                metrics_out["valid"][metric] = sk_metrics.recall_score(data["y_valid"], predictions["valid"], average = average)
+                if valid_exists:
+                    metrics_out["valid"][metric] = sk_metrics.recall_score(data["y_valid"], predictions["valid"], average = average)
                 if test_exists:
                     metrics_out["test"][metric] = sk_metrics.recall_score(data["y_test"], predictions["test"], average = average)
 

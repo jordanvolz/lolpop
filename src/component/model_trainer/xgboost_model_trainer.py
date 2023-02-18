@@ -32,10 +32,13 @@ class XGBoostModelTrainer(AbstractModelTrainer):
         predictions = {}
 
         predictions["train"] = self.model.predict(data["X_train"])
-        predictions["valid"] = self.model.predict(data["X_valid"])
         if self.problem_type == "classification": 
             predictions["train_proba"] = self.model.predict_proba(data["X_train"])
-            predictions["valid_proba"] = self.model.predict_proba(data["X_valid"])
+
+        if data.get("X_valid") is not None: 
+            predictions["valid"] = self.model.predict(data["X_valid"])
+            if self.problem_type == "classification": 
+                predictions["valid_proba"] = self.model.predict_proba(data["X_valid"])
 
         if data.get("X_test") is not None: 
             predictions["test"] = self.model.predict(data["X_test"])

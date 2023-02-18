@@ -32,51 +32,44 @@ class ClassificationRunner(AbstractRunner):
         #return data
         return data 
 
-    def train_model(self, data): 
+    def train_model(self, data, dataset_version=None): 
+
+        if data is None and dataset_version is not None: 
+            data = self.resource_version_control.get_data(dataset_version, self.abstract_metadata_tracker.get_vc_info(dataset_version))
         #split data 
         data_dict = self.train.split_data(data)
         
         #train a model
         model, model_version = self.train.train_model(data_dict)
 
-        #comment out for performance
-        ##analyze the model 
-        ##self.train.analyze_model(data_dict, model, model_version)
-        #
-        ##run model checks
-        #self.train.check_model(data_dict, model, model_version)       
-        #
-        ##run bias checks
-        #self.train.check_model_bias(data_dict, model, model_version)
+        
+        #analyze the model 
+        self.train.analyze_model(data_dict, model, model_version)
+        
+        #run model checks
+        self.train.check_model(data_dict, model, model_version)       
+        
+        #run bias checks
+        self.train.check_model_bias(data_dict, model, model_version)
+        
+        #build lineage 
+        self.metadata_tracker.build_model_lineage(model_version, self.process.datasets_used)
 
         #run comparison to previous model verison
         is_new_model_better = self.train.compare_models(data_dict, model, model_version)
-
-        #build lineage 
-        #self.metadata_tracker.build_model_lineage(model_version, self.process.datasets_used)
 
 
         if is_new_model_better: 
             if self.train._get_config("retrain_all"): 
                 model, experiment = self.train.retrain_model_on_all_data(data_dict, model_version, ref_model=model)
 
-            #promote model 
-            self.deploy.promote_model(model_version, reason="New model verison better than deployed model version.")
+        return model_version, is_new_model_better 
 
-            #check/queue for approval 
-            is_approved = self.deploy.queue_model_for_approval(model_version)
-
-            # deploy model -- maybe move into it's own deployment pipeline
-            if is_approved or (self._get_config("AUTO_APPROVE") == "True"): 
-                self.deploy.deploy_model(model_version)
-
-        pass 
+    def deploy_model(self, model, model_version=None): 
+        pass
 
     def predict_data(self, model, data): 
         pass 
-
-    def deploy_model(): 
-        pass
 
     def build_all(): 
         pass 

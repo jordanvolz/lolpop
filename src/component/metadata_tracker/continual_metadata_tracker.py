@@ -37,7 +37,7 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
         return artifact 
 
     def log_metadata(self, resource, **kwargs):
-        metadata = resource.metadata.create(**kwargs)
+        metadata = resource.metadata.create(replace_if_exists=True, **kwargs)
         self.log("Continual metadata created: %s" %metadata.name)
         return metadata 
 

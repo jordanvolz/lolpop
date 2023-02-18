@@ -47,7 +47,11 @@ class ContinualMetricsTracker(AbstractMetadataTracker):
     def log_metrics(self, experiment, metrics, perf_metric):
         #set performance metric for experiment 
         experiment.performance_metric_name = perf_metric
-        experiment.performance_metric_val = metrics["valid"][perf_metric]
+
+        if len(metrics.get("valid")) > 0: 
+            experiment.performance_metric_val = metrics["valid"][perf_metric]
+        else: 
+            experiment.performance_metric_val = metrics["train"][perf_metric]
         experiment.update(paths=["performance_metric_name", "performance_metric_val"])
 
         #create metrics object for each metric

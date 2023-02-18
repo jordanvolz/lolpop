@@ -37,7 +37,7 @@ class ContinualVersionControl(AbstractResourceVersionControl):
         
         return {"uri" : artifact.url}
 
-    def get_data(self, dataset_version, vc_info, key="data-csv", **kwargs):
+    def get_data(self, dataset_version, vc_info=None, key="data-csv", **kwargs):
         artifact = dataset_version.artifacts.get(id=key)
         file_path = "%s/%s/%s" %(self._get_config("local_dir"),dataset_version.id, artifact.id)
         os.makedirs(file_path, exist_ok=True)
