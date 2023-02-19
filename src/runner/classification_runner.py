@@ -5,7 +5,7 @@ from utils import common_utils as utils
 class ClassificationRunner(AbstractRunner): 
 
     __REQUIRED_CONF__ = {
-        "pipelines": ["process", "train", "predict"], 
+        "pipelines": ["process", "train", "deploy", "predict"], 
         "components": ["metadata_tracker", "metrics_tracker", "resource_version_control"], 
         "config": ["table_train", "table_eval", "table_prediction", "model_target", "drop_columns"]
     }
@@ -34,15 +34,19 @@ class ClassificationRunner(AbstractRunner):
 
     def train_model(self, data, dataset_version=None): 
 
-        if data is None and dataset_version is not None: 
-            data = self.resource_version_control.get_data(dataset_version, self.abstract_metadata_tracker.get_vc_info(dataset_version))
+        if data is None: 
+            if dataset_version is not None: 
+                data = self.resource_version_control.get_data(dataset_version, self.abstract_metadata_tracker.get_vc_info(dataset_version))
+            else: 
+                self.notify("No data provided. Can't train a model", level="ERROR")
+                raise Exception("No data provided. Can't train a model.")
+ 
         #split data 
         data_dict = self.train.split_data(data)
         
         #train a model
         model, model_version = self.train.train_model(data_dict)
 
-        
         #analyze the model 
         self.train.analyze_model(data_dict, model, model_version)
         
@@ -58,7 +62,6 @@ class ClassificationRunner(AbstractRunner):
         #run comparison to previous model verison
         is_new_model_better = self.train.compare_models(data_dict, model, model_version)
 
-
         if is_new_model_better: 
             if self.train._get_config("retrain_all"): 
                 model, experiment = self.train.retrain_model_on_all_data(data_dict, model_version, ref_model=model)
@@ -66,7 +69,14 @@ class ClassificationRunner(AbstractRunner):
         return model_version, is_new_model_better 
 
     def deploy_model(self, model, model_version=None): 
-        pass
+        if model is None: 
+            if model_version is not None: 
+                data = self.resource_version_control.get_model(model_version, self.abstract_metadata_tracker.get_vc_info(model_version))
+            else: 
+                self.notify("No model provided. Can't deploy model", level="ERROR")
+                raise Exception("No model provided. Can't deploy model.")
+        
+        
 
     def predict_data(self, model, data): 
         pass 

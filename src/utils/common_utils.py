@@ -80,22 +80,54 @@ def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=No
 
 def lower_conf(conf): 
     return {k.lower():v for k,v in conf.items()}
+    
+#Need to revisit. Seems like this is not actually merging on update, it's reassigning. 
+#As a result, some default conf can get lost
+def copy_config_into(conf, default_conf): 
+    #have to use omegaconf so types match
+    default_copy = OmegaConf.create(default_conf.copy())
+    updated_conf = OmegaConf.merge(default_copy, conf)
+    return updated_conf
 
 #validates configuration with the required conf specified
-def validate_conf(conf, required_conf):
-    #map everything to lowercase keys to avoid capitalization mismatch
+def validate_conf(config, required_conf, components_objs={}):
+    conf = config.copy()
+    #convert componenets_obj dict into primitives
+    components = OmegaConf.create({k:type(v).__name__ for k,v in components_objs.items()})
+    #updates conf.components with components. 
+    #we want local config values to overwrite glboals, so we do a two step update
+    if conf.get("components", None) is None: 
+        conf["components"]=components
+    else: 
+        components.update(conf.get("components",{}))
+        conf.get("components",{}).update(components)
+
     missing = {}
     total_missing = 0
     if required_conf is not None: 
         if conf is None: 
             conf = {}
+        #map everything to lowercase keys to avoid capitalization mismatch
         lconf = lower_conf(conf)
         lrequired_conf = lower_conf(required_conf)
         for k,v in lrequired_conf.items(): 
             missing_k = []
             for val in v: 
-                if conf.get(k,{}).get(val.lower(),None) is None: 
+                #value can be of form "key|values" which specifies the value(s) allowed
+                #this is mainly used to specify the classes supported
+                #i.e. something like "MetadataTracker|ContinualMetadataTracker"
+                if "|" in val: 
+                    val_arr = val.split("|")
+                    val_key = val_arr[0]
+                    val_value = val_arr[1].split(",")
+                else: 
+                    val_key = val
+                    val_value = None
+                if conf.get(k,{}).get(val_key.lower(),None) is None: 
                     missing_k.append(val) 
+                elif val_value is not None: 
+                    if conf.get(k,{}).get(val_key.lower()) not in val_value: 
+                        missing_k.append(val)
             missing[k] = missing_k
         for v in missing.values(): 
             total_missing = total_missing + len(v)

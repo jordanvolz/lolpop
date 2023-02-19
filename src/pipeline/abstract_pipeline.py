@@ -6,6 +6,9 @@ class AbstractPipeline:
         "components": [], 
         "config": []
     }
+    __DEFAULT_CONF__ = {
+        "config" : {}
+    }
 
     def __init__(self, conf, runner_conf, parent_process="runner", problem_type=None, pipeline_type="abstract_pipeline", **kwargs):
         #config defines all components in `components`
@@ -15,6 +18,7 @@ class AbstractPipeline:
         ##     <component>: <class>
         # then you need to also have a directory <component> with has your class loaded top-level
         self.name = type(self).__name__
+        conf = utils.copy_config_into(conf, self.__DEFAULT_CONF__)
         self._validate_conf(conf, kwargs.get("components"))
         self.config = conf.get("config", {}) 
         self.parent_process = parent_process
@@ -35,6 +39,7 @@ class AbstractPipeline:
         if "components" in conf.keys(): 
             for component in conf.components.keys(): 
                 obj = utils.register_component_class(self, conf, component, pipeline_conf = pipeline_conf, runner_conf = runner_conf, parent_process=self.name, problem_type = self.problem_type, dependent_components=kwargs.get("components"))
+                self.log("Loaded class %s into component %s" %(type(getattr(self, component)).__name__, component))
                 pipeline_components[component] = obj
 
         #now update all pipeline scope components to know about the other pipeline components
@@ -42,7 +47,7 @@ class AbstractPipeline:
             obj._update_components(components = pipeline_components)
 
     def _validate_conf(self, conf, components):
-        missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__)
+        missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__, components)
         if total_missing > 0: 
             #check to see if missing components are provided by runner via kwargs
             if len(missing.get("components")) > 0: 

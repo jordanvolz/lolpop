@@ -4,10 +4,14 @@ class AbstractComponent:
     __REQUIRED_CONF__ = {
         "config" : []
     }
+    __DEFAULT_CONF__ = {
+        "config" : {}
+    }
 
     def __init__(self, config={}, pipeline_conf={}, runner_conf={}, parent_process=None, problem_type = None, **kwargs):
         self.name = type(self).__name__
-        self._validate_conf(config)
+        config = utils.copy_config_into(config, self.__DEFAULT_CONF__)
+        self._validate_conf(config,kwargs.get("components",{}))
         self.config = config.get("config",{})
         self.pipeline_conf = pipeline_conf
         self.runner_conf = runner_conf
@@ -20,8 +24,8 @@ class AbstractComponent:
         for component in kwargs.get("components",{}).keys(): 
             setattr(self, component, kwargs.get("components").get(component))
 
-    def _validate_conf(self, conf):
-        missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__)
+    def _validate_conf(self, conf, components):
+        missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__, components)
         if total_missing>0: 
             #check to see if missing components are provided by runner via kwargs
             if len(missing.get("components",{})) > 0: 

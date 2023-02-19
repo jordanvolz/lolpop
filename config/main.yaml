@@ -1,8 +1,9 @@
 #runner config
 pipelines: 
-  process: ClassificationProcess 
-  train: ClassificationTrain
-  predict: AbstractPredict
+  process: OfflineProcess 
+  train: OfflineTrain
+  deploy: OfflineDeploy
+  predict: OfflinePredict
 components: 
   metadata_tracker: ContinualMetadataTracker
   metrics_tracker: ContinualMetricsTracker
@@ -92,6 +93,13 @@ train:
       metrics: ["accuracy", "f1", "precision", "recall"]
       perf_metric: f1
       retrain_all: True 
+
+deploy: 
+  components: 
+    model_repository: ContinualModelRepository
+    model_deployer: SeldonModelDeployer
+  config: 
+    k4: v4
 
 predict: 
   config: 
