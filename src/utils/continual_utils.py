@@ -1,40 +1,7 @@
 ### badly needs to be refactored
-import pandas as pd
-import numpy as np
 import os 
 import json
-import subprocess
-import itertools
-import optuna
-import sweetviz as sv 
-import snowflake.connector as snow_conn
-from matplotlib import pyplot as plt
-import joblib 
-import shap 
-
-from pandas_profiling import ProfileReport, compare
-from deepchecks.tabular import Dataset
-from deepchecks.tabular.suites import data_integrity, model_evaluation
-from evidently.test_suite import TestSuite
-from evidently.test_preset import *
-from evidently.tests import * 
-from evidently import ColumnMapping
-from sklearn import metrics as sk_metrics
-from xgboost import XGBClassifier
-from alibi.explainers import TreeShap
-from yellowbrick.classifier import ClassificationReport, ConfusionMatrix, ROCAUC, PrecisionRecallCurve, DiscriminationThreshold, ClassPredictionError
-from yellowbrick.target import ClassBalance, FeatureCorrelation
-from aif360.datasets import StandardDataset
-from aif360.metrics import BinaryLabelDatasetMetric, ClassificationMetric
-
 from continual import Client 
-from continual.python.sdk import utils
-
-from prefect_dbt.cli.commands import trigger_dbt_cli_command
-from prefect_snowflake.credentials import SnowflakeCredentials
-from prefect_snowflake.database import SnowflakeConnector, snowflake_query
-from snowflake.connector.pandas_tools import write_pandas
-from git import Repo
 
 # Get continual client
 def get_client(config): 

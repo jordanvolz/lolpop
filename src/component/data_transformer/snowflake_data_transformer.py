@@ -61,6 +61,8 @@ def get_from_snowflake(sql, account, user, password, database, schema, warehouse
     )
     cur = connection.cursor()
     cur.execute(sql)
+    #coerce_float helps in converting numeric types into floats
+    #otherwise they end up as strings and mess stuff up
     df = pd.DataFrame.from_records(
-        iter(cur), columns=[x[0] for x in cur.description])
+        iter(cur), columns=[x[0] for x in cur.description], coerce_float=True)
     return df

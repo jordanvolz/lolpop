@@ -11,3 +11,7 @@
 7. Additional Components/integrations
 8. Orchestrator integrations/examples 
 9. CI/CD strategy
+10. Compute layer. Where do things run? Should consider in the context of orchestrators. We don't want to do the orchestration, so possibly we can offload this to them.  
+11. Object caching? Helps when re-running long pipelines. 
+12. working w/ secrets managers
+XX. Comparison w/ ZenML

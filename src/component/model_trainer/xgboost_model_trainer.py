@@ -49,8 +49,8 @@ class XGBoostModelTrainer(AbstractModelTrainer):
 
         return predictions 
 
-    def save(self, data, *args, **kwargs): 
-        pass
+    #def save(self, experiment, *args, **kwargs): 
+    #    pass
 
     def _predict_df(self,df): 
         return self.model.predict(df)

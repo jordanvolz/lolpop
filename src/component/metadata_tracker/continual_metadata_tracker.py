@@ -51,19 +51,19 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
             data = metadata.data
         return data
 
-    def log_tag(self, key, value): 
+    def log_tag(self, resource,key, value): 
         tag = resource.tags.create(key=key, value=value)
         self.log("Continual tag created: %s" %tag.name)
         return tag
     
-    def get_tag(self, key, **kwargs):
+    def get_tag(self, resource, key, **kwargs):
         value = None
         tag = resource.tags.get(key=key)
         if tag is not None: 
             value = tag.value
         return value
 
-    def create_resource(self, id, type=None, parent=None): 
+    def create_resource(self, id, type=None, parent=None, **kwargs): 
         resource = None 
         if type == "dataset_version": 
             try: 
@@ -79,6 +79,9 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
                 resource = self.run.models.create(id).model_versions.create()  
         elif type == "experiment": 
             resource = parent.experiments.create()
+        elif type == "promotion":
+            resource = parent.promotions.create(
+                model_version=parent, id=id, reason=kwargs.get("reason", "UPLIFT"))
         self.log("Get/Created Continual resource with name: %s" %resource.name, level="INFO")
         return resource
 

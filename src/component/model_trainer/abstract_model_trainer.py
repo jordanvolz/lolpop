@@ -133,15 +133,6 @@ class AbstractModelTrainer(AbstractComponent):
         
         #rebuild model on all data 
         #we need to use the single model entry point for this, as this doesn't log the rigth info
-        model, exp = self.build_model(train_data, model_version, model_trainer, params)                
-        #only have a training set so these are not really useful
-        ##predictions = get_predictions(model, train_data, algo)
-        ##metrics_val = calculate_metrics(train_data, predictions, metrics)
-        ##log_metrics(exp, metrics_val, perf_metric)
-        ##model_version.create_metrics(metrics=winning_exp.list_metrics())
+        model, exp = self.build_model(train_data, model_version, model_trainer, params)                        
         
-        #update metadata
-        #model_version.update(performance_metric_name = winning_experiment.performance_metric_name, performance_metric_val = winning_experiment.performance_metric_val)
-        model_version.metadata.create(key="winning_experiment_id", data={"winning_exp_id": exp.name}, replace_if_exists=True)
-
         return model, exp

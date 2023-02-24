@@ -84,8 +84,8 @@ class LocalDataSplitter(AbstractDataSplitter):
 
     def _get_train_test_dfs(self, data, combine_xy=True, combine_train_valid=True):
         if combine_train_valid: 
-            df_X = pd.concat([data["X_train"],data["X_valid"]])
-            df_y = pd.concat([data["y_train"],data["y_valid"]])
+            df_X = pd.concat([data["X_train"],data["X_valid"]], ignore_index=True)
+            df_y = pd.concat([data["y_train"],data["y_valid"]], ignore_index=True)
         else: 
             df_X = data["X_train"]
             df_y = data["y_train"]
