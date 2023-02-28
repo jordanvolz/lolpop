@@ -7,6 +7,9 @@
 3. testing frameworking/strategy
 3.1. tests for runners/components/pipelines
 3.2. generic tests (like swapping components) that apply broadly
+3.3. config based tests. I.E. you can define stuff in yamls. 
+3.4 for testing purposes, might make sense to have test_build=True param in init that initializes components w/ valid configs
+otherwise we might run into a complicated testing nightmare w/ cascading dependencies, etc 
 4. Default Values
 5. Flush out Logging/Notifications, revisit/refactor utils/abstract classes
 6. Additional Use Case Examples: regression, time series analsis, NLP
@@ -20,4 +23,4 @@
 11. Object caching? Helps when re-running long pipelines. 
 12. working w/ secrets managers
 13. runner loading is slow --> look into
-XX. Comparison w/ ZenML/kebro/mlflow pipelienes/metaflow, etc
+XX. Comparison w/ ZenML/kebro/ploomer/mlflow pipelienes/metaflow, etc

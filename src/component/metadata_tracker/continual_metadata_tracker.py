@@ -227,7 +227,7 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
         self.log_metadata(model_version, id = "feature_importance_feature_value_diff_train_test", data = feature_importance_diff)
 
     def get_winning_experiment(self, model_version):
-        winning_exp_id = self.metadata_tracker.get_metadata(model_version, "winning_experiment_id").get("winning_exp_id")
+        winning_exp_id = self.metadata_tracker.get_metadata(model_version, "winning_experiment_id").get("winning_experiment_id")
         experiment = self.metadata_tracker.get_resource(winning_exp_id, type="experiment", parent=model_version)
         return experiment
 

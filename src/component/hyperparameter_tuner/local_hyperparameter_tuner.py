@@ -43,7 +43,7 @@ class LocalHyperparameterTuner(AbstractHyperparameterTuner):
 
         #log important stuff to model version
         self.metrics_tracker.copy_metrics(winning_exp, model_version)
-        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_id", data={"winning_exp_id" : winning_exp_id})
+        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_id", data={"winning_experiment_id" : winning_exp_id})
         self.metadata_tracker.log_metadata(model_version, id="winning_experiment_model_trainer", data={"winning_experiment_model_trainer" : winning_exp_model_trainer})
 
         return best_model

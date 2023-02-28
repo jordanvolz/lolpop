@@ -24,7 +24,7 @@ class AbstractTrain(AbstractPipeline):
         pass
 
     def load_model(self, model_obj, model_version, ref_model, *args, **kwargs):
-        model_trainer = self.metadata_tracker.get_metadata(model_version, "winning_experiment_model_trainer").get("winning_exp_model_trainer")
+        model_trainer = self.metadata_tracker.get_metadata(model_version, "winning_experiment_model_trainer").get("winning_experiment_model_trainer")
         model_cl = utils.load_class(model_trainer)
         dependent_components = {"logger" : self.logger, "notifier" : self.notifier,  "metadata_tracker" :self.metadata_tracker, "metrics_tracker": self.metrics_tracker, "resource_version_control": self.resource_version_control}
         model = model_cl(ref_model.config, self.config, self.runner_conf, parent_process=ref_model.parent_process, problem_type = self.problem_type, params=ref_model.params, components=dependent_components) 

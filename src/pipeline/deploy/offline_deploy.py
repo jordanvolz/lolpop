@@ -14,11 +14,10 @@ class OfflineDeploy(AbstractDeploy):
             if model_version is not None:
                 experiment = self.metadata_tracker.get_winning_experiment(
                     model_version)
-                model = self.resource_version_control.get_model(
-                    experiment, self.metadata_tracker.get_vc_info(model_version))
+                model = self.resource_version_control.get_model(experiment)
 
         #register model in model repository
-        model_id = self.model_respository.register_model(model_version, model)
+        model_id = self.model_repository.register_model(model_version, model)
 
         #promote model
         promotion = self.model_repository.promote_model(model_id)

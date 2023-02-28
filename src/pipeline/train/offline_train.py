@@ -63,10 +63,10 @@ class OfflineTrain(AbstractTrain):
     def compare_models(self, data_dict, model, model_version): 
         #get currently deployed model version/previous model version and winning experiment
         prev_model_version = self.metadata_tracker.get_currently_deployed_model_version(model_version)
-        experiment = self.metadata_tracker.get_winning_experiment(model_version)
+        prev_experiment = self.metadata_tracker.get_winning_experiment(prev_model_version)
 
         #get the prev model version object from resource version control and load it into a model trainer
-        prev_model_obj = self.resource_version_control.get_model(experiment, key = "model_artifact")
+        prev_model_obj = self.resource_version_control.get_model(prev_experiment, key = "model_artifact")
         prev_model = self.load_model(prev_model_obj, prev_model_version, model)
 
         #compare model to the last version 
