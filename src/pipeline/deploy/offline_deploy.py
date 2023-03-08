@@ -8,16 +8,16 @@ class OfflineDeploy(AbstractDeploy):
     def __init__(self, conf, runner_conf, **kwargs):
         super().__init__(conf, runner_conf, **kwargs)
 
-    def promote_model(self, model_version, model=None, *args, **kwargs):
+    def promote_model(self, model_version, model_obj=None, *args, **kwargs):
         #get model from RVC if not provided.
-        if model is None:
+        if model_obj is None:
             if model_version is not None:
                 experiment = self.metadata_tracker.get_winning_experiment(
                     model_version)
-                model = self.resource_version_control.get_model(experiment)
+                model_obj = self.resource_version_control.get_model(experiment)
 
         #register model in model repository
-        model_id = self.model_repository.register_model(model_version, model)
+        model_id = self.model_repository.register_model(model_version, model_obj)
 
         #promote model
         promotion = self.model_repository.promote_model(model_id)

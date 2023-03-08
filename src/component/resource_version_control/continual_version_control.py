@@ -25,19 +25,18 @@ class ContinualVersionControl(AbstractResourceVersionControl):
             self.client = cutils.get_client(secrets)
             self.run = cutils.get_run(self.client, description=description, run_id=run_id)
 
-    def version_data(self, dataset_version, data, **kwargs): 
+    def version_data(self, dataset_version, data, key = "data_csv", **kwargs): 
         id = self.metadata_tracker.get_resource_id(dataset_version)
 
         #dump dataframe to local
         local_path = "%s/%s.csv" %(self.config.get("local_dir"),id)
         data.to_csv(local_path, index=False)
 
-        key = kwargs.get("key", "data-csv")
         artifact = self.metadata_tracker.log_artifact(dataset_version, id = key, path = local_path, mime_type="csv", external=False)
         
         return {"uri" : artifact.url}
 
-    def get_data(self, dataset_version, vc_info=None, key="data-csv", **kwargs):
+    def get_data(self, dataset_version, vc_info=None, key="data_csv", **kwargs):
         artifact = dataset_version.artifacts.get(id=key)
         file_path = "%s/%s/%s" %(self._get_config("local_dir"),dataset_version.id, artifact.id)
         os.makedirs(file_path, exist_ok=True)

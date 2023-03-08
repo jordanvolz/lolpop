@@ -102,6 +102,22 @@ deploy:
     k4: v4
 
 predict: 
+  components: 
+    data_profiler: $process.components.data_profiler
+    prediction_explainer: $train.components.model_explainer
+    prediction_checker: $process.components.data_checker
+    data_transformer: SnowflakeDataTransformer
+  prediction_explainer: 
+    config: 
+      explainer_class: $train.model_explainer.config.explainer_class
+  data_transformer: 
+      config: 
+        account: wr40705.us-east-1  
+        user: jordan
+        password: Teferi88
+        database: DBT 
+        schema: PETFINDER
+        warehouse: JAV_TEST_WAREHOUSE
   config: 
     k2: v2
 
@@ -109,7 +125,7 @@ predict:
 metadata_tracker: 
   config: 
     continual_endpoint: https://sdk.continual.ai 
-    continual_apikey: apikey/8935447e76934054b5aac24c9829e72f
+    continual_apikey: apikey/5b818042162e4bb7896c5277d74709e0
     continual_project: c2-testing
     continual_environment: production
 metrics_tracker: 

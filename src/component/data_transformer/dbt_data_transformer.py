@@ -27,10 +27,10 @@ class dbtDataTransformer(AbstractDataTransformer):
             obj = cl(config, self.pipeline_conf, self.runner_conf, **kwargs)
             setattr(self,"data_loader",obj)
 
-    def get_data(self, **kwargs): 
+    def get_data(self, source_table_name, **kwargs): 
         pass 
 
-    def transform(self, data, **kwargs):
+    def transform(self, data, source_table_name, **kwargs):
         command = "dbt run --target %s --project-dir %s --profiles-dir %s --profile %s" %(
             self.dbt_config.get("DBT_TARGET"), 
             self.dbt_config.get("DBT_PROJECT_DIR"), 
@@ -43,12 +43,7 @@ class dbtDataTransformer(AbstractDataTransformer):
         self.log("dbt output: \n%s" %output, "INFO")
 
         if int(exit_code) == 0: #dbt ran successfully
-            table_to_load = self._get_config("table_train")
-
-            if self._get_config("pipeline_type") == "predict": 
-                table_to_load = self._get_config("table_eval")
-
-            data = self.data_loader.get_data(table_to_load)
+            data = self.data_loader.get_data(source_table_name)
 
         return data 
 

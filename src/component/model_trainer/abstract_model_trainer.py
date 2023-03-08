@@ -113,6 +113,11 @@ class AbstractModelTrainer(AbstractComponent):
         self.metadata_tracker.log_metadata(model_version, id="winning_experiment_id", data={"winning_experiment_id" : self.metadata_tracker.get_resource_id(experiment)})
         self.metadata_tracker.log_metadata(model_version, id="winning_experiment_model_trainer", data={"winning_experiment_model_trainer" : type(self).__name__})
 
+        #save splits
+        for k,v in data.items(): 
+            vc_info = self.resource_version_control.version_data(model_version, v, key=k, file_suffix=k)
+            self.metadata_tracker.register_vc_resource(model_version, vc_info, key="%s_csv" %k, file_type="csv")
+
         return self, experiment 
 
     def rebuild_model(self, data, model_version):

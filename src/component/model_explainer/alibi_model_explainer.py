@@ -11,93 +11,106 @@ class AlibiModelExplainer(AbstractModelExplainer):
     __REQUIRED_CONF__ = {
         "config" : ["explainer_class", "local_dir"]
     }
+
+    def get_explanations(self, data, model, model_version, label, classification_type=None, to_list=False, *args, **kwargs): 
+        #load explainer class and instatiate
+        explainer_class = self._get_config("explainer_class")
+        explainer_cl = getattr(alibi, explainer_class)
+        explainer = explainer_cl(model._get_model(), task=self.problem_type)
+
+        #fit the explainer and generate explanations
+        explainer.fit()
+        explanations = explainer.explain(data)
+
+        #generate shap_plots 
+        self._get_shap_plots(explanations.shap_values, explanations.expected_value, data, model._get_model(), label, model_version, classification_type)
+
+        #log feature importance         
+        self.metadata_tracker.log_metadata(model_version, id = "%s_global_feature_importance" %label, data = explanations.raw.get("importances").get("aggregated"))
+  
+        if to_list: 
+            explanations = explanations.raw.get("instances").tolist() 
+
+        return explanations
+
     def get_feature_importance(self, data_dict, model, model_version, *args, **kwargs): 
         #generate train/test datasets
         (train_X, train_y), (test_X, test_y) = self.data_splitter._get_train_test_dfs(data_dict, combine_xy=False) 
         if self.problem_type == "classification": 
             classification_type = utils.get_multiclass(train_y.unique())
         else: 
-            classificatioN_type = None 
+            classification_type = None 
 
-        #load explainer class and instatiate
-        explainer_class = self._get_config("explainer_class")
-        explainer_cl = getattr(alibi, explainer_class)
-        explainer = explainer_cl(model._get_model(), task=self.problem_type)
-
-        #fit the explainer and generate explanations for training and test datasets
-        explainer.fit()
-        explanations_train = explainer.explain(train_X)
-        explanations_test = explainer.explain(test_X)
-
-        #generate shap_plots for train and test explanations 
-        self._get_shap_plots(explanations_train.shap_values, explanations_train.expected_value, train_X, model._get_model(), "train", model_version, classification_type)
-        self._get_shap_plots(explanations_test.shap_values, explanations_test.expected_value, test_X, model._get_model(), "test", model_version, classification_type)
+        explanations_train = self.get_explanations(train_X, model, model_version, "train", classification_type)
+        explanations_test = self.get_explanations(train_X, model, model_version, "test", classification_type)
 
         #compare test and train 
         expected_value_diff, feature_importance_diff = self._compare_train_test_feat_importance(explanations_train, explanations_test, classification_type)
         
         #log feature importance
-        self.metadata_tracker.log_feature_importance(explanations_train, explanations_test, expected_value_diff, feature_importance_diff, model_version)
+        self.metadata_tracker.log_metadata(model_version, id = "feature_importance_expected_value_diff_train_test", data = expected_value_diff)
+        self.metadata_tracker.log_metadata(model_version, id = "feature_importance_feature_value_diff_train_test", data = feature_importance_diff)
 
         return explanations_train, explanations_test
 
     #generate all the shap plot
     def _get_shap_plots(self, shap_values, expected_value, data, model, label, model_version, classification_type=None): 
 
-        if classification_type == "multiclass":
+        #note: classificaiton_type == None currently when making a prediction
+        if classification_type == "multiclass" or classification_type is None:
             #bar plot w/ all classes
             shap.summary_plot(shap_values, data)
             self._save_pyplot("shap_summary_plot_bar", label, model_version)
-        elif classification_type == "multiclass": 
+        elif classification_type == "binary": 
             #if binary, then just make it an array of one class and the rest should still work
             shap_values = [shap_values]
         else: 
             self.notify("Unsupported problem type for generating shapley plots: %s" %self.problem_type)
 
-        if classification_type is not None: 
-            #for multiclass, many plots only work on one class at a time. 
-            for i in range(len(shap_values)):
-                #scatter plot for class
-                shap.summary_plot(shap_values[i], data)
-                self._save_pyplot("shap_scatter_plot_class_%s" %str(i), label, model_version)
+        #if classification_type is not None: 
+        ##for multiclass, many plots only work on one class at a time. 
+        for i in range(len(shap_values)):
+            #scatter plot for class
+            shap.summary_plot(shap_values[i], data)
+            self._save_pyplot("shap_scatter_plot_class_%s" %str(i), label, model_version)
 
-                #bar plot for class
-                shap.summary_plot(shap_values[i], data, plot_type="bar")
-                self._save_pyplot("shap_scatter_plot_bar_%s" %str(i), label, model_version)
+            #bar plot for class
+            shap.summary_plot(shap_values[i], data, plot_type="bar")
+            self._save_pyplot("shap_scatter_plot_bar_%s" %str(i), label, model_version)
 
-                ##force plot for class
-                ##force plot is very slow for large matrices, so we'll impose a sample
-                sample_size = 100
-                idx = np.random.randint(len(shap_values[i]), size=sample_size)
-                # force plot doesn't really work w/ multiclass right now
-                #shap.force_plot(expected_value[i], shap_values[i][idx,:], matplotlib=True)
-                #save_pyplot("shap_force_plot_bar_%s" %str(i), label, model_version)
+            ##force plot for class
+            ##force plot is very slow for large matrices, so we'll impose a sample
+            sample_size = 100
+            idx = np.random.randint(len(shap_values[i]), size=sample_size)
+            # force plot doesn't really work w/ multiclass right now
+            #shap.force_plot(expected_value[i], shap_values[i][idx,:], matplotlib=True)
+            #save_pyplot("shap_force_plot_bar_%s" %str(i), label, model_version)
 
-                #decision plots
-                shap.decision_plot(expected_value[i], shap_values[i][idx,:])
-                self._save_pyplot("shap_decision_plot_%s" %str(i), label, model_version)
+            #decision plots
+            shap.decision_plot(expected_value[i], shap_values[i][idx,:])
+            self._save_pyplot("shap_decision_plot_%s" %str(i), label, model_version)
 
-                #create dependence plots -- one for each feature
-                for ft in data.columns: 
-                    #you can set interaction_index to determine which feature is used to color plot.
-                    #if omitted it will just use what seems to have the best interaction. If none it will turn off coloring
-                    shap.dependence_plot(ft, shap_values[i], data, interaction_index=None)
-                    self._save_pyplot("shap_dependence_plot_%s_%s" %(str(i), ft), label, model_version)\
+            #create dependence plots -- one for each feature
+            for ft in data.columns: 
+                #you can set interaction_index to determine which feature is used to color plot.
+                #if omitted it will just use what seems to have the best interaction. If none it will turn off coloring
+                shap.dependence_plot(ft, shap_values[i], data, interaction_index=None)
+                self._save_pyplot("shap_dependence_plot_%s_%s" %(str(i), ft), label, model_version)\
 
-                    #partial dependenceplots
-                    if i == 0: #only need to calculate these once
-                        shap.partial_dependence_plot(ft, model.predict, data)
-                        self._save_pyplot("shap_partial_dependence_plot_%s" %ft, label, model_version)
+                #partial dependenceplots
+                if i == 0: #only need to calculate these once
+                    shap.partial_dependence_plot(ft, model.predict, data)
+                    self._save_pyplot("shap_partial_dependence_plot_%s" %ft, label, model_version)
 
-                # we can also check bias too if not doing it elsewhere: 
-                #for bias in config.get('BIAS_COLUMNS').split(","): 
-                #    shap.group_difference_plot(shap_values[i], data[bias].values==1, feature_names=data.columns)
-                #    save_pyplot("shap_group_difference_plot_%s_bias_%s" %(str(i),bias), label, model_version)
-                
-                #other plots
-                #waterfall_plot only shows the effect of one row at a time
-                #multioutput_decision_plot only shows the effect of one row at a time, but it's super awesome for multiclass problems
-                #heatmap -- difficult to use from alibi
+            # we can also check bias too if not doing it elsewhere: 
+            #for bias in config.get('BIAS_COLUMNS').split(","): 
+            #    shap.group_difference_plot(shap_values[i], data[bias].values==1, feature_names=data.columns)
+            #    save_pyplot("shap_group_difference_plot_%s_bias_%s" %(str(i),bias), label, model_version)
+            
+            #other plots
+            #waterfall_plot only shows the effect of one row at a time
+            #multioutput_decision_plot only shows the effect of one row at a time, but it's super awesome for multiclass problems
+            #heatmap -- difficult to use from alibi
 
    #save shapley plut usin matplotlib.pyplot
     def _save_pyplot(self, name, label, model_version): 

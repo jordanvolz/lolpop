@@ -19,12 +19,11 @@ class dvcVersionControl(AbstractResourceVersionControl):
         self.dvc_dir = secrets.get("DVC_DIR")
         self.dvc_remote = secrets.get("DVC_REMOTE")
 
-    def version_data(self, dataset_version, data, **kwargs): 
+    def version_data(self, dataset_version, data, file_suffix = None, **kwargs): 
         id = self.metadata_tracker.get_resource_id(dataset_version)
 
         #set up paths
         dvc_path = self.dvc_dir
-        file_suffix = kwargs.get("file_suffix",None)
         if file_suffix: 
             dvc_file = "%s_%s.csv" %(id, file_suffix)
         else: 
@@ -44,7 +43,9 @@ class dvcVersionControl(AbstractResourceVersionControl):
         
         return {"uri" : URI, "hexsha": hexsha}
 
-    def get_data(self, dataset_version, hexsha, **kwargs):
+    def get_data(self, dataset_version, vc_info, **kwargs):
+        if vc_info is not None: 
+            hexsha = vc_info.get("hexsha")
         id = self.metadata_tracker.get_resource_id(dataset_version)
         dvc_file = "%s.csv" %(id)
     

@@ -32,7 +32,10 @@ class ContinualMetricsTracker(AbstractMetadataTracker):
     def log_metric(self, resource, id, value, group=None, time=None, **kwargs): 
         #first, check to see if metric exists and if not, just create it 
         metric_name = "%s/metrics/%s" %(resource.name,id)
-        metric = self.get_metric(resource, metric_name)
+        try: 
+            metric = self.get_metric(resource, metric_name)
+        except: 
+            metric = None 
         if metric is None: 
             metric = self.create_metric(resource, id, id)
 
@@ -43,6 +46,22 @@ class ContinualMetricsTracker(AbstractMetadataTracker):
     def get_metric(self, resource, id):
         metric = resource.metrics.get(id=id)
         return metric 
+
+    #if latest, returns latest metric, otherwise returns the entire series
+    def get_metric_value(self, resource, id, group=None, latest=True):
+        if id == "performance_metric_val" or id == "performance_metric_name":
+            metric = getattr(resource, id)
+            return metric
+        else:
+            metric = resource.metrics.get(id=id)
+
+            metric_vals = metric.values
+            if group is not None:
+                metric_vals = [x for x in metric_vals if x.group == group]
+            if latest:
+                metric_vals = metric_vals[-1]
+
+            return metric_vals
 
     def log_metrics(self, experiment, metrics, perf_metric):
         #set performance metric for experiment 
@@ -89,3 +108,10 @@ class ContinualMetricsTracker(AbstractMetadataTracker):
             to_resource.performance_metric_name = from_resource.performance_metric_name
             to_resource.performance_metric_val = from_resource.performance_metric_val
             to_resource.update(paths=["performance_metric_name", "performance_metric_val"])
+
+    def log_prediction_metrics(self, prediction_job, predictions): 
+        df_values = predictions.value_counts()
+        class_distribution = {x:y/sum(df_values) for x,y in df_values.to_dict().items()}
+
+        self.metadata_tracker.log_metadata(prediction_job, id="class_distribution", data = class_distribution)
+        self.log_metric(prediction_job, "num_predictions", len(predictions))

@@ -14,13 +14,13 @@ class ClassificationRunner(AbstractRunner):
     def __init__(self, conf):
         super().__init__(conf, problem_type="classification")
 
-    def process_data(self):
+    def process_data(self, source_data = "train"):
         #run data transformations and encodings
-        data = self.process.transform_data()  # maybe better called get_training_data?
+        source_table_name = self.config.get("table_%s" % source_data)
+        data = self.process.transform_data(source_table_name)  # maybe better called get_training_data?
 
         #track & version data
-        dataset_version = self.process.track_data(
-            data, self.config.get("table_train"))
+        dataset_version = self.process.track_data(data, source_table_name)
 
         #profile data
         self.process.profile_data(data, dataset_version)
@@ -32,7 +32,7 @@ class ClassificationRunner(AbstractRunner):
         self.process.compare_data(data, dataset_version)
 
         #return data
-        return data
+        return data, dataset_version
 
     def train_model(self, data, dataset_version=None):
 
@@ -74,7 +74,7 @@ class ClassificationRunner(AbstractRunner):
                 model, experiment = self.train.retrain_model_on_all_data(
                     data_dict, model_version, ref_model=model)
 
-        return model_version, is_new_model_better
+        return model_version, model, is_new_model_better
 
     def deploy_model(self, model_version):
         #promote model
@@ -89,8 +89,61 @@ class ClassificationRunner(AbstractRunner):
 
         return deployment
 
-    def predict_data(self, model, data):
+    def predict_data(self, model_version, model, data, dataset_version):
+        #compare evaluation data to training data
+        self.predict.compare_data(model_version, dataset_version, data)
+
+        #get predictions
+        data, prediction_job = self.predict.get_predictions(model, model_version, data)
+
+        #version data
+        self.predict.track_predictions(prediction_job, data)
+
+        #calculate drift
+        self.predict.analyze_prediction_drift(model_version, prediction_job, data)
+
+        #run prediction checks
+        self.predict.check_predictions(data, prediction_job)
+
+        #run save predictions
+        self.predict.save_predictions(data)
+
+        return data, prediction_job
+
+    def evaluate_ground_truth(self, prediction_job=None): 
+        #if prediciton job isn't known, get the most recent job
+        if prediction_job == None: 
+            model = self.metadata_tracker.get(self.config.get("model_name"), type="model")
+            prediction_job = self.metadata_tracker.get_latest_model_resource(model, type="prediction_job")
+        
+        #get prediciton data 
+        vc_info = self.metadata_tracker.get_vc_info(prediction_job)
+        prediction_data = self.resource_version_control.get_data(prediction_job, vc_info, key = "data_csv") 
+
+        #get training data
+        train_data = self.process.transform_data(self.config.get("table_train"))
+
+        #data_dict = {"y_train" : train_data[self.config.get("model_target")]}
+
+        #metrics = 
+
+        pass 
+
+    def stop(self):
+        self.metadata_tracker.stop()
         pass
 
-    def build_all():
-        pass
+    def build_all(self):
+        data, dataset_version = self.process_data()
+        model_version, model, is_new_model_better = self.train_model(data, dataset_version)
+        if is_new_model_better: 
+            deployment = self.deploy_model(model_version)
+        eval_data, eval_dataset_version = self.process_data(source_data="eval")
+        data, prediction_job = self.predict_data(model_version,model, eval_data, eval_dataset_version)
+        self.evaluate_ground_truth(prediction_job)
+        
+    #helper function for lookup up config key 
+    def _get_config(self, key, default_value=None):
+        key = key.lower()
+        value = utils.lower_conf(self.config).get(key, None)
+        return value

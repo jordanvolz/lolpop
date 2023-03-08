@@ -11,12 +11,12 @@ class OfflineProcess(AbstractProcess):
     def __init__(self, conf, runner_conf, **kwargs): 
         super().__init__(conf, runner_conf, **kwargs)
 
-    def transform_data(self): 
+    def transform_data(self, source_table_name): 
         #get source data
-        data = self.data_transformer.get_data()
+        data = self.data_transformer.get_data(source_table_name)
 
         #transform data
-        data_out = self.data_transformer.transform(data)
+        data_out = self.data_transformer.transform(data, source_table_name)
 
         return data_out
 
@@ -29,7 +29,7 @@ class OfflineProcess(AbstractProcess):
         vc_info = self.resource_version_control.version_data(dataset_version, data)
 
         #register version control metadata w/ metadata tracker
-        self.metadata_tracker.register_vc_resource(dataset_version, vc_info, key="data-csv", file_type="csv")
+        self.metadata_tracker.register_vc_resource(dataset_version, vc_info, key="data_csv", file_type="csv")
 
         return dataset_version
       
@@ -66,7 +66,7 @@ class OfflineProcess(AbstractProcess):
         #get previous dataset version & dataframe 
         prev_dataset_version = self.metadata_tracker.get_prev_resource_version(dataset_version)
         vc_info = self.metadata_tracker.get_vc_info(prev_dataset_version)
-        prev_data = self.resource_version_control.get_data(prev_dataset_version, vc_info, key = "data-csv")
+        prev_data = self.resource_version_control.get_data(prev_dataset_version, vc_info, key = "data_csv")
 
         #compare current dataset version with previous dataset version
         comparison_report, file_path = self.data_profiler.compare_data(data, prev_data)

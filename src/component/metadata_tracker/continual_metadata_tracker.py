@@ -28,7 +28,7 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
         self.stop()
 
     def log_artifact(self, resource,  **kwargs): 
-        artifact = resource.artifacts.create(**kwargs)
+        artifact = resource.artifacts.create(replace_if_exists=True, **kwargs)
         self.log("Continual artifact created: %s" %artifact.name)
         return artifact 
 
@@ -81,7 +81,12 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
             resource = parent.experiments.create()
         elif type == "promotion":
             resource = parent.promotions.create(
-                model_version=parent, id=id, reason=kwargs.get("reason", "UPLIFT"))
+                kwargs.get("improvement_metric"), kwargs.get("improvement_metric_value"), 
+                kwargs.get("base_improvement_metric_value"), kwargs.get("improvement_metric_diff"),
+                model_version=parent, reason=kwargs.get("reason", "UPLIFT"))
+        elif type == "prediction_job": 
+            resource = parent.batch_predictions.create() 
+
         self.log("Get/Created Continual resource with name: %s" %resource.name, level="INFO")
         return resource
 
@@ -93,6 +98,8 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
             resource = self.run.datasets.get(id)
         elif type == "experiment": 
             resource = self.run.model_versions.get(parent.name).experiments.get(id)
+        elif type == "model": 
+            resource = self.run.models.get(id)
         return resource
 
     def update_resource(self, resource, value_dict, type=None): 
@@ -108,7 +115,7 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
         parent_id = name_arr[-3]
         parent_resource = getattr(self.run,parent_resource_type).get(parent_id)
         resource_version_type = parent_resource_type[:-1] + "_" + name_arr[-2]
-        recent_resource_version_list = getattr(parent_resource,resource_version_type).list(latest=True)
+        recent_resource_version_list = getattr(parent_resource,resource_version_type).list(default_sort_order="DESC")
 
         found_current_version = False 
         i = 0
@@ -126,13 +133,22 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
 
     def get_currently_deployed_model_version(self, model_version, return_latest_if_no_deployed=True, **kwargs): 
         model = self.run.models.get(model_version.parent)
-        deployed_mv_name = model.current_version
+        try: 
+            deployed_mv_name = model.current_version
+        except: 
+            deployed_mv_name = None
         deployed_mv = None 
-        if len(deployed_mv_name) == 0 : 
+        if deployed_mv_name is None: 
             deployed_mv = self.get_prev_resource_version(model_version)
         elif return_latest_if_no_deployed: 
             deployed_mv = self.run.model_versions.get(deployed_mv_name)
         return deployed_mv
+
+    def get_latest_model_resource(self, model, type): 
+        resource = None 
+        if type == "prediction_job": 
+            resource = model.batch_predictions.list()[0]
+        return resource
 
     #dataset versions should be populated by process pipeline and passed in by runner
     #if that doesn't happen, we can look up the last model version and reuse those dataset versions
@@ -173,14 +189,18 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
             hexsha = vc_info.get("hexsha")
 
             artifact = self.log_artifact(resource, id = key, url=uri, mime_type=file_type, external=True)
-            self.log_metadata(resource, id="git_hexsha", data={"hexsha": hexsha})
+            self.log_metadata(resource, id="git_hexsha_%s" %key, data={"hexsha": hexsha})
         
         if len(additional_metadata) > 0: 
             for k,v in additional_metadata.items(): 
                 self.log_metadata(resource, id = k, data=v)
 
     def get_vc_info(self, resource, key = "git_hexsha"): 
-        return self.get_metadata(resource,key)
+        data = None
+        metadata = self.get_metadata(resource, key)
+        if metadata is not None: 
+            data = metadata.get("hexsha")
+        return data
 
     def log_data_profile(self, resource, file_path, profile, profiler_class = None): 
         # in the future we may want to try to map the profile to Continual's internal profile type. 
@@ -218,13 +238,6 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
         elif profiler_class == "ContinualDataProfiler": 
             #not implemented
             return None
-
-    def log_feature_importance(self, explanations_train, explanations_test, expected_value_diff, feature_importance_diff, model_version): 
-        
-        self.log_metadata(model_version, id = "train_global_feature_importance", data = explanations_train.raw.get("importances").get("aggregated"))
-        self.log_metadata(model_version, id = "test_global_feature_importance", data = explanations_test.raw.get("importances").get("aggregated"))
-        self.log_metadata(model_version, id = "feature_importance_expected_value_diff_train_test", data = expected_value_diff)
-        self.log_metadata(model_version, id = "feature_importance_feature_value_diff_train_test", data = feature_importance_diff)
 
     def get_winning_experiment(self, model_version):
         winning_exp_id = self.metadata_tracker.get_metadata(model_version, "winning_experiment_id").get("winning_experiment_id")

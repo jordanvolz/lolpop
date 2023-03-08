@@ -32,8 +32,15 @@ class ContinualModelRepository(AbstractModelRepository):
         return model_version
 
     def promote_model(self, model_version, reason="UPLIFT", *args, **kwargs):
+        improvement_metric = self.metrics_tracker.get_metric_value(
+            model_version, "performance_metric_name")
+        improvement_metric_value = self.metrics_tracker.get_metric_value(model_version,"performance_metric_val")
+        improvement_metric_diff = self.metrics_tracker.get_metric_value(model_version, "deployed_model_perf_metric_diff")
+        base_improvement_metric_value = improvement_metric_value - improvement_metric_diff
         promotion = self.metadata_tracker.create_resource(
-            model_version, type="promotion", reason=reason)
+            improvement_metric=improvement_metric, improvement_metric_value=improvement_metric_value, 
+            base_improvement_metric_value=base_improvement_metric_value, improvement_metric_diff=improvement_metric_diff,
+            id=None, parent=model_version, type="promotion", reason=reason)
         return promotion
 
     #approvals are not implemented in Continual, so just return True if called.
