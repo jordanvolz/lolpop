@@ -1,4 +1,4 @@
-from runner import ClassificationRunner
+from lolpop.runner import ClassificationRunner
 
 #create runner from config
 config_file = "/Users/jordanvolz/github/lolpop/examples/classification/main_local.yaml"
