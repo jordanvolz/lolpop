@@ -11,6 +11,7 @@
 --> also, see: https://typer.tiangolo.com/tutorial/package/
 --> idea is that users can package up their own stuff, i.e. add component and create binary, or docker image, or even docker image of embedded model, etc. 
 --> but also need to work through distributing lolpop's defaults
+--> Note; issue w/ evidently requiring pyyaml <6 and dbt-core >=6, currently can install via `pip3 install -e . --no-deps` to get by it. 
 3. testing frameworking/strategy
 3.1. tests for runners/components/pipelines
 3.2. generic tests (like swapping components) that apply broadly

@@ -21,8 +21,7 @@ class dbtDataTransformer(AbstractDataTransformer):
         #note that we don't use utils.register_class_component here because we need to look up the config externally in the dbt profile.
         # in the future we may clean these different paths up. 
         if data_loader is not None: 
-            module = __import__("component")
-            cl = getattr(module, data_loader)
+            cl = utils.load_class(data_loader)
             config = get_dw_config_from_profile(self.dbt_config)
             obj = cl(config, self.pipeline_conf, self.runner_conf, **kwargs)
             setattr(self,"data_loader",obj)

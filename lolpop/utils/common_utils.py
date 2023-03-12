@@ -1,5 +1,6 @@
 import subprocess 
 import os 
+from importlib import import_module
 from git import Repo
 from omegaconf import OmegaConf, dictconfig
 from datetime import datetime
@@ -54,7 +55,7 @@ def git_commit_file(file_path, repo_path=None, msg="Commiting file from mlops-ju
 
 #load class object
 def load_class(class_name, class_type="component"): 
-    module = __import__("lolpop.%s" %class_type)
+    module = import_module("lolpop.%s" %class_type)
     cl = getattr(module, class_name)
     return cl
 
