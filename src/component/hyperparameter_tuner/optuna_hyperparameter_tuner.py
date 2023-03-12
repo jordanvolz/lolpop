@@ -48,7 +48,7 @@ class OptunaHyperparameterTuner(AbstractHyperparameterTuner):
         #save data splits
         for k,v in data.items(): 
             vc_info = self.resource_version_control.version_data(model_version, v, key=k, file_suffix=k)
-            self.metadata_tracker.register_vc_resource(model_version, vc_info, key="%s_csv" %k, file_type="csv")
+            self.metadata_tracker.register_vc_resource(model_version, vc_info, key=k, file_type="csv")
 
         #now, we determine overall best experiment and save into model_version
         winning_exp_id = self._get_winning_experiment(exp_list, perf_metric, reverse=utils.get_metric_direction(perf_metric))

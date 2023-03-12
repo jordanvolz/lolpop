@@ -27,7 +27,17 @@ class AbstractTrain(AbstractPipeline):
         model_trainer = self.metadata_tracker.get_metadata(model_version, "winning_experiment_model_trainer").get("winning_experiment_model_trainer")
         model_cl = utils.load_class(model_trainer)
         dependent_components = {"logger" : self.logger, "notifier" : self.notifier,  "metadata_tracker" :self.metadata_tracker, "metrics_tracker": self.metrics_tracker, "resource_version_control": self.resource_version_control}
-        model = model_cl(ref_model.config, self.config, self.runner_conf, parent_process=ref_model.parent_process, problem_type = self.problem_type, params=ref_model.params, components=dependent_components) 
+        #might want to find a better way to do this next step. 
+        #it would be nice if you could reconstruct a model trainer class only w/ a model version object     
+        if ref_model is not None: 
+            config = ref_model.config 
+            parent_process = ref_model.parent_process
+            params = ref_model.params
+        else: 
+            config = {} 
+            parent_process = self.parent_process 
+            params = {} 
+        model = model_cl(config, self.config, self.runner_conf, parent_process=parent_process, problem_type = self.problem_type, params=params, components=dependent_components) 
         #if you passed in a model_obj, we assume you have a pre-trained model object you wish to use
         if model_obj is not None: 
             model._set_model(model_obj)

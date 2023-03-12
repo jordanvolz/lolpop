@@ -15,6 +15,7 @@ config:
   table_prediction: PETFINDER_PREDICTIONS
   model_name: petfinder_adoption_speed
   model_target: ADOPTIONSPEED
+  model_index: PETID
   drop_columns: [NAME, PETID, RESCUERID, DESCRIPTION]
   local_dir: /tmp/artifacts/
 
@@ -104,20 +105,20 @@ deploy:
 predict: 
   components: 
     data_profiler: $process.components.data_profiler
-    prediction_explainer: $train.components.model_explainer
-    prediction_checker: $process.components.data_checker
+    model_explainer: $train.components.model_explainer
+    data_checker: $process.components.data_checker
     data_transformer: SnowflakeDataTransformer
-  prediction_explainer: 
+  model_explainer: 
     config: 
       explainer_class: $train.model_explainer.config.explainer_class
   data_transformer: 
-      config: 
-        account: wr40705.us-east-1  
-        user: jordan
-        password: Teferi88
-        database: DBT 
-        schema: PETFINDER
-        warehouse: JAV_TEST_WAREHOUSE
+    config: 
+      account: wr40705.us-east-1  
+      user: jordan
+      password: Teferi88
+      database: DBT 
+      schema: PETFINDER
+      warehouse: JAV_TEST_WAREHOUSE
   config: 
     k2: v2
 

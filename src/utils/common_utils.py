@@ -227,8 +227,9 @@ def convert_col_types(data, prev_data):
     df_a = data.copy()
     df_b = prev_data.copy()
     for col in df_a.columns:
-        if df_a[col].dtype != df_b[col].dtype:
-            df_a[col] = df_a[col].astype(df_b[col].dtype)
+        if col in df_b.columns: #if col is net new, we can skip
+            if df_a[col].dtype != df_b[col].dtype:
+                df_a[col] = df_a[col].astype(df_b[col].dtype)
     return df_a
 
 #True = lower is better

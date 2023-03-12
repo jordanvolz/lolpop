@@ -1,9 +1,11 @@
 0. Code Review (check formatting, base to child params, inputs/output types, etc)
 --> change src --> lolpop
+--> docstrings
+--> pre-commit hook for python formatting
 00. pipeline extensibility
 00.1 i.e. using metaflow as pipeline instead of default pipelines
 1. CLI
-1.1. runner/pipeline/component templates
+1.1. runner/pipeline/component templates -- DONE
 2. packaing strategy/setup.py/requirements.txts
 --> try to use extras_require to pull in individual requirements.txt from components?
 --> also, see: https://typer.tiangolo.com/tutorial/package/
@@ -26,6 +28,7 @@
 9. CI/CD strategy
 10. Compute layer. Where do things run? Should consider in the context of orchestrators. We don't want to do the orchestration, so possibly we can offload this to them.  
 11. Object caching? Helps when re-running long pipelines. 
+--> idea is to define things you want to cache in decorators and then also have a caching component
 12. working w/ secrets managers
 13. runner loading is slow --> look into
 XX. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc

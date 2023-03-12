@@ -9,9 +9,14 @@ class DeepchecksDataChecker(AbstractDataChecker):
         "config" : ["local_dir"]
     }
     def check_data(self, data, **kwargs): 
+        model_target = self._get_config("MODEL_TARGET")
+        label = None 
+        if model_target in data.columns:
+            label = model_target
+            
         ds = Dataset(
             data, 
-            label = self._get_config("MODEL_TARGET"), 
+            label = label, 
             index_name=self._get_config("MODEL_INDEX"), 
             cat_features=self._get_config("MODEL_CAT_FEATURES"), 
             datetime_name=self._get_config("MODEL_TIME_INDEX")

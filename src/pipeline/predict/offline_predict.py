@@ -4,7 +4,7 @@ from utils import common_utils as utils
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class OfflinePredict(AbstractPredict): 
     __REQUIRED_CONF__ = {
-        "components": ["data_transformer", "metadata_tracker", "resource_version_control", "prediction_explainer", "prediction_checker"], 
+        "components": ["data_transformer", "metadata_tracker", "resource_version_control", "model_explainer", "data_checker", "data_profiler"], 
         "config": []
     }
 
@@ -13,8 +13,8 @@ class OfflinePredict(AbstractPredict):
         
     def compare_data(self, model_version, dataset_version, data):
         #get training dataset version and df 
-        vc_info = self.metadata_tracker.get_vc_info(model_version, key="git_hexsha_train_csv")
-        train_df = self.resource_version_control.get_data(model_version, vc_info, key = "train_csv")
+        vc_info = self.metadata_tracker.get_vc_info(model_version, key="git_hexsha_X_train")
+        train_df = self.resource_version_control.get_data(model_version, vc_info, key = "X_train")
 
         #compare current dataset version with previous dataset version
         comparison_report, file_path = self.data_profiler.compare_data(data, train_df)
@@ -28,25 +28,30 @@ class OfflinePredict(AbstractPredict):
         
     def get_predictions(self, model, model_version, data): 
         #get prediction job
-        prediction_job = self.metadata_tracker.create_resource(id=None, type="prediction_job")
+        prediction_job = self.metadata_tracker.create_resource(id=None, type="prediction_job", parent=model_version, prediction_count=data.shape[0])
+
+        #drop any metadata columns
+        df = data.drop(self._get_config("DROP_COLUMNS", []), axis=1, errors="ignore")
 
         #make predictions
-        data["predictions"] = model._predict_df(data)
+        data["predictions"] = model._predict_df(df)
+        if self.problem_type == "classification": 
+            data["predictions_proba"] = model._predict_proba_df(df, to_list=True)
 
         #get explanations
-        data["explanations"] = self.prediction_explainer.get_explanations(data, model, model_version, "predictions", to_list=True)
+        data["explanations"] = self.model_explainer.get_explanations(df, model, model_version, "predictions", to_list=True)
 
         #log predictions
         self.metrics_tracker.log_prediction_metrics(prediction_job, data["predictions"])
 
         return data, prediction_job
 
-    def track_predictions(self, prediciton_job, data):
+    def track_predictions(self, prediction_job, data):
         #version data
-        vc_info = self.resource_version_control.version_data(prediciton_job, data)
+        vc_info = self.resource_version_control.version_data(prediction_job, data)
 
         #register version control metadata w/ metadata tracker
-        self.metadata_tracker.register_vc_resource(prediciton_job, vc_info, key="data_csv", file_type="csv")
+        self.metadata_tracker.register_vc_resource(prediction_job, vc_info, key="data_csv", file_type="csv")
 
     def analyze_prediction_drift(self, dataset_version, prediction_job, data):
         #get previous dataset version & dataframe 
@@ -55,7 +60,7 @@ class OfflinePredict(AbstractPredict):
         prev_data = self.resource_version_control.get_data(prev_dataset_version, vc_info, key = "data_csv")
 
         #compare current dataset version with previous dataset version
-        comparison_report, file_path = self.prediction_profiler.compare_data(data, prev_data)
+        comparison_report, file_path = self.data_profiler.compare_data(data, prev_data)
 
         self.metadata_tracker.log_data_comparison(
             prediction_job,
@@ -66,7 +71,7 @@ class OfflinePredict(AbstractPredict):
         
     def check_predictions(self, data, prediction_job): 
         #run data checks
-        data_report, file_path, checks_status = self.prediction_checker.check_data(data)
+        data_report, file_path, checks_status = self.data_checker.check_data(data)
 
         #log data report to metadata tracker
         self.metadata_tracker.log_checks(
@@ -81,5 +86,5 @@ class OfflinePredict(AbstractPredict):
             url = self.metadata_tracker.url
             self.notify("Issues found with data checks. Visit %s for more information." %url, checks_status)
 
-    def save_predictions(self, data): 
-        self.data_transformer.save_data(data)
+    def save_predictions(self, data, table): 
+        self.data_transformer.save_data(data, table)

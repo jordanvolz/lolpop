@@ -50,5 +50,6 @@ class dbtDataTransformer(AbstractDataTransformer):
 def get_dw_config_from_profile(dbt_config): 
     conf = OmegaConf.load("%s/profiles.yml" %dbt_config.get("DBT_PROFILES_DIR")).get(dbt_config.get("DBT_PROFILE")).get("outputs").get(dbt_config.get("DBT_TARGET"))
     config = {x.lower():y for x,y in conf.items() if x.lower() in ["account", "database", "password", "schema", "user", "warehouse"]}
-
+    config = {"config" : config}
+    
     return config 

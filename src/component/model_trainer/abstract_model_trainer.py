@@ -27,7 +27,10 @@ class AbstractModelTrainer(AbstractComponent):
         self.metadata_tracker.register_vc_resource(experiment, vc_info, key="model_artifact", additional_metadata = experiment_metadata)
 
 
-    def _predict_df():
+    def _predict_df(self, df):
+        pass 
+
+    def _predict_proba_df(self, df): 
         pass 
 
     def _get_model(self):
@@ -42,8 +45,8 @@ class AbstractModelTrainer(AbstractComponent):
     def calculate_metrics(self, data, predictions, metrics, **kwargs): 
         metrics_out = {"train" : {}, "valid" : {}, "test" : {}}
 
-        test_exists = data.get("X_test") is not None
-        valid_exists = data.get("X_valid") is not None
+        test_exists = data.get("y_test") is not None
+        valid_exists = data.get("y_valid") is not None
 
         if self.problem_type == "classification": 
             multi_class = False
@@ -116,7 +119,7 @@ class AbstractModelTrainer(AbstractComponent):
         #save splits
         for k,v in data.items(): 
             vc_info = self.resource_version_control.version_data(model_version, v, key=k, file_suffix=k)
-            self.metadata_tracker.register_vc_resource(model_version, vc_info, key="%s_csv" %k, file_type="csv")
+            self.metadata_tracker.register_vc_resource(model_version, vc_info, key=k, file_type="csv")
 
         return self, experiment 
 

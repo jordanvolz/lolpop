@@ -57,30 +57,33 @@ class ContinualMetricsTracker(AbstractMetadataTracker):
 
             metric_vals = metric.values
             if group is not None:
-                metric_vals = [x for x in metric_vals if x.group == group]
+                metric_vals = [x.value for x in metric_vals if x.group == group]
             if latest:
-                metric_vals = metric_vals[-1]
+                metric_vals = metric_vals[-1].value
 
             return metric_vals
 
-    def log_metrics(self, experiment, metrics, perf_metric):
-        #set performance metric for experiment 
-        experiment.performance_metric_name = perf_metric
+    def log_metrics(self, resource, metrics, perf_metric):
+        is_experiment = resource.name.split("/")[-2] == "experiments"
 
-        if len(metrics.get("valid")) > 0: 
-            experiment.performance_metric_val = metrics["valid"][perf_metric]
-        else: 
-            experiment.performance_metric_val = metrics["train"][perf_metric]
-        experiment.update(paths=["performance_metric_name", "performance_metric_val"])
+        if is_experiment: 
+            #set performance metric for experiment 
+            resource.performance_metric_name = perf_metric
+
+            if len(metrics.get("valid")) > 0: 
+                resource.performance_metric_val = metrics["valid"][perf_metric]
+            else: 
+                resource.performance_metric_val = metrics["train"][perf_metric]
+            resource.update(paths=["performance_metric_name", "performance_metric_val"])
 
         #create metrics object for each metric
         metrics_dicts = cutils.convert_to_metrics_dicts(metrics)
         for key in metrics["train"].keys(): 
-            self.create_metric(experiment, id=key, display_name=key)
+            self.create_metric(resource, id=key, display_name=key)
 
         #log all metrics 
         for metric in metrics_dicts: 
-            self.log_metric(experiment,**metric)
+            self.log_metric(resource, **metric)
     
     #copy metrics from one resource to another. 
     #Mainly used to copy winning exp metrics to model version

@@ -81,11 +81,15 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
             resource = parent.experiments.create()
         elif type == "promotion":
             resource = parent.promotions.create(
-                kwargs.get("improvement_metric"), kwargs.get("improvement_metric_value"), 
-                kwargs.get("base_improvement_metric_value"), kwargs.get("improvement_metric_diff"),
-                model_version=parent, reason=kwargs.get("reason", "UPLIFT"))
+                reason = kwargs.get("reason", "UPLIFT"),
+                model_version = parent.name,
+                improvement_metric = kwargs.get("improvement_metric"),
+                improvement_metric_value = kwargs.get("improvement_metric_value"),
+                base_improvement_metric_value = kwargs.get(
+                    "base_improvement_metric_value"),
+                improvement_metric_diff = kwargs.get("improvement_metric_diff"))
         elif type == "prediction_job": 
-            resource = parent.batch_predictions.create() 
+            resource = parent.batch_predictions.create(model_version=parent.name, prediction_count = kwargs.get("prediction_count")) 
 
         self.log("Get/Created Continual resource with name: %s" %resource.name, level="INFO")
         return resource
@@ -133,21 +137,31 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
 
     def get_currently_deployed_model_version(self, model_version, return_latest_if_no_deployed=True, **kwargs): 
         model = self.run.models.get(model_version.parent)
+        deployed_mv = None
         try: 
-            deployed_mv_name = model.current_version
+            #get promoted model version
+            latest_promotion = model.latest_promotion()
+            if latest_promotion: 
+                deployed_mv_name = latest_promotion.model_version
+                #if no promotion, system returns this shell object, so check for that
+                if len(deployed_mv_name) > 0: 
+                    deployed_mv = model.model_versions.get(deployed_mv_name) 
+            #if not promotion exists, return prior mv
+            if deployed_mv is None and return_latest_if_no_deployed:
+                deployed_mv = self.get_prev_resource_version(model_version)
         except: 
-            deployed_mv_name = None
-        deployed_mv = None 
-        if deployed_mv_name is None: 
-            deployed_mv = self.get_prev_resource_version(model_version)
-        elif return_latest_if_no_deployed: 
-            deployed_mv = self.run.model_versions.get(deployed_mv_name)
+            deployed_mv = None         
         return deployed_mv
 
+    def get_prediction_job_model_version(self, prediction_job): 
+        model_version_name = prediction_job.model_version 
+        model_version = self.run.model_versions.get(model_version_name)
+        return model_version
+    
     def get_latest_model_resource(self, model, type): 
         resource = None 
         if type == "prediction_job": 
-            resource = model.batch_predictions.list()[0]
+            resource = model.batch_predictions.list(default_sort_order="DESC")[0]
         return resource
 
     #dataset versions should be populated by process pipeline and passed in by runner

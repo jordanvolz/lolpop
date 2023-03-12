@@ -35,11 +35,16 @@ class ContinualModelRepository(AbstractModelRepository):
         improvement_metric = self.metrics_tracker.get_metric_value(
             model_version, "performance_metric_name")
         improvement_metric_value = self.metrics_tracker.get_metric_value(model_version,"performance_metric_val")
-        improvement_metric_diff = self.metrics_tracker.get_metric_value(model_version, "deployed_model_perf_metric_diff")
+        try: 
+            improvement_metric_diff = self.metrics_tracker.get_metric_value(model_version, "deployed_model_perf_metric_diff")
+        except: #this fails if the model is the first model, as there is no comparison to the previous model 
+            improvement_metric_diff = 0 
         base_improvement_metric_value = improvement_metric_value - improvement_metric_diff
         promotion = self.metadata_tracker.create_resource(
-            improvement_metric=improvement_metric, improvement_metric_value=improvement_metric_value, 
-            base_improvement_metric_value=base_improvement_metric_value, improvement_metric_diff=improvement_metric_diff,
+            improvement_metric=improvement_metric, 
+            improvement_metric_value=improvement_metric_value, 
+            base_improvement_metric_value=base_improvement_metric_value, 
+            improvement_metric_diff=improvement_metric_diff,
             id=None, parent=model_version, type="promotion", reason=reason)
         return promotion
 

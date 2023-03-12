@@ -90,6 +90,12 @@ class ClassificationRunner(AbstractRunner):
         return deployment
 
     def predict_data(self, model_version, model, data, dataset_version):
+        if model is None: 
+            if model_version is not None: 
+                experiment = self.metadata_tracker.get_winning_experiment(model_version)
+                model_obj = self.resource_version_control.get_model(experiment, key="model_artifact")
+                model = self.train.load_model(model_obj, model_version, model)
+        
         #compare evaluation data to training data
         self.predict.compare_data(model_version, dataset_version, data)
 
@@ -100,34 +106,49 @@ class ClassificationRunner(AbstractRunner):
         self.predict.track_predictions(prediction_job, data)
 
         #calculate drift
-        self.predict.analyze_prediction_drift(model_version, prediction_job, data)
+        self.predict.analyze_prediction_drift(dataset_version, prediction_job, data)
 
         #run prediction checks
-        self.predict.check_predictions(data, prediction_job)
+        self.predict.check_predictions(data.drop(["explanations", "predictions_proba"],axis=1, errors="ignore"), prediction_job)
 
         #run save predictions
-        self.predict.save_predictions(data)
+        self.predict.save_predictions(data, self._get_config("table_prediction"))
 
         return data, prediction_job
 
     def evaluate_ground_truth(self, prediction_job=None): 
-        #if prediciton job isn't known, get the most recent job
+        #if prediction job isn't known, get the most recent job
         if prediction_job == None: 
-            model = self.metadata_tracker.get(self.config.get("model_name"), type="model")
+            model = self.metadata_tracker.get_resource(self.config.get("model_name"), type="model")
             prediction_job = self.metadata_tracker.get_latest_model_resource(model, type="prediction_job")
         
         #get prediciton data 
         vc_info = self.metadata_tracker.get_vc_info(prediction_job)
         prediction_data = self.resource_version_control.get_data(prediction_job, vc_info, key = "data_csv") 
 
-        #get training data
+        #get *current* training data
         train_data = self.process.transform_data(self.config.get("table_train"))
 
-        #data_dict = {"y_train" : train_data[self.config.get("model_target")]}
+        #train data might have a lot more data than when we predicted, so we need to 
+        #filter out extra data and then match indices 
+        index = self._get_config("model_index")
+        train_data_filtered = train_data[train_data[index].isin(prediction_data[index])]
+        train_data_sorted = train_data_filtered.sort_values(by=index).reset_index(drop=True)
+        prediction_data_sorted = prediction_data.sort_values(by=index).reset_index(drop=True)
+        ground_truth = {"y_train": train_data_sorted[self.config.get("model_target")]}
+        predictions = {"train": prediction_data_sorted["predictions"]}
 
-        #metrics = 
+        #get model object and calculate metrics
+        model_version = self.metadata_tracker.get_prediction_job_model_version(prediction_job)
+        experiment = self.metadata_tracker.get_winning_experiment(model_version)
+        model_obj = self.resource_version_control.get_model(experiment, key="model_artifact")
+        model = self.train.load_model(model_obj, model_version, None)
+        metrics_val = model.calculate_metrics(ground_truth, predictions, self.train._get_config("metrics"))
 
-        pass 
+        #log stuff
+        self.metrics_tracker.log_metrics(prediction_job, metrics_val, self.train._get_config("perf_metric"))
+        self.metrics_tracker.log_metric(
+            prediction_job, "num_ground_truth_observations", train_data_sorted.shape[0])
 
     def stop(self):
         self.metadata_tracker.stop()
