@@ -1,5 +1,5 @@
 0. Code Review (check formatting, base to child params, inputs/output types, etc)
---> change src --> lolpop
+--> change src --> lolpop -- DONE 
 --> docstrings
 --> pre-commit hook for python formatting
 00. pipeline extensibility
@@ -31,5 +31,6 @@
 11. Object caching? Helps when re-running long pipelines. 
 --> idea is to define things you want to cache in decorators and then also have a caching component
 12. working w/ secrets managers
-13. runner loading is slow --> look into
+13. runner loading is slow --> look into. 
+--> also suppress import messaging when loading lolpop
 XX. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc

@@ -1,7 +1,7 @@
 import typer 
 import click 
 
-from lolpop.cli import create, run, package, test 
+import create, run, package, test 
 from importlib.metadata import version
 from typing import Optional
 
@@ -10,11 +10,11 @@ try:
 except:
     __version__ = "local-dev"
 
-class NaturalOrderGroup(click.Group):
-    def list_commands(self, ctx):
-        return self.commands.keys()
+#class NaturalOrderGroup(click.Group):
+#    def list_commands(self, ctx):
+#        return self.commands.keys()
 
-app = typer.Typer(cls=NaturalOrderGroup,
+app = typer.Typer(#cls=NaturalOrderGroup,
                   help="lolpop: A software engineering framework for machine learning workflows.",
                   no_args_is_help=True)
 

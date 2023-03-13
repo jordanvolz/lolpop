@@ -6,15 +6,15 @@ import os
 app = typer.Typer(help="Create new runners, piplines, and components.")
 
 LOLPOP_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-PARENT_DIR = os.path.dirname(LOLPOP_DIR)
+#PARENT_DIR = os.path.dirname(LOLPOP_DIR)
 
 @app.command("component")
 def component(
     component_type: str = typer.Argument(..., help="Component type (Should be snake_case)."),
     component_class: str = typer.Argument(..., help="Component class name (Should be snake_case)."),
     template_path: str = typer.Argument(
-        "%s/templates/component_template" % (PARENT_DIR), help="Path to the template file. Or a git url of a template file."),
-    component_dir: Path = typer.Option("%s/component" %LOLPOP_DIR,
+        "%s/templates/component_template" % (LOLPOP_DIR), help="Path to the template file. Or a git url of a template file."),
+    component_dir: Path = typer.Option("%s/lolpop/component" %LOLPOP_DIR,
                                        help="Parent directory for the new component."),
 ): 
     create_template("component", component_type,
@@ -26,8 +26,8 @@ def pipeline(
     pipeline_class: str = typer.Argument(
         ..., help="Pipeline class name (Should be snake_case)."),
     template_path: str = typer.Argument(
-        "%s/templates/pipeline_template" % (PARENT_DIR), help="Path to the template file. Or a git url of a template file."),
-    pipeline_dir: Path = typer.Option("%s/pipeline" % LOLPOP_DIR,
+        "%s/templates/pipeline_template" % (LOLPOP_DIR), help="Path to the template file. Or a git url of a template file."),
+    pipeline_dir: Path = typer.Option("%s/lolpop/pipeline" % LOLPOP_DIR,
                                        help="Parent directory for the new pipeline."),
 ): 
     create_template("pipeline", pipeline_type,
@@ -38,8 +38,8 @@ def runner(
     runner_type: str = typer.Argument(..., help="Component type (Should be snake_case)"),
     runner_class: str = typer.Argument(..., help="Component class name (Should be snake_case)."),
     template_path: str = typer.Argument(
-        "%s/templates/runner_template" % (PARENT_DIR), help="Path to the template file. Or a git url of a template file."),
-    runner_dir: Path = typer.Option("%s/runner" %LOLPOP_DIR,
+        "%s/templates/runner_template" % (LOLPOP_DIR), help="Path to the template file. Or a git url of a template file."),
+    runner_dir: Path = typer.Option("%s/lolpop/runner" %LOLPOP_DIR,
                                        help="Parent directory for the new component."),
 ): 
     create_template("runner", runner_type,

@@ -1,6 +1,6 @@
 import typer 
 from pathlib import Path 
-from utils import common_utils as utils
+from lolpop.utils import common_utils as utils
 from typing import List
 import json
 
