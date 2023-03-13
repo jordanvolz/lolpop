@@ -125,30 +125,36 @@ class ClassificationRunner(AbstractRunner):
         #get prediciton data 
         vc_info = self.metadata_tracker.get_vc_info(prediction_job)
         prediction_data = self.resource_version_control.get_data(prediction_job, vc_info, key = "data_csv") 
-
+        
         #get *current* training data
         train_data = self.process.transform_data(self._get_config("table_train"))
-
-        #train data might have a lot more data than when we predicted, so we need to 
-        #filter out extra data and then match indices 
+        
+        #let's find common index values that exist in both the training dataset and the prediction set
         index = self._get_config("model_index")
-        train_data_filtered = train_data[train_data[index].isin(prediction_data[index])]
-        train_data_sorted = train_data_filtered.sort_values(by=index).reset_index(drop=True)
-        prediction_data_sorted = prediction_data.sort_values(by=index).reset_index(drop=True)
-        ground_truth = {"y_train": train_data_sorted[self._get_config("model_target")]}
-        predictions = {"train": prediction_data_sorted["predictions"]}
+        common_indices = train_data.merge(prediction_data, on=index, how="inner")[index]
 
-        #get model object and calculate metrics
-        model_version = self.metadata_tracker.get_prediction_job_model_version(prediction_job)
-        experiment = self.metadata_tracker.get_winning_experiment(model_version)
-        model_obj = self.resource_version_control.get_model(experiment, key="model_artifact")
-        model = self.train.load_model(model_obj, model_version, None)
-        metrics_val = model.calculate_metrics(ground_truth, predictions, self.train._get_config("metrics"))
+        #if there are any in common, then we can check the ground truth 
+        if len(common_indices) > 0: 
+            #filter out any values not in the common index and then sort data so they match indices 
+            train_data_filtered = train_data[train_data[index].isin(common_indices)]
+            prediction_data_filtered = prediction_data[prediction_data[index].isin(common_indices)]
+            train_data_sorted = train_data_filtered.sort_values(by=index).reset_index(drop=True)
+            prediction_data_sorted = prediction_data_filtered.sort_values(by=index).reset_index(drop=True)
+            ground_truth = {"y_train": train_data_sorted[self._get_config("model_target")]}
+            predictions = {"train": prediction_data_sorted["predictions"]}
+          
+            #get model object and calculate metrics
+            model_version = self.metadata_tracker.get_prediction_job_model_version(prediction_job)
+            experiment = self.metadata_tracker.get_winning_experiment(model_version)
+            model_obj = self.resource_version_control.get_model(experiment, key="model_artifact")
+            model = self.train.load_model(model_obj, model_version, None)
+            metrics_val = model.calculate_metrics(ground_truth, predictions, self.train._get_config("metrics"))
 
-        #log stuff
-        self.metrics_tracker.log_metrics(prediction_job, metrics_val, self.train._get_config("perf_metric"))
-        self.metrics_tracker.log_metric(
-            prediction_job, "num_ground_truth_observations", train_data_sorted.shape[0])
+            #log stuff
+            self.metrics_tracker.log_metrics(prediction_job, metrics_val, self.train._get_config("perf_metric"))
+            self.metrics_tracker.log_metric(prediction_job, "num_ground_truth_observations", train_data_sorted.shape[0])
+        else: #nothing in prediction has a ground truth yet 
+            self.notify("Current training data has no overlap with the prediction job %s" %self.metadata_tracker.get_resource_id(prediction_job), level = "WARNING")
 
     def stop(self):
         self.metadata_tracker.stop()

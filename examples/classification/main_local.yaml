@@ -113,9 +113,9 @@ predict:
       explainer_class: $train.model_explainer.config.explainer_class
   data_transformer: 
     config: 
-      account: wr40705.us-east-1  
+      account: XXXXXXXX 
       user: jordan
-      password: Teferi88
+      password: XXXXXXXX
       database: DBT 
       schema: PETFINDER
       warehouse: JAV_TEST_WAREHOUSE

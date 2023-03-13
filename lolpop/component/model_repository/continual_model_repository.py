@@ -43,7 +43,7 @@ class ContinualModelRepository(AbstractModelRepository):
             improvement_metric=improvement_metric, 
             improvement_metric_value=improvement_metric_value, 
             base_improvement_metric_value=base_improvement_metric_value, 
-            improvement_metric_diff=improvement_metric_diff,
+            #improvement_metric_diff=improvement_metric_diff,
             id=None, parent=model_version, type="promotion", reason=reason)
         return promotion
 

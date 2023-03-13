@@ -87,7 +87,8 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
                 improvement_metric_value = kwargs.get("improvement_metric_value"),
                 base_improvement_metric_value = kwargs.get(
                     "base_improvement_metric_value"),
-                improvement_metric_diff = kwargs.get("improvement_metric_diff"))
+                #improvement_metric_diff = kwargs.get("improvement_metric_diff")
+                )
         elif type == "prediction_job": 
             resource = parent.batch_predictions.create(model_version=parent.name, prediction_count = kwargs.get("prediction_count")) 
 
