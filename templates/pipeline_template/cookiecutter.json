@@ -1,0 +1,6 @@
+{
+    "PipelineClass": "MyNewPipeline",
+    "pipeline_class": "my_new_pipeline",
+    "PipelineType": "MyNewPipelineType",
+    "pipeline_type": "my_new_pipeline_type"
+}

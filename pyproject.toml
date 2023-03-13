@@ -1,0 +1,53 @@
+[tool.poetry]
+name = "lolpop"
+version = "0.1.0"
+description = "A software engineering framework for machine learning workflows"
+authors = ["jordanvolz <jordan.volz@gmail.com>"]
+license = LICENSE
+packages = [
+    {include = "src"},
+    ]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+google-auth="2.16.1"
+google-auth-oauthlib="1.0.0"
+google-auth-httplib2="0.1.0" 
+google-api-python-client="2.79.0"
+hydra-core="1.2.0"
+joblib="1.1.0"
+mlflow="1.26.1"
+numpy="1.22.4"
+omegaconf="2.2.3"
+pandas="1.4.2"
+prefect="2.6.6"
+scikit_learn="1.1.2"
+SQLAlchemy="1.4.37"
+xgboost="1.6.1"
+#prefect-dbt="0.2.6"
+dbt-core="1.3"
+dbt-snowflake="1.3"
+#prefect-snowflake="0.2.2"
+pyarrow="6.0.1"
+sweetviz="2.1.4"
+#pandas-profiling="3.5.0"
+dvc="2.37.0"
+dvc-gs="2.20.0"
+deepchecks="0.10.0"
+evidently="^0.2.1"
+optuna="3.0.4"
+alibi = {version = "0.8.0", extras = ["shap"]}
+yellowbrick="1.4"
+aif360="0.5.0"
+#aif360[all] #fails if R is not installed
+continual="^2.0.0a34"
+ydata-profiling="4.0.0"
+snowflake-sqlalchemy="1.4.6"
+tqdm="4.64.1"
+
+[tool.poetry.dev-dependencies]
+pytest
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
