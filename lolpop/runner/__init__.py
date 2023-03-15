@@ -4,7 +4,9 @@ def __map_runners__():
     from importlib import import_module
     from inspect import isclass
     from .abstract_runner import AbstractRunner
+    import warnings
 
+    warnings.filterwarnings("ignore")
     #get current directory and all subdirectors. These represent the resource types
     path = Path(__file__).parent.resolve()
     subdirs = ["%s/%s" %(path,x) for x in os.listdir(path) if ((x[0] != "_") and (".py" not in x) )]
@@ -17,5 +19,7 @@ def __map_runners__():
             classes = [x for x in dir(module) if isclass(getattr(module,x))]
             runners = [x for x in classes if issubclass(getattr(module, x), AbstractRunner)]
             globals().update({name: getattr(module,name) for name in runners})
+
+    warnings.resetwarnings()
 
 __map_runners__()

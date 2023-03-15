@@ -1,5 +1,5 @@
 from lolpop.utils import common_utils as utils
-
+from omegaconf import OmegaConf
 class AbstractPipeline: 
 
     __REQUIRED_CONF__ = {
@@ -10,25 +10,28 @@ class AbstractPipeline:
         "config" : {}
     }
 
-    def __init__(self, conf, runner_conf, parent_process="runner", problem_type=None, pipeline_type="abstract_pipeline", **kwargs):
-        #config defines all components in `components`
-        #format is 
-        ## <pipeline>: 
-        ##   components: 
-        ##     <component>: <class>
-        # then you need to also have a directory <component> with has your class loaded top-level
+    def __init__(self, conf, runner_conf, parent_process="runner", problem_type=None, pipeline_type="abstract_pipeline", components={}, **kwargs):
+        #set basic properties like configs
         self.name = type(self).__name__
-        conf = utils.copy_config_into(conf, self.__DEFAULT_CONF__)
-        self._validate_conf(conf, kwargs.get("components"))
-        self.config = conf.get("config", {}) 
+        self.config = conf.get("config", {})
         self.parent_process = parent_process
         self.pipeline_type = pipeline_type
         self.runner_conf = runner_conf
         self.problem_type = problem_type
 
+        #merge pipeline conf into runner conf
+        omega_conf = OmegaConf.create(conf)
+        OmegaConf.update(omega_conf, "config",
+                         utils.copy_config_into(self.config, runner_conf)
+                         )
+
+        #merge into default conf & validate the result
+        conf = utils.copy_config_into(omega_conf, self.__DEFAULT_CONF__)
+        self._validate_conf(omega_conf, components)
+
         #set up reference to each component that is passed in from runner. 
-        for component in kwargs.get("components",{}).keys(): 
-            setattr(self, component, kwargs.get("components").get(component))
+        for component in components.keys(): 
+            setattr(self, component, components.get(component))
 
         pipeline_conf = self.config
         pipeline_conf["pipeline_type"]=self.pipeline_type
@@ -38,7 +41,7 @@ class AbstractPipeline:
         pipeline_components = {}
         if "components" in conf.keys(): 
             for component in conf.components.keys(): 
-                obj = utils.register_component_class(self, conf, component, pipeline_conf = pipeline_conf, runner_conf = runner_conf, parent_process=self.name, problem_type = self.problem_type, dependent_components=kwargs.get("components"))
+                obj = utils.register_component_class(self, conf, component, pipeline_conf = pipeline_conf, runner_conf = runner_conf, parent_process=self.name, problem_type = self.problem_type, dependent_components=components)
                 self.log("Loaded class %s into component %s" %(type(getattr(self, component)).__name__, component))
                 pipeline_components[component] = obj
 
@@ -54,8 +57,8 @@ class AbstractPipeline:
                 for component in missing.get("components"): 
                     if components.get(component, None) is not None: 
                         total_missing = total_missing - 1
-                if total_missing > 0:   
-                    raise Exception ("Missing the following from pipeline configuration: %s" %missing)
+            if total_missing > 0:   
+                raise Exception ("Missing the following from pipeline configuration: %s" %missing)
 
     def log(self, msg, level="INFO"): 
         utils.log(self, msg, level)

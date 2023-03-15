@@ -10,13 +10,13 @@ class ContinualModelRepository(AbstractModelRepository):
         "config": []
     }
 
-    def __init__(self, conf, pipeline_conf, runner_conf, description=None, run_id=None, **kwargs):
+    def __init__(self, conf, pipeline_conf, runner_conf, description=None, run_id=None, components={}, **kwargs):
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, **kwargs)
+        super().__init__(conf, pipeline_conf, runner_conf, components=components, **kwargs)
 
         # if we are using continual for metadata tracking then we won't have to set up connection to continual
         # if not, then we do. If would be weird to have to do this, but just in case.
-        if isinstance(kwargs.get("components", {"metadata_tracker": None}).get("metadata_tracker"), ContinualMetadataTracker):
+        if isinstance(components.get("metadata_tracker"), ContinualMetadataTracker):
             self.client = self.metadata_tracker.client
             self.run = self.metadata_tracker.run
         else:

@@ -3,7 +3,7 @@ name = "lolpop"
 version = "0.1.0"
 description = "A software engineering framework for machine learning workflows"
 authors = ["jordanvolz <jordan.volz@gmail.com>"]
-license = LICENSE
+license = "Apache-2.0"
 packages = [
     {include = "src"},
     ]
@@ -33,7 +33,7 @@ sweetviz="2.1.4"
 #pandas-profiling="3.5.0"
 dvc="2.37.0"
 dvc-gs="2.20.0"
-deepchecks="0.10.0"
+deepchecks="^0.13.0"
 evidently="^0.2.1"
 optuna="3.0.4"
 alibi = {version = "0.8.0", extras = ["shap"]}
@@ -46,7 +46,8 @@ snowflake-sqlalchemy="1.4.6"
 tqdm="4.64.1"
 
 [tool.poetry.dev-dependencies]
-pytest
+pytest = "^7.2"
+faker = "^17.6"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

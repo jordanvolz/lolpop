@@ -1,7 +1,7 @@
 from lolpop.runner import ClassificationRunner
 
 #create runner from config
-config_file = "/Users/jordanvolz/github/lolpop/examples/classification/main_local.yaml"
+config_file = "/Users/jordanvolz/github/lolpop/examples/classification/main_local.yaml.hidden"
 clf_runner = ClassificationRunner(config_file)
 #run data processing
 train_data, train_dataset_version = clf_runner.process_data()
