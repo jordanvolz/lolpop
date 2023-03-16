@@ -28,7 +28,7 @@ def create_rows_faker(num=1):
                } for x in range(num)]
     return output
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def fake_component_config(tmp_path_factory):
     return {
         "config": {

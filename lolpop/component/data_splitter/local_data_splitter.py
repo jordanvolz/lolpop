@@ -142,8 +142,8 @@ class LocalDataSplitter(BaseDataSplitter):
 
         return data_out
 
-    def _get_train_test_dfs(self, data, combine_xy=True, combine_train_valid=True):
-        """Given the dictionary of split data sets, this produces combined training and test dataframes
+    def get_train_test_dfs(self, data, combine_xy=True, combine_train_valid=True):
+        """Given the dictionary of split data sets, this produces combined training and test dataframes. 
 
         Args:
             data (dict(pd.Dataframes)): A dictionary of dataframes. Should be the output of split_data

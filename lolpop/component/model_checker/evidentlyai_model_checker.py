@@ -21,7 +21,7 @@ class EvidentlyAIModelChecker(AbstractModelChecker):
         column_mapping.prediction = "prediction"
 
         #set up data + predictions for train/test drift
-        df_train, df_test = self.data_splitter._get_train_test_dfs(data_dict) 
+        df_train, df_test = self.data_splitter.get_train_test_dfs(data_dict) 
         df_train["prediction"] = model._predict_df(df_train.drop([model_target], axis=1))
         df_test["prediction"] = model._predict_df(df_test.drop([model_target], axis=1))
 

@@ -38,10 +38,17 @@ class DeepchecksDataChecker(BaseDataChecker):
         file_path = "%s/DEEPCHECKS_DATA_REPORT.HTML" %self._get_config("local_dir")
         data_report.save_as_html(file_path)
 
+        num_checks_passed = len(data_report.get_passed_checks())
+        num_checks_failed = len(data_report.get_not_passed_checks())
+        num_checks_not_ran = len(data_report.get_not_ran_checks())
+        self.log("%s had %s passed checks." %(self.name, num_checks_passed))
+        self.log("%s had %s failed checks." % (self.name, num_checks_failed))
+        self.log("%s had %s checks not run." % (self.name, num_checks_not_ran))
+
         checks_status = "PASS"
-        if len(data_report.get_not_passed_checks()) > 0: 
+        if num_checks_failed > 0:
             checks_status = "ERROR"
-        elif len(data_report.get_not_ran_checks()) > 0: 
+        elif num_checks_not_ran > 0: 
             checks_status = "WARN"
 
         return data_report, file_path, checks_status

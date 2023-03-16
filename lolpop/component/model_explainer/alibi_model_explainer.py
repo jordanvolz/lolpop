@@ -35,7 +35,7 @@ class AlibiModelExplainer(AbstractModelExplainer):
 
     def get_feature_importance(self, data_dict, model, model_version, *args, **kwargs): 
         #generate train/test datasets
-        (train_X, train_y), (test_X, test_y) = self.data_splitter._get_train_test_dfs(data_dict, combine_xy=False) 
+        (train_X, train_y), (test_X, test_y) = self.data_splitter.get_train_test_dfs(data_dict, combine_xy=False) 
         if self.problem_type == "classification": 
             classification_type = utils.get_multiclass(train_y.unique())
         else: 

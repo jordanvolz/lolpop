@@ -27,10 +27,18 @@ class EvidentlyAIDataChecker(BaseDataChecker):
         data_report.save_html(file_path)
 
         summary = data_report.as_dict()["summary"]
+        
+        num_checks_passed = summary["success_tests"]
+        num_checks_failed = summary["failed_tests"]
+        num_checks_not_ran = summary["total_tests"] - (num_checks_failed + num_checks_passed)
+        self.log("%s had %s passed checks." % (self.name, num_checks_passed))
+        self.log("%s had %s failed checks." % (self.name, num_checks_failed))
+        self.log("%s had %s checks not run." % (self.name, num_checks_not_ran))
+
         checks_status = "PASS"
-        if summary["failed_tests"] > 0: 
+        if num_checks_failed > 0: 
             checks_status = "ERROR"
-        elif summary["success_tests"] < summary["total_tests"]: 
+        elif num_checks_not_ran > 0: 
             checks_status = "WARN"
 
         return data_report, file_path, checks_status

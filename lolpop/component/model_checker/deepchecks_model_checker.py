@@ -14,7 +14,7 @@ class DeepchecksModelChecker(AbstractModelChecker):
         model_cat_features = self._get_config("MODEL_CAT_FEATURES")
 
         #set up data + predictions for train/text drift
-        df_train, df_test = self.data_splitter._get_train_test_dfs(data_dict) 
+        df_train, df_test = self.data_splitter.get_train_test_dfs(data_dict) 
 
         ds_train = Dataset(df_train, label = model_target, index_name=model_index, cat_features=model_cat_features, datetime_name=model_time_index)
         ds_test = Dataset(df_test, label = model_target, index_name=model_index, cat_features=model_cat_features, datetime_name=model_time_index)
