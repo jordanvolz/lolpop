@@ -1,12 +1,12 @@
 from lolpop.component.metrics_tracker.base_metrics_tracker import BaseMetricsTracker
-from lolpop.component.metadata_tracker.continual_metadata_tracker import ContinualMetadataTracker
-from lolpop.utils import continual_utils as cutils
+from lolpop.component.metadata_tracker.wandb_metadata_tracker import WandBMetadataTracker
 from lolpop.utils import common_utils as utils
+import wandb 
 
 #@utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class ContinualMetricsTracker(BaseMetricsTracker): 
+class WandBMetricsTracker(BaseMetricsTracker): 
     __REQUIRED_CONF__ = {
-        "config" : ["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"]
+        "config": ["WANDB_KEY", "WANDB_PROJECT", "WANDB_ENTITY"]
     }
     
     def __init__(self, conf, pipeline_conf, runner_conf,  description=None, run_id=None, components = {}, **kwargs): 
@@ -15,13 +15,15 @@ class ContinualMetricsTracker(BaseMetricsTracker):
         
         # if we are using continual for metadata tracking then we won't have to set up connection to continual
         # if not, then we do. If would be weird to have to do this, but just in case. 
-        if isinstance(components.get("metadata_tracker"), ContinualMetadataTracker): 
+        if isinstance(components.get("metadata_tracker"), WandBMetadataTracker): 
             self.client = self.metadata_tracker.client
             self.run = self.metadata_tracker.run
         else: 
-            secrets = utils.load_config(["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"], conf.get("config",{}))
-            self.client = cutils.get_client(secrets)
-            self.run = cutils.get_run(self.client, description=description, run_id=run_id)
+            secrets = utils.load_config(
+                "WANDB_KEY", "WANDB_PROJECT", "WANDB_ENTITY", conf.get("config", {}))
+            self.client = wandb
+            wandb.login(key=secrets.get("WANDB_KEY", "WANDB_PROJECT"))
+            self.run = wandb.init(project=secrets.get("WANDB_PROJECT"), id=run_id)
 
     def create_metric(self, resource, id, display_name, **kwargs):
         metric = resource.metrics.create(id=id, display_name=id)

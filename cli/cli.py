@@ -1,7 +1,7 @@
 import typer 
 import click 
 
-import create, run, package, test 
+import create, run, package, test, datagen, seed 
 from importlib.metadata import version
 from typing import Optional
 
@@ -22,6 +22,8 @@ app.add_typer(run.app, name="run")
 app.add_typer(create.app, name="create")
 app.add_typer(test.app, name="test")
 app.add_typer(package.app, name="package")
+app.add_typer(datagen.app, name="datagen")
+app.add_typer(seed.app, name="seed")
 
 
 def version_callback(value: bool):

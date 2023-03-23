@@ -8,6 +8,9 @@ class AbstractComponent:
         "config" : {}
     }
 
+    suppress_logger = False
+    suppress_notifier = False 
+
     def __init__(self, config={}, pipeline_conf={}, runner_conf={}, parent_process=None, problem_type = None, components = {}, *args, **kwargs):
         #set basic properties, like name and configs
         self.name = type(self).__name__
@@ -51,11 +54,14 @@ class AbstractComponent:
                 raise Exception ("Missing the following from %s component configuration: %s" %(type(self).__name__, missing))
 
     def log(self, msg, level="INFO"): 
-        utils.log(self, msg, level)
+        if not self.suppress_logger:
+            utils.log(self, msg, level)
+
 
     def notify(self, msg, level="ERROR"): 
-        self.notifier.notify(msg, level)
-        self.log("Notification Sent: %s" %msg, level)
+        if not self.suppress_notifier: 
+            self.notifier.notify(msg, level)
+            self.log("Notification Sent: %s" %msg, level)
 
     #helper function to lookup config key in component, pipeline or runner conf
     def _get_config(self, key, default_value=None):

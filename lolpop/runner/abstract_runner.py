@@ -12,6 +12,9 @@ class AbstractRunner:
         "config" : {}
     }
 
+    suppress_logger = False 
+    suppress_notifier = False
+
     def __init__(self, conf_file, problem_type = "unspecified_problem_type"):
         self.name = type(self).__name__
         conf = OmegaConf.load(conf_file)  
@@ -80,11 +83,13 @@ class AbstractRunner:
         return conf
 
     def log(self, msg, level="INFO"): 
-        utils.log(self, msg, level)
+        if not self.suppress_logger: 
+            utils.log(self, msg, level)
 
     def notify(self, msg, level="ERROR"): 
-        self.notifier.notify(msg, level)
-        self.log("Notification Sent: %s" %msg, level)
+        if not self.suppress_notifier: 
+            self.notifier.notify(msg, level)
+            self.log("Notification Sent: %s" %msg, level)
 
     #helper function for lookup up config key
     def _get_config(self, key, default_value=None):

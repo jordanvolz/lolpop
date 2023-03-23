@@ -1,16 +1,44 @@
-from lolpop.component.metadata_tracker.abstract_metadata_tracker import AbstractMetadataTracker
+from lolpop.component.metadata_tracker.base_metadata_tracker import BaseMetadataTracker
 from lolpop.utils import common_utils as utils
 from lolpop.utils import continual_utils as cutils
 import pandas as pd
 import os 
 
 #@utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class ContinualMetadataTracker(AbstractMetadataTracker): 
+class ContinualMetadataTracker(BaseMetadataTracker): 
+    """
+    A class for logging metadata and artifacts to Continual. Inherits from BaseMetadataTracker.
+
+    Args:
+        conf (dict): Configuration dicitonary for the metadata tracker componenet.
+        pipeline_conf (dict): Configuration dictionary for the pipeline.
+        runner_conf (dict): Configuration dictionary for the runner.
+        description (str, optional): Description for the run. Defaults to None.
+        run_id (str, optional): ID of the run. Defaults to None.
+
+    Attributes:
+        __REQUIRED_CONF__: List of required configuration for this component. 
+        client (): Client object for interacting with Continual.
+        run (): Run object representing the current run in Continual.
+        url (str): URL for the Continual application.
+    """
     __REQUIRED_CONF__ = {
         "config" : ["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"]
     }
 
-    def __init__(self, conf, pipeline_conf, runner_conf, description=None, run_id=None, *args, **kwargs): 
+    def __init__(self, conf, pipeline_conf, runner_conf, description=None, run_id=None, *args, **kwargs):
+        """
+        Initialize the ContinualMetadataTracker object.
+
+        Args:
+            conf (dict): Configuration dictionary for this component.
+            pipeline_conf (dict): Configuration dictionary for the pipeline.
+            runner_conf (dict): Configuration dictionary for the runner.
+            description (str, optional): Description for the run. Defaults to None.
+            run_id (str, optional): ID of the run. Defaults to None.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        """
         #set normal config
         super().__init__(conf, pipeline_conf, runner_conf, *args, **kwargs)
 
@@ -25,23 +53,66 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
         self.url = self.run.continual_app_url
     
     def __exit__(self):
+        """
+        Stop the ContinualMetadataTracker object.
+        """
         self.stop()
 
     def log_artifact(self, resource,  **kwargs): 
+        """
+        Log an artifact to Continual.
+
+        Args:
+            resource: Resource object to log the artifact to. Typically should be an experiment, modelversion, or datasetversion object. 
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            artifact: The created Continual artifact object.
+        """
         artifact = resource.artifacts.create(replace_if_exists=True, **kwargs)
         self.log("Continual artifact created: %s" %artifact.name)
         return artifact 
 
     def get_artifact(self, resource, id):
+        """
+        Retrieve a Continual artifact.
+
+        Args:
+            resource: Resource object the artifact belongs to.
+            id (str): ID of the artifact to retrieve.
+
+        Returns:
+            artifact: The retrieved Continual artifact object.
+        """
         artifact = resource.artifacts.get(id=id)
         return artifact 
 
     def log_metadata(self, resource, **kwargs):
+        """
+        Log metadata to Continual.
+
+        Args:
+            resource: Resource object to log the metadata to.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            metadata: The created Continual metadata object.
+        """
         metadata = resource.metadata.create(replace_if_exists=True, **kwargs)
         self.log("Continual metadata created: %s" %metadata.name)
         return metadata 
 
     def get_metadata(self, resource,id):
+        """
+        Retrieve metadata from Continual.
+
+        Args:
+            resource: Resource object the metadata belongs to.
+            id (str): ID of the metadata to retrieve.
+
+        Returns:
+            dict: The retrieved metadata dictionary.
+        """
         data = None 
         try: 
             metadata = resource.metadata.get(id=id)
@@ -51,7 +122,17 @@ class ContinualMetadataTracker(AbstractMetadataTracker):
             data = metadata.data
         return data
 
-    def log_tag(self, resource,key, value): 
+    def log_tag(self, resource, key, value): 
+        """
+        Log a tag to Continual.
+
+        Args:
+            resource: Resource object to log the tag to.
+            key (str): The key of the tag.
+            value (str): The value of the tag.
+        Returns:
+            tag: The created tag object
+        """
         tag = resource.tags.create(key=key, value=value)
         self.log("Continual tag created: %s" %tag.name)
         return tag

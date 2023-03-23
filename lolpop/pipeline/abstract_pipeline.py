@@ -10,6 +10,9 @@ class AbstractPipeline:
         "config" : {}
     }
 
+    suppress_logger = False
+    suppress_notifier = False
+
     def __init__(self, conf, runner_conf, parent_process="runner", problem_type=None, pipeline_type="abstract_pipeline", components={}, **kwargs):
         #set basic properties like configs
         self.name = type(self).__name__
@@ -61,11 +64,13 @@ class AbstractPipeline:
                 raise Exception ("Missing the following from pipeline configuration: %s" %missing)
 
     def log(self, msg, level="INFO"): 
-        utils.log(self, msg, level)
+        if not self.suppress_logger: 
+            utils.log(self, msg, level)
 
     def notify(self, msg, level="ERROR"): 
-        self.notifier.notify(msg, level)
-        self.log("Notification Sent: %s" %msg, level)
+        if not self.suppress_notifier: 
+            self.notifier.notify(msg, level)
+            self.log("Notification Sent: %s" %msg, level)
 
     #helper function for lookup up config key in pipeline or runner conf
     def _get_config(self, key, default_value=None): 

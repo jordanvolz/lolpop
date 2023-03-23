@@ -5,6 +5,7 @@ from git import Repo
 from omegaconf import OmegaConf, dictconfig
 from datetime import datetime
 from functools import wraps 
+import pandas as pd 
 
 #
 ##should decide if these things go into the common_utils class or just the abstract classes. 
@@ -54,8 +55,8 @@ def git_commit_file(file_path, repo_path=None, msg="Commiting file from mlops-ju
 #    return id 
 
 #load class object
-def load_class(class_name, class_type="component"): 
-    module = import_module("lolpop.%s" %class_type)
+def load_class(class_name, class_type="component", parent="lolpop"): 
+    module = import_module("%s.%s" %(parent, class_type))
     cl = getattr(module, class_name)
     return cl
 
@@ -248,3 +249,16 @@ def get_multiclass(labels):
         classification_type = "multiclass"
 
     return classification_type
+
+
+def create_df_from_file(source_file, engine="pyarrow", **kwargs): 
+    _, source_file_type = str(source_file).split("/")[-1].split(".")
+    data = pd.DataFrame()
+    if source_file_type == "csv":
+        data = pd.read_csv(source_file, engine=engine, **kwargs)
+    elif source_file_type in ["parquet", "pq"]:
+        data = pd.read_parquet(source_file, engine=engine, **kwargs)
+    else:
+        raise Exception("Unsupported file type: %s" % source_file_type)
+    
+    return data

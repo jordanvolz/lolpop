@@ -1,4 +1,4 @@
-from lolpop.component.data_transformer.abstract_data_transformer import AbstractDataTransformer
+from lolpop.component.data_transformer.base_data_transformer import BaseDataTransformer
 from lolpop.utils import common_utils as utils
 
 import pandas as pd
@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 from tqdm import tqdm
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class SnowflakeDataTransformer(AbstractDataTransformer): 
+class SnowflakeDataTransformer(BaseDataTransformer): 
     #use load_config to allow passing these in via env_variables
     #__REQUIRED_CONF__ = {
     #    "config" : ["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"]
@@ -17,14 +17,13 @@ class SnowflakeDataTransformer(AbstractDataTransformer):
 
     def __init__(self, conf, pipeline_conf, runner_conf, **kwargs): 
         super().__init__(conf, pipeline_conf, runner_conf, **kwargs)
-
         self.snowflake_config = utils.load_config([
-            "ACCOUNT", 
-            "USER", 
-            "PASSWORD", 
-            "DATABASE", 
-            "SCHEMA", 
-            "WAREHOUSE"], self.config)
+            "SNOWFLAKE_ACCOUNT", 
+            "SNOWFLAKE_USER", 
+            "SNOWFLAKE_PASSWORD", 
+            "SNOWFLAKE_DATABASE", 
+            "SNOWFLAKE_SCHEMA", 
+            "SNOWFLAKE_WAREHOUSE"], self.config)
 
 
     def get_data(self, table, sql=None, *args, **kwargs):
@@ -110,12 +109,12 @@ class SnowflakeDataTransformer(AbstractDataTransformer):
         result = pd.DataFrame() 
         result = get_from_snowflake(
             sql, 
-            config.get("ACCOUNT"), 
-            config.get("USER"), 
-            config.get("PASSWORD"), 
-            config.get("DATABASE"), 
-            config.get("SCHEMA"), 
-            config.get("WAREHOUSE")
+            config.get("SNOWFLAKE_ACCOUNT"), 
+            config.get("SNOWFLAKE_USER"), 
+            config.get("SNOWFLAKE_PASSWORD"), 
+            config.get("SNOWFLAKE_DATABASE"), 
+            config.get("SNOWFLAKE_SCHEMA"), 
+            config.get("SNOWFLAKE_WAREHOUSE")
             )
         return result
     
@@ -123,12 +122,12 @@ class SnowflakeDataTransformer(AbstractDataTransformer):
         save_to_snowflake(
             data, 
             table_name,
-            config.get("ACCOUNT"),
-            config.get("USER"),
-            config.get("PASSWORD"),
-            config.get("DATABASE"),
-            config.get("SCHEMA"),
-            config.get("WAREHOUSE")
+            config.get("SNOWFLAKE_ACCOUNT"),
+            config.get("SNOWFLAKE_USER"),
+            config.get("SNOWFLAKE_PASSWORD"),
+            config.get("SNOWFLAKE_DATABASE"),
+            config.get("SNOWFLAKE_SCHEMA"),
+            config.get("SNOWFLAKE_WAREHOUSE")
         )
 
 #get df from snowflake

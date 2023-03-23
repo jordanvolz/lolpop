@@ -13,12 +13,12 @@ def workflow(
     build_method: str = typer.Option("main",
                                        help="The method in the runner class to execute."),
     build_args: List[str] = typer.Option([], help="List of args to pass into build_method."),
-    build_kwargs: str = typer.Option({}, help="Dict (as a string) of kwargs to pass into build_method"),
+    build_kwargs: str = typer.Option("{}", help="Dict (as a string) of kwargs to pass into build_method"),
 ): 
 
     typer.secho("Loading class %s" %runner_class, fg="blue")
     runner_cl = utils.load_class(runner_class, class_type="runner")
-    typer.secho("Loaded!" % runner_class, fg="green")
+    typer.secho("Loaded %s!" %runner_class, fg="green")
 
     typer.secho("Initializing class %s with config file %s" %(runner_class, config_file), fg="blue")
     runner = runner_cl(config_file)
