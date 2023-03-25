@@ -5,8 +5,9 @@ description = "A software engineering framework for machine learning workflows"
 authors = ["jordanvolz <jordan.volz@gmail.com>"]
 license = "Apache-2.0"
 packages = [
-    {include = "src"},
+    {include = "lolpop"},
     ]
+include = ["templates"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
@@ -44,7 +45,7 @@ continual="^2.0.0a34"
 ydata-profiling="4.0.0"
 snowflake-sqlalchemy="1.4.6"
 tqdm="4.64.1"
-sdv=="1.0.0b1"
+sdv="1.0.0b1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2"

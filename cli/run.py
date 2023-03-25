@@ -6,7 +6,15 @@ import json
 
 app = typer.Typer(help="Run workflows with lolpop.")
 
-@app.command("workflow")
+
+@app.callback(invoke_without_command=True)
+def default(ctx: typer.Context):
+    if ctx.invoked_subcommand is not None:
+        return
+    else:
+        typer.echo(ctx.command.get_help(ctx))
+
+@app.command("workflow", help="Run a workflow.")
 def workflow(
     runner_class: str = typer.Argument(..., help="Runner class."),
     config_file: Path = typer.Option(..., help="Location of runner configuration file."),

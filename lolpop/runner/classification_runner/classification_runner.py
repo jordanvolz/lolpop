@@ -11,8 +11,8 @@ class ClassificationRunner(AbstractRunner):
         "config": ["table_train", "table_eval", "table_prediction", "model_target", "drop_columns"]
     }
 
-    def __init__(self, conf):
-        super().__init__(conf, problem_type="classification")
+    def __init__(self, conf, *args, **kwargs):
+        super().__init__(conf, problem_type="classification", *args, **kwargs)
 
     def process_data(self, source_data = "train"):
         #run data transformations and encodings

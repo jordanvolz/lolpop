@@ -1,5 +1,5 @@
-from lolpop.pipeline.{{cookiecutter.pipeline_type}}.base_{{cookiecutter.pipeline_type}} import Base{{cookiecutter.PipelineType}}
-from utils import lolpop.common_utils as utils
+from .base_{{cookiecutter.pipeline_type}} import Base{{cookiecutter.PipelineType}}
+from lolpop.utils import common_utils as utils
 #import your libraries here
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
@@ -14,9 +14,9 @@ class {{cookiecutter.PipelineClass}}(Base{{cookiecutter.PipelineType}}):
     #    "config": {}
     #}
 
-    def __init__(self, conf, pipeline_conf, runner_conf, description=None, run_id=None, **kwargs):
+    def __init__(self, conf, runner_conf, **kwargs):
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, **kwargs)
+        super().__init__(conf, runner_conf, **kwargs)
         #Add any additional class initialization code here.
         
     # Write your functions here. Implement Base class functions and actually write them! 

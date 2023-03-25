@@ -8,7 +8,15 @@ app = typer.Typer(help="Generate synthetic data from existing data.")
 LOLPOP_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 #PARENT_DIR = os.path.dirname(LOLPOP_DIR)
 
-@app.command("create")
+
+@app.callback(invoke_without_command=True)
+def default(ctx: typer.Context):
+    if ctx.invoked_subcommand is not None:
+        return
+    else:
+        typer.echo(ctx.command.get_help(ctx))
+
+@app.command("create", help="Create a synthetic dataset.")
 def create(
     source_file: Path = typer.Argument(
         ..., help="Path to the source file."),

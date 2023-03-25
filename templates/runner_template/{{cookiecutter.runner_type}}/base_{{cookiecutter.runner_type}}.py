@@ -1,4 +1,4 @@
-from lolpop.runner.base_runner import BaseRunner
+from lolpop.runner import BaseRunner
 
 
 class Base{{cookiecutter.RunnerType}}(BaseRunner):

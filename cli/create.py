@@ -2,44 +2,56 @@ import typer
 from cookiecutter.main import cookiecutter 
 from pathlib import Path
 import os 
+from lolpop import __template_path__ as lolpop_template_path
 
 app = typer.Typer(help="Create new runners, piplines, and components.")
 
 LOLPOP_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 #PARENT_DIR = os.path.dirname(LOLPOP_DIR)
 
-@app.command("component")
+
+@app.callback(invoke_without_command=True)
+def default(ctx: typer.Context):
+    if ctx.invoked_subcommand is not None:
+        return
+    else:
+        typer.echo(ctx.command.get_help(ctx))
+
+
+@app.command("component", help="Initialize a custom component.")
 def component(
     component_type: str = typer.Argument(..., help="Component type (Should be snake_case)."),
     component_class: str = typer.Argument(..., help="Component class name (Should be snake_case)."),
     template_path: str = typer.Argument(
-        "%s/templates/component_template" % (LOLPOP_DIR), help="Path to the template file. Or a git url of a template file."),
-    component_dir: Path = typer.Option("%s/lolpop/component" %LOLPOP_DIR,
+        lolpop_template_path + "/component_template", help="Path to the template file. Or a git url of a template file."),
+    component_dir: Path = typer.Option(os.getcwd() + "/src/component",
                                        help="Parent directory for the new component."),
 ): 
     create_template("component", component_type,
                     component_class, template_path, component_dir)
     
-@app.command("pipeline")
+
+@app.command("pipeline", help="Initialize a custom pipeline.")
 def pipeline(
     pipeline_type: str = typer.Argument(..., help="Pipeline type (Should be snake_case)."),
     pipeline_class: str = typer.Argument(
         ..., help="Pipeline class name (Should be snake_case)."),
     template_path: str = typer.Argument(
-        "%s/templates/pipeline_template" % (LOLPOP_DIR), help="Path to the template file. Or a git url of a template file."),
-    pipeline_dir: Path = typer.Option("%s/lolpop/pipeline" % LOLPOP_DIR,
+        lolpop_template_path + "/pipeline_template", help="Path to the template file. Or a git url of a template file."),
+    pipeline_dir: Path = typer.Option(os.getcwd() + "/src/pipeline",
                                        help="Parent directory for the new pipeline."),
 ): 
     create_template("pipeline", pipeline_type,
                     pipeline_class, template_path, pipeline_dir)
 
-@app.command("runner")
+
+@app.command("runner", help="Initialize a custom component.")
 def runner(
     runner_type: str = typer.Argument(..., help="Component type (Should be snake_case)"),
     runner_class: str = typer.Argument(..., help="Component class name (Should be snake_case)."),
     template_path: str = typer.Argument(
-        "%s/templates/runner_template" % (LOLPOP_DIR), help="Path to the template file. Or a git url of a template file."),
-    runner_dir: Path = typer.Option("%s/lolpop/runner" %LOLPOP_DIR,
+        lolpop_template_path + "/runner_template", help="Path to the template file. Or a git url of a template file."),
+    runner_dir: Path = typer.Option(os.getcwd() + "/src/runner",
                                        help="Parent directory for the new component."),
 ): 
     create_template("runner", runner_type,

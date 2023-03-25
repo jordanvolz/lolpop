@@ -1,5 +1,6 @@
 import subprocess 
 import os 
+import sys
 from importlib import import_module
 from git import Repo
 from omegaconf import OmegaConf, dictconfig
@@ -46,13 +47,11 @@ def git_commit_file(file_path, repo_path=None, msg="Commiting file from mlops-ju
 
     return hexsha
 
-#get the id from the fully qualified name 
-#it's odd that this lives in common_utils, but it's currently needed
-#while wildcard loookup doesn't work in Continual. When that is fixed we shouldn't need it anymore. 
-#def truncate_id(id): 
-#    if "/" in id: 
-#        id = id.split("/")[-1] #get the last piece, i.e. it's a continual name
-#    return id 
+def load_plugin(plugin_path): 
+    sys.path.append(str(plugin_path))
+    plugin_name = plugin_path.name
+    mod = import_module(plugin_name)
+    return mod.__name__
 
 #load class object
 def load_class(class_name, class_type="component", parent="lolpop"): 
@@ -60,24 +59,55 @@ def load_class(class_name, class_type="component", parent="lolpop"):
     cl = getattr(module, class_name)
     return cl
 
+#load class object from plugins
+def load_class_from_plugin(class_name, plugin_mods, class_type="component", parent="lolpop"):
+    #try to load from each plugin
+    cl = None 
+    for plugin in plugin_mods: 
+        try: 
+            cl = load_class(class_name, class_type=class_type, parent=plugin)
+            break 
+        except: 
+            continue 
+    return cl
+
 #register component class as an attribute of the provided object
-def register_component_class(self_obj, conf, component_type, default_class_name=None, pipeline_conf = {}, runner_conf = {}, parent_process = "runner", problem_type = None, dependent_components = {}): 
+def register_component_class(self_obj, conf, component_type, default_class_name=None, pipeline_conf = {}, runner_conf = {}, parent_process = "runner", problem_type = None, dependent_components = {}, plugin_mods=[]): 
     obj = None
     component_class_name = conf.components.get(component_type, default_class_name)
     if component_class_name is not None:
-        cl = load_class(component_class_name) 
-        obj = cl(conf.get(component_type,{}), pipeline_conf, runner_conf, parent_process = parent_process, problem_type=problem_type, components = dependent_components) 
-        setattr(self_obj, component_type, obj)
+        try: 
+            cl = load_class(component_class_name) 
+        except: 
+            self_obj.log(
+            	"Unable to find class %s in built-in components. Searching plugins..." %component_class_name)
+            cl = load_class_from_plugin(component_class_name, plugin_mods)
+            self_obj.log(
+            	"Found class %s in plugins!" %component_class_name)
+        obj = None 
+        if cl is not None: 
+            obj = cl(conf.get(component_type,{}), pipeline_conf, runner_conf, parent_process = parent_process, problem_type=problem_type, components = dependent_components) 
+            setattr(self_obj, component_type, obj)
     return obj 
 
 #registers pipeline as an attribute of the provided object
-def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=None, runner_conf = {}, parent_process = "runner", problem_type = None, dependent_components = {}): 
+def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=None, runner_conf = {}, parent_process = "runner", problem_type = None, dependent_components = {}, plugin_mods=[]): 
     obj = None 
     pipeline_class_name = conf.pipelines.get(pipeline_type, default_class_name)
     if pipeline_class_name is not None: 
-        cl = load_class(pipeline_class_name, class_type="pipeline")
-        obj = cl(conf.get(pipeline_type,{}), runner_conf, parent_process = parent_process, problem_type = problem_type, components = dependent_components)
-        setattr(self_obj, pipeline_type, obj)
+        try: 
+            cl = load_class(pipeline_class_name, class_type="pipeline")
+        except: 
+            self_obj.log(
+            	"Unable to find pipeline %s in built-in pipelines. Searching plugins..." % pipeline_class_name)
+            cl = load_class_from_plugin(
+            	pipeline_class_name, plugin_mods, class_type="pipeline")
+            self_obj.log(
+            	"Found class %s in plugins!" % pipeline_class_name)
+        obj = None
+        if cl is not None: 
+            obj = cl(conf.get(pipeline_type,{}), runner_conf, parent_process = parent_process, problem_type = problem_type, components = dependent_components, plugin_mods=plugin_mods)
+            setattr(self_obj, pipeline_type, obj)
     return obj
 
 def lower_conf(conf): 
@@ -150,6 +180,17 @@ def resolve_conf_variables(conf, main_conf=None):
                     OmegaConf.update(conf,k, get_conf_value(v[1:], main_conf))
                     #conf[k] = get_conf_value(v[1:], main_conf)
     return conf
+
+# returns configuration from conf object (file location or python dict)
+def get_conf(conf_obj): 
+    if type(conf_obj) is str: 
+        conf = OmegaConf.load(conf_obj)
+    elif type(conf_obj) is dict: 
+        conf = OmegaConf.create(conf_obj)
+    else: 
+        raise Exception("Invalid configuration. Configuration must be a file or a a dict.")
+    
+    return conf 
 
 #returns node value in conf specified by var in the form 'node1.node2.node3...'
 def get_conf_value(var, conf): 

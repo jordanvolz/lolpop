@@ -6,7 +6,7 @@ import os
 
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
-class OptunaHyperparameterTuner(AbstractHyperparameterTuner):
+class WandBHyperparameterTuner(AbstractHyperparameterTuner):
 
     def __init__(self, conf, pipeline_conf, runner_conf, description=None, run_id=None, components={}, **kwargs):
         #set normal config
@@ -29,9 +29,8 @@ class OptunaHyperparameterTuner(AbstractHyperparameterTuner):
         #set up params
         sweep_config = self._get_config("sweep_config")
 
-        
-       self._wandb_objective(sweep_config)
-       self._log_study(study, model_version, algo)  # returns best exp id
+        self._wandb_objective(sweep_config)
+        self._log_study(study, model_version, algo)  # returns best exp id
 
 
         #save data splits

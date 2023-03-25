@@ -1,4 +1,4 @@
-from lolpop.component.base_component import BaseComponent
+from lolpop.component import BaseComponent
 
 
 class Base{{cookiecutter.ComponentType}}(BaseComponent):

@@ -13,7 +13,7 @@ class AbstractPipeline:
     suppress_logger = False
     suppress_notifier = False
 
-    def __init__(self, conf, runner_conf, parent_process="runner", problem_type=None, pipeline_type="abstract_pipeline", components={}, **kwargs):
+    def __init__(self, conf, runner_conf, parent_process="runner", problem_type=None, pipeline_type="abstract_pipeline", components={}, plugin_mods=[], **kwargs):
         #set basic properties like configs
         self.name = type(self).__name__
         self.config = conf.get("config", {})
@@ -44,9 +44,13 @@ class AbstractPipeline:
         pipeline_components = {}
         if "components" in conf.keys(): 
             for component in conf.components.keys(): 
-                obj = utils.register_component_class(self, conf, component, pipeline_conf = pipeline_conf, runner_conf = runner_conf, parent_process=self.name, problem_type = self.problem_type, dependent_components=components)
-                self.log("Loaded class %s into component %s" %(type(getattr(self, component)).__name__, component))
-                pipeline_components[component] = obj
+                obj = utils.register_component_class(self, conf, component, pipeline_conf = pipeline_conf, runner_conf = runner_conf, parent_process=self.name, problem_type = self.problem_type, dependent_components=components, plugin_mods=plugin_mods)
+                if obj is not None: 
+                    self.log("Loaded class %s into component %s" %(type(getattr(self, component)).__name__, component))
+                    pipeline_components[component] = obj
+                else: 
+                    self.log("Unable to load class for component %s" %
+                             component)
 
         #now update all pipeline scope components to know about the other pipeline components
         for obj in pipeline_components.values(): 

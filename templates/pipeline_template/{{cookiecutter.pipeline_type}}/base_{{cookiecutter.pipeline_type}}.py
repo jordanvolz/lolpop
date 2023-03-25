@@ -1,4 +1,4 @@
-from lolpop.pipeline.base_pipeline import BasePipeline
+from lolpop.pipeline import BasePipeline
 
 
 class Base{{cookiecutter.PipelineType}}(BasePipeline):

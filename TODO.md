@@ -41,6 +41,8 @@ i.e. do we need an 'operator' concept?
 --> profiling via: https://stackoverflow.com/questions/16373510/improving-speed-of-python-module-import
     --> gist is that some of the libaries we are importing are very slow 
 --> also suppress import messaging when loading lolpop
+14. Data synthesizer + data seeding for better local experience -- DONE 
+15. Notebook to lolpop component conversions
 XX. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc
 
 
