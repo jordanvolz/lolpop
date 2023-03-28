@@ -17,6 +17,7 @@
 2.1 project structure? 
 --> best practice is probably to be opinionated about this and then have an easy packaging mechanism in the CLI. 
 --> this would make non-unit workflow testing less confusing too, very likely.
+2.2 Plugin support -- done 
 3. testing frameworking/strategy
 3.1. tests for runners/components/pipelines
 3.2. generic tests (like swapping components) that apply broadly
@@ -43,6 +44,7 @@ i.e. do we need an 'operator' concept?
 --> also suppress import messaging when loading lolpop
 14. Data synthesizer + data seeding for better local experience -- DONE 
 15. Notebook to lolpop component conversions
+16. ChatGPT to write documentation of your workflow. And maybe docstrings/unit tests/etc?
 XX. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc
 
 
@@ -55,3 +57,4 @@ To build, MVP:
 6. Project Templates
 7. MVP Documentation
 8. Local Experience -- i.e. try it out w/o complicated installs/registrations
+9. MVP
