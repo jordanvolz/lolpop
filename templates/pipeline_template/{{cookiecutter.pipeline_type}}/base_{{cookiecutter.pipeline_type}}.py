@@ -12,6 +12,12 @@ class Base{{cookiecutter.PipelineType}}(BasePipeline):
         "config": {}
     }
 
+    def __init__(self, conf, **kwargs):
+        #set normal config
+        self.__file_path == __file__
+        super().__init__(conf, **kwargs)
+        #Add any additional class initialization code here.
+
     # Write your functions here. The Base Class should primarily just implement an interface for 
     # other classes to implement.   
     def my_function(self, required_arg1, required_arg2, *args, **kwargs):

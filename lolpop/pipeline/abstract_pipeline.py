@@ -13,9 +13,10 @@ class AbstractPipeline:
     suppress_logger = False
     suppress_notifier = False
 
-    def __init__(self, conf, runner_conf, parent_process="runner", problem_type=None, pipeline_type="abstract_pipeline", components={}, plugin_mods=[], **kwargs):
+    def __init__(self, conf, runner_conf, parent_process="runner", problem_type=None, pipeline_type="abstract_pipeline", components={}, plugin_mods=[], plugin_paths=[], **kwargs):
         #set basic properties like configs
         self.name = type(self).__name__
+        conf = utils.get_conf(conf)
         self.config = conf.get("config", {})
         self.parent_process = parent_process
         self.pipeline_type = pipeline_type
@@ -39,6 +40,13 @@ class AbstractPipeline:
         pipeline_conf = self.config
         pipeline_conf["pipeline_type"]=self.pipeline_type
 
+        #handle plugins
+        if len(plugin_mods) == 0: 
+            if len(plugin_paths) == 0:
+                plugin_paths = self._get_config("plugin_paths", [])
+            plugin_mods = utils.get_plugin_mods(self, plugin_paths, self.__file_path__)
+        self.plugin_mods = plugin_mods
+
         #now handle all components explicitly set for pipeline
         #note: this will override any component name inherited from the runner, which is what we want
         pipeline_components = {}
@@ -57,6 +65,7 @@ class AbstractPipeline:
             obj._update_components(components = pipeline_components)
 
     def _validate_conf(self, conf, components):
+        conf = utils.resolve_conf_variables(conf)
         missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__, components)
         if total_missing > 0: 
             #check to see if missing components are provided by runner via kwargs

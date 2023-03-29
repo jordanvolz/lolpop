@@ -14,6 +14,7 @@ class AbstractComponent:
     def __init__(self, config={}, pipeline_conf={}, runner_conf={}, parent_process=None, problem_type = None, components = {}, *args, **kwargs):
         #set basic properties, like name and configs
         self.name = type(self).__name__
+        config = utils.get_conf(config)
         self.config = config.get("config", {})
         self.pipeline_conf = pipeline_conf
         self.runner_conf = runner_conf
@@ -43,6 +44,7 @@ class AbstractComponent:
             setattr(self, component, components.get(component))
 
     def _validate_conf(self, conf, components):
+        conf = utils.resolve_conf_variables(conf)
         missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__, components)
         if total_missing>0: 
             #check to see if missing components are provided by runner

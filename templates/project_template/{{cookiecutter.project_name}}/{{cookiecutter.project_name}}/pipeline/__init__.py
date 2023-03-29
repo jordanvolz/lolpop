@@ -4,7 +4,7 @@ def __map_pipelines__():
     import os
     from importlib import import_module
     from inspect import isclass
-    from lolpop.pipeline.abstract_pipeline import AbstractPipeline
+    from lolpop.pipeline import AbstractPipeline
     import warnings
 
     warnings.filterwarnings("ignore")
@@ -18,7 +18,7 @@ def __map_pipelines__():
             (".py" in x) and ("__" not in x))]
         #from each file, import all classes and register them in the global namespace.
         for file in files:
-            module = import_module("lolpop.%s.%s.%s" % (
+            module = import_module("{{cookiecutter.project_name}}.%s.%s.%s" % (
                 subdir.split("/")[-2], subdir.split("/")[-1], file[:-3]))
             classes = [x for x in dir(module) if isclass(getattr(module, x))]
             pipelines = [x for x in classes if issubclass(

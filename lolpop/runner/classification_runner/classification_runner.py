@@ -12,6 +12,7 @@ class ClassificationRunner(AbstractRunner):
     }
 
     def __init__(self, conf, *args, **kwargs):
+        self.__file_path__ = __file__
         super().__init__(conf, problem_type="classification", *args, **kwargs)
 
     def process_data(self, source_data = "train"):

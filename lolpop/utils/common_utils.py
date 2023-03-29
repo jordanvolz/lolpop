@@ -7,20 +7,18 @@ from omegaconf import OmegaConf, dictconfig
 from datetime import datetime
 from functools import wraps 
 import pandas as pd 
+from pathlib import Path 
 
 #
 ##should decide if these things go into the common_utils class or just the abstract classes. 
 #
 
 #shell command wrapper
-def execute_cmd(cmd, print_it=False):
+def execute_cmd(cmd):
 	popen = subprocess.Popen([cmd], stdout=subprocess.PIPE, universal_newlines=True, shell=True)
 	output = popen.stdout.read()
 	exit_code = popen.wait()
-	if print_it:
-		print(output)
-		#print("exit code: %s" %exit_code)
-	return (output,exit_code)
+	return (output ,exit_code)
 
 # pulls keys out of config or gets form env variable
 # i.e. either handle secret manager before getting here and pass in 
@@ -60,14 +58,14 @@ def load_class(class_name, class_type="component", parent="lolpop"):
     return cl
 
 #load class object from plugins
-def load_class_from_plugin(class_name, plugin_mods, class_type="component", parent="lolpop"):
+def load_class_from_plugin(class_name, plugin_mods, class_type="component"):
     #try to load from each plugin
     cl = None 
     for plugin in plugin_mods: 
         try: 
             cl = load_class(class_name, class_type=class_type, parent=plugin)
             break 
-        except: 
+        except Exception as e: 
             continue 
     return cl
 
@@ -76,6 +74,7 @@ def register_component_class(self_obj, conf, component_type, default_class_name=
     obj = None
     component_class_name = conf.components.get(component_type, default_class_name)
     if component_class_name is not None:
+        obj = None
         try: 
             cl = load_class(component_class_name) 
         except: 
@@ -83,8 +82,7 @@ def register_component_class(self_obj, conf, component_type, default_class_name=
             	"Unable to find class %s in built-in components. Searching plugins..." %component_class_name)
             cl = load_class_from_plugin(component_class_name, plugin_mods)
             self_obj.log(
-            	"Found class %s in plugins!" %component_class_name)
-        obj = None 
+            	"Found class %s in plugins!" %component_class_name) 
         if cl is not None: 
             obj = cl(conf.get(component_type,{}), pipeline_conf, runner_conf, parent_process = parent_process, problem_type=problem_type, components = dependent_components) 
             setattr(self_obj, component_type, obj)
@@ -198,6 +196,28 @@ def get_conf_value(var, conf):
     for i in var_arr: 
         conf = conf.get(i)
     return conf 
+
+def get_plugin_mods(self_obj, plugin_paths, file_path):
+    # if no plugin_dir is provided, then try to use the parent directory.
+    # if the parent directory is lolpop, then it is a built-in runner and we can ignore
+    if len(plugin_paths) == 0:
+        #directory should be something like <module_name>/<runner>/<runner_type>/<runner_class>.py
+        plugin_dir = os.path.dirname(os.path.dirname(
+            os.path.dirname(os.path.realpath(file_path))))
+        if plugin_dir != "lolpop":
+            plugin_paths = [Path(plugin_dir)]
+    else:
+        plugin_paths = [Path(dir) for dir in plugin_paths]
+
+    #load up all plugin modules
+    plugin_mods = []
+    for dir in plugin_paths:
+        if dir.exists():
+            plugin_mods.append(load_plugin(dir))
+        else:
+            self_obj.log("Plugin path not found: %s" % str(dir))
+    
+    return plugin_mods
 
 def log(obj, msg, level): 
     current_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S.%f")

@@ -5,7 +5,7 @@ def __map_components__():
     import os
     from importlib import import_module
     from inspect import isclass
-    from lolpop.component.abstract_component import AbstractComponent
+    from lolpop.component import AbstractComponent
     import warnings
 
     warnings.filterwarnings("ignore")
@@ -19,7 +19,7 @@ def __map_components__():
             (".py" in x) and ("__" not in x))]
         #from each file, import all classes and register them in the global namespace.
         for file in files:
-            module = import_module("lolpop.%s.%s.%s" % (
+            module = import_module("{{cookiecutter.project_name}}.%s.%s.%s" % (
                 subdir.split("/")[-2], subdir.split("/")[-1], file[:-3]))
             classes = [x for x in dir(module) if isclass(getattr(module, x))]
             components = [x for x in classes if issubclass(

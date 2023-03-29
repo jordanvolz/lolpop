@@ -17,7 +17,8 @@ class AbstractRunner:
     suppress_logger = False 
     suppress_notifier = False
 
-    def __init__(self, conf_file, problem_type = "unspecified_problem_type", plugin_dirs=[]):
+    def __init__(self, conf_file, problem_type = "unspecified_problem_type", plugin_paths=[]):
+        #handle configuration 
         self.name = type(self).__name__
         conf = utils.get_conf(conf_file)
         conf = utils.copy_config_into(conf, self.__DEFAULT_CONF__) 
@@ -25,22 +26,11 @@ class AbstractRunner:
         self.config = conf.get("config", {})
         self.problem_type = conf.get("problem_type", problem_type)
 
-        # if no plugin_dir is provided, then try to use the parent directory. 
-        # if the parent directory is lolpop, then it is a built-in runner and we can ignore
-        if len(plugin_dirs) == 0: 
-            plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-            if plugin_dir != "lolpop":
-                plugin_dirs = [Path(plugin_dir)] 
-        else: 
-            plugin_dirs = [Path(dir) for dir in plugin_dirs]
-
-        #load up all plugin modules
-        plugin_mods = []
-        for dir in plugin_dirs: 
-            if dir.exists():
-                plugin_mods.append(utils.load_plugin(dir))
-            else: 
-                self.log("Plugin path not found: %s" %str(dir))
+        #handle plugins
+        if len(plugin_paths) == 0: 
+            plugin_paths=conf.get("plugin_paths",[])
+        plugin_mods = utils.get_plugin_mods(self, plugin_paths, self.__file_path__)
+        self.plugin_mods = plugin_mods
 
         #config defines all pipelines in `pipelines`
         #format is 
@@ -127,3 +117,4 @@ class AbstractRunner:
         key = key.lower()
         value = utils.lower_conf(self.config).get(key, None)
         return value
+        
