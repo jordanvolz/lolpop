@@ -19,7 +19,7 @@ Try out the classification example in `examples/classification/mlflow`. To run i
 ```
 python3 examples/classification/mlflow/mlrunner.py 
 ```
-Note: You'll want to update `examples/classification/mlflow/local_dev.yaml` with your own configuration. In particular, update the mlflow configuration. You also need to download the `test.csv` and `train.csv` files 
+Note: You'll want to update `examples/classification/mlflow/local_dev.yaml` with your own configuration and then mlrunner.py with the path to your configuration. In particular, update the mlflow configuration. You also need to download the `test.csv` and `train.csv` files 
 from [Kaggle](https://www.kaggle.com/competitions/petfinder-adoption-prediction/data) and update your conf to point to their locations. 
 
 You'll probably hit a few errors in trying to run the first time. Let me know what they are. 
