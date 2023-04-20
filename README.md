@@ -23,15 +23,18 @@ Note: You'll want to update `examples/classification/mlflow/local_dev.yaml` with
 from [Kaggle](https://www.kaggle.com/competitions/petfinder-adoption-prediction/data) and update your conf to point to their locations. 
 
 You'll probably hit a few errors in trying to run the first time. Let me know what they are. 
+
 ## contributing 
 
 If you're interested in contributing, there is a basic CLI tool that can boostrap a new runner/pipeline/component for you. 
 To use, simply execute: 
 
 ```
+
 python3 cli/cli.py create component/pipeline/runner <component_type> <componenet_class>
 ```
 
 Component type should be something like metadata_tracker, metrics_tracker, model_trainer, etc, and component class is the name of the class. This will create a new component type in the specified directory in lolpop.  
 This will boostrap a cookiecutter project in the provided `--component-dir` which you can then edit as desired. 
+
 
