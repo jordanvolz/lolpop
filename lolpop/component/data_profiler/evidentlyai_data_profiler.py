@@ -1,4 +1,4 @@
-from lolpop.component.data_profiler.abstract_data_profiler import AbstractDataProfiler
+from lolpop.component.data_profiler.base_data_profiler import BaseDataProfiler
 from lolpop.utils import common_utils as utils
 from evidently.report import Report
 from evidently.metric_preset import DataQualityPreset, DataDriftPreset
@@ -6,12 +6,22 @@ from evidently.test_suite import TestSuite
 from evidently.test_preset import DataQualityTestPreset, DataDriftTestPreset, DataStabilityTestPreset
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class EvidentlyAIDataProfiler(AbstractDataProfiler): 
+class EvidentlyAIDataProfiler(BaseDataProfiler): 
+    
     __REQUIRED_CONF__ = {
         "config" : ["local_dir"]
     }
 
-    def profile_data(self, data, **kwargs): 
+    def profile_data(self, data, *args, **kwargs): 
+        """Profiles data using EvidentlyAI
+
+        Args:
+            data (pd.DataFrame): A dataframe of the data to profile.  
+
+        Returns:
+            data_report (object): Python object of the report 
+            file_path (string): file path of the exported report
+        """
         data_report = Report(metrics=[DataQualityPreset()])
         data_report.run(current_data=data, reference_data=None)
         file_path = "%s/EVIDENTLY_DATA_PROFILE_REPORT.HTML" %self._get_config("local_dir")
@@ -19,7 +29,18 @@ class EvidentlyAIDataProfiler(AbstractDataProfiler):
         
         return data_report, file_path
 
-    def compare_data(self, data, prev_data, **kwargs): 
+    def compare_data(self, data, prev_data, *args, **kwargs): 
+        """Produces a (probably data drift) report between two data sets 
+           using EvidentlyAI. 
+
+        Args:
+            data (pd.DataFrame): A dataframe of the "current" data. 
+            prev_data (pd.DataFrame): A dataframe of the "historical" data. 
+
+        Returns:
+            data_report (object): Python object of the report 
+            file_path (string): file path of the exported report
+        """
         data_report = None
         file_path = None 
         (data, prev_data, ok) = utils.compare_data_schemas(self, data, prev_data)

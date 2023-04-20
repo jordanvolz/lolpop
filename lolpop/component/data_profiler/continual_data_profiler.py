@@ -1,8 +1,8 @@
-from lolpop.component.data_profiler.abstract_data_profiler import AbstractDataProfiler
+from lolpop.component.data_profiler.base_data_profiler import BaseDataProfiler
 from lolpop.utils import common_utils as utils
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class ContinualDataProfiler(AbstractDataProfiler): 
+class ContinualDataProfiler(BaseDataProfiler): 
 
     def profile_data(self, data, entry_names=["train"], datetime_columns=[], index_column=None, time_index_column=None, **kwargs): 
         #bit of a hack as this function currently requires an index

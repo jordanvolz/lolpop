@@ -6,19 +6,27 @@ import json
 
 app = typer.Typer(help="Run workflows with lolpop.")
 
-@app.command("workflow")
+
+@app.callback(invoke_without_command=True)
+def default(ctx: typer.Context):
+    if ctx.invoked_subcommand is not None:
+        return
+    else:
+        typer.echo(ctx.command.get_help(ctx))
+
+@app.command("workflow", help="Run a workflow.")
 def workflow(
     runner_class: str = typer.Argument(..., help="Runner class."),
     config_file: Path = typer.Option(..., help="Location of runner configuration file."),
     build_method: str = typer.Option("main",
                                        help="The method in the runner class to execute."),
     build_args: List[str] = typer.Option([], help="List of args to pass into build_method."),
-    build_kwargs: str = typer.Option({}, help="Dict (as a string) of kwargs to pass into build_method"),
+    build_kwargs: str = typer.Option("{}", help="Dict (as a string) of kwargs to pass into build_method"),
 ): 
 
     typer.secho("Loading class %s" %runner_class, fg="blue")
     runner_cl = utils.load_class(runner_class, class_type="runner")
-    typer.secho("Loaded!" % runner_class, fg="green")
+    typer.secho("Loaded %s!" %runner_class, fg="green")
 
     typer.secho("Initializing class %s with config file %s" %(runner_class, config_file), fg="blue")
     runner = runner_cl(config_file)

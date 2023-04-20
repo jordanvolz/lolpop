@@ -1,0 +1,120 @@
+#runner config
+pipelines: 
+  process: OfflineProcess 
+  train: OfflineTrain
+  deploy: OfflineDeploy
+  predict: OfflinePredict
+components: 
+  metadata_tracker: MLFlowMetadataTracker
+  metrics_tracker: MLFlowMetricsTracker
+  resource_version_control: dvcVersionControl
+  notifier: StdOutNotifier
+config: 
+  train_data: /Users/jordanvolz/Downloads/PETFINDER/train.csv
+  eval_data: /Users/jordanvolz/Downloads/PETFINDER/test.csv
+  prediction_data: /Users/jordanvolz/Downloads/PETFINDER/predictions.csv
+  model_name: petfinder_adoption_speed
+  model_target: AdoptionSpeed
+  model_index: PetID
+  drop_columns: [Name, PetID, RescuerID, Description, SPLIT]
+  local_dir: /tmp/artifacts/
+
+#pipelines config
+process: 
+  components: 
+    data_transformer: LocalDataTransformer
+    data_profiler: EvidentlyAIDataProfiler
+    data_checker: DeepchecksDataChecker
+  data_transformer: 
+    config: 
+      transformer_path: /Users/jordanvolz/github/lolpop/examples/classification/mlflow/process_petfinder.py
+
+train: 
+  components: 
+    data_splitter: LocalDataSplitter
+    hyperparameter_tuner: OptunaHyperparameterTuner
+    model_checker: EvidentlyAIModelChecker
+    model_explainer: AlibiModelExplainer
+    model_visualizer: YellowbrickModelVisualizer
+    model_bias_checker: AIFairnessModelBiasChecker
+  data_splitter: 
+    config: 
+      include_test: True
+      split_ratio: [0.8,0.1,0.1]
+  hyperparameter_tuner: 
+    config: 
+      param_type: fixed
+      training_params: 
+        XGBoostModelTrainer: 
+          objective: ["multiclass"]
+          max_depth: [4,8]
+          alpha: [1,5,10]
+          learning_rate: [1.0]
+          n_estimators: [10]
+          random_state: [0]
+  model_checker: 
+    config: 
+      baseline_method: value
+      baseline_value: class_avg
+  model_explainer: 
+    config: 
+      explainer_class: TreeShap
+      skip_explainer_plots: True
+  model_bias_checker: 
+    config: 
+        #the features that you want to check bias on
+        protected_attribute_names : ["Gender", "Vaccinated", "Sterilized"] 
+        # the values of the target variable that are considered good/favorable
+        favorable_classes : [0,1]
+        # the values of the protected_attribute_names that you believe may be privileged. 
+        # Same order as above and each column can take a list of values
+        # this should be something like [[1],[1],[1]] 
+        privileged_classes:  [[1],[1],[1]]
+        # list of groups to consider privilege/unprivilege. 
+        # Each "group" is a dict of values of protected_attributes
+        # 'AND' logic is applied between members of a dict, and 'OR' between dicts in the list
+        #GENDER=1 AND VACCINATED=1 AND STERILIZED=1
+        privileged_groups :   [{"Gender" : 1, "Vaccinated":1, "Sterilized":1}] 
+        #GENDER=0 OR VACCINATED=0 OR STERILIZED=0
+        unprivileged_groups : [{"Gender" : 0}, {"Vaccinated":0}, {"Sterilized":0}] 
+  config: 
+      metrics: ["accuracy", "f1", "precision", "recall"]
+      perf_metric: f1
+      retrain_all: True 
+
+deploy: 
+  components: 
+    model_repository: MLFlowModelRepository
+    model_deployer: SeldonModelDeployer
+
+predict: 
+  components: 
+    data_profiler: $process.components.data_profiler
+    model_explainer: $train.components.model_explainer
+    data_checker: $process.components.data_checker
+    data_connector: LocalDataConnector
+  model_explainer: 
+    config: 
+      explainer_class: $train.model_explainer.config.explainer_class
+      skip_explainer_plots: True
+
+#component config
+metadata_tracker: 
+  config: 
+    mlflow_tracking_uri: file:///Users/jordanvolz/Downloads/mlruns
+    mlflow_experiment_name: petfinder_adoption_speed
+metrics_tracker: 
+  config: 
+    continual_endpoint: $metadata_tracker.config.continual_endpoint
+    continual_apikey: $metadata_tracker.config.continual_apikey
+    continual_project: $metadata_tracker.config.continual_project
+    continual_environment: $metadata_tracker.config.continual_environment
+notifier: 
+  config: 
+    gcloud_credentials_file: /home/jordanvolz/.config/gcloud/email-notification-account.json
+    gcloud_credentials_token: /home/jordanvolz/.config/gcloud/email-notification-account-token.json
+    receipient_email: jordan@continual.ai
+    sender_email: lolpop@continual.ai
+logger:
+  config: 
+    log_level: DEBUG

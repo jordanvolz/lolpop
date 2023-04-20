@@ -31,7 +31,7 @@ class AbstractHyperparameterTuner(AbstractComponent):
             "training_params" : params,
             "model_trainer" : algo, 
         }
-        self.metadata_tracker.register_vc_resource(experiment, vc_info, key="model_artifact", additional_metadata = experiment_metadata)
+        self.metadata_tracker.register_vc_resource(experiment, vc_info, additional_metadata = experiment_metadata)
 
 
     #builds a grid of all possible parameter combinations gives a params item with a list of values for each param

@@ -5,6 +5,8 @@ import pandas as pd
 class AbstractModelTrainer(AbstractComponent): 
 
     model = None 
+    mlflow_module = "you_need_to_implement_this_for_mlflow_use"
+    
     #predictions = {}
     def __init__(self, conf, pipeline_conf, runner_conf, params=None, problem_type="classification", *args, **kwargs): 
         #set normal config
@@ -24,7 +26,7 @@ class AbstractModelTrainer(AbstractComponent):
             "training_params" : self.params,
             "model_trainer" : algo
         }
-        self.metadata_tracker.register_vc_resource(experiment, vc_info, key="model_artifact", additional_metadata = experiment_metadata)
+        self.metadata_tracker.register_vc_resource(experiment, vc_info, additional_metadata = experiment_metadata)
 
 
     def _predict_df(self, df):
@@ -118,7 +120,7 @@ class AbstractModelTrainer(AbstractComponent):
 
         #save splits
         for k,v in data.items(): 
-            vc_info = self.resource_version_control.version_data(model_version, v, key=k, file_suffix=k)
+            vc_info = self.resource_version_control.version_data(model_version, v, key=k)
             self.metadata_tracker.register_vc_resource(model_version, vc_info, key=k, file_type="csv")
 
         return self, experiment 

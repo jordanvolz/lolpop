@@ -21,7 +21,7 @@ class EvidentlyAIModelChecker(AbstractModelChecker):
         column_mapping.prediction = "prediction"
 
         #set up data + predictions for train/test drift
-        df_train, df_test = self.data_splitter._get_train_test_dfs(data_dict) 
+        df_train, df_test = self.data_splitter.get_train_test_dfs(data_dict) 
         df_train["prediction"] = model._predict_df(df_train.drop([model_target], axis=1))
         df_test["prediction"] = model._predict_df(df_test.drop([model_target], axis=1))
 
@@ -59,8 +59,8 @@ class EvidentlyAIModelChecker(AbstractModelChecker):
         df_current["prediction"] = current_model._predict_df(df_current)
         df_deployed["prediction"] = deployed_model._predict_df(df_deployed)
 
-        drift_report = TestSuite(tests=[TestColumnDrift(column_name="prediction")])
-        #drift_report = Report(metrics = [TargetDriftPreset()])
+        #drift_report = TestSuite(tests=[TestColumnDrift(column_name="prediction")])
+        drift_report = Report(metrics = [TargetDriftPreset()])
 
         drift_report.run(current_data=df_current, reference_data=df_deployed, column_mapping=column_mapping)
         file_path = "%s/EVIDENTLY_MODEL_DRIFT_REPORT.HTML" %self._get_config("local_dir")

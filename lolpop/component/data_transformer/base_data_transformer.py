@@ -1,8 +1,8 @@
 from lolpop.component.abstract_component import AbstractComponent
 
-class AbstractDataTransformer(AbstractComponent): 
+class BaseDataTransformer(AbstractComponent): 
 
-    def get_data(self, *args, **kwargs): 
+    def get_data(self, source_table_name, *args, **kwargs): 
         pass 
 
     def transform(self, data, *args, **kwargs):

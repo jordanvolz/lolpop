@@ -5,7 +5,7 @@ class AbstractProcess(AbstractPipeline):
     datasets_used = []
 
     def __init__(self, conf, runner_conf, pipeline_type = "process", **kwargs):
-        super().__init__(conf, runner_conf, **kwargs)
+        super().__init__(conf, runner_conf, pipeline_type=pipeline_type, **kwargs)
 
     def transform_data(): 
         pass 

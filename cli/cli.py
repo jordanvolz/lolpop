@@ -1,9 +1,13 @@
 import typer 
 import click 
+import os 
 
-import create, run, package, test 
+import create, run, package, test, datagen, seed 
 from importlib.metadata import version
 from typing import Optional
+from pathlib import Path 
+from cookiecutter.main import cookiecutter
+from lolpop import __template_path__ as lolpop_template_path
 
 try:
     __version__ = version("lolpop")
@@ -22,6 +26,8 @@ app.add_typer(run.app, name="run")
 app.add_typer(create.app, name="create")
 app.add_typer(test.app, name="test")
 app.add_typer(package.app, name="package")
+app.add_typer(datagen.app, name="datagen")
+app.add_typer(seed.app, name="seed")
 
 
 def version_callback(value: bool):
@@ -44,6 +50,21 @@ def main(
 ):
     return
 
+@app.command("init", help="Initialize a lolpop project.")
+def initialize(
+    project_name: str = typer.Argument(..., help="Name of the project to create."), 
+    project_path: Path = typer.Option(Path(os.getcwd()), help="Path to create project."), 
+    template_path: str = typer.Option(
+        lolpop_template_path + "/project_template", help="Path to the project template."),
+    ): 
+    try:
+        cookiecutter(template=template_path,
+                    extra_context={"project_name": project_name},
+                    output_dir=project_path, no_input=True)
+        typer.secho("Successfully created lolpop project %s at location %s/%s" %
+                    (project_name, project_path, project_name), fg="green")
+    except Exception as e: 
+        typer.secho("Failed to create template for %s %s: %s" %(template_type, object_class, str(e)), fg="red") 
 
 @app.command("help", add_help_option=False, options_metavar="")
 def help(ctx: typer.Context):

@@ -1,4 +1,4 @@
-from lolpop.runner.base_runner import BaseRunner
+from lolpop.runner import BaseRunner
 
 
 class Base{{cookiecutter.RunnerType}}(BaseRunner):
@@ -11,6 +11,12 @@ class Base{{cookiecutter.RunnerType}}(BaseRunner):
     __DEFAULT_CONF__ = {
         "config": {}
     }
+
+    def __init__(self, conf, **kwargs):
+        #set normal config
+        self.__file_path__ == __file__
+        super().__init__(conf, **kwargs)
+        #Add any additional class initialization code here.
 
     # Write your functions here. The Base Class should primarily just implement an interface for 
     # other classes to implement.   

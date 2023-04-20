@@ -5,7 +5,9 @@ def __map_pipelines__():
     from importlib import import_module
     from inspect import isclass
     from .abstract_pipeline import AbstractPipeline
+    import warnings
 
+    warnings.filterwarnings("ignore")
     #get current directory and all subdirectors. These represent the resource types
     path = Path(__file__).parent.resolve()
     subdirs = ["%s/%s" %(path,x) for x in os.listdir(path) if ((x[0] != "_") and (".py" not in x) )]
@@ -18,5 +20,7 @@ def __map_pipelines__():
             classes = [x for x in dir(module) if isclass(getattr(module,x))]
             pipelines = [x for x in classes if issubclass(getattr(module, x), AbstractPipeline)]
             globals().update({name: getattr(module,name) for name in pipelines})
+
+    warnings.resetwarnings()
 
 __map_pipelines__()

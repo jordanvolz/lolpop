@@ -3,10 +3,11 @@ name = "lolpop"
 version = "0.1.0"
 description = "A software engineering framework for machine learning workflows"
 authors = ["jordanvolz <jordan.volz@gmail.com>"]
-license = LICENSE
+license = "Apache-2.0"
 packages = [
-    {include = "src"},
+    {include = "lolpop"},
     ]
+include = ["templates"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
@@ -33,20 +34,22 @@ sweetviz="2.1.4"
 #pandas-profiling="3.5.0"
 dvc="2.37.0"
 dvc-gs="2.20.0"
-deepchecks="0.10.0"
+deepchecks="^0.13.0"
 evidently="^0.2.1"
 optuna="3.0.4"
 alibi = {version = "0.8.0", extras = ["shap"]}
 yellowbrick="1.4"
 aif360="0.5.0"
 #aif360[all] #fails if R is not installed
-continual="^2.0.0a34"
+continual="^2.0.0a51"
 ydata-profiling="4.0.0"
 snowflake-sqlalchemy="1.4.6"
 tqdm="4.64.1"
+sdv="1.0.0b1"
 
 [tool.poetry.dev-dependencies]
-pytest
+pytest = "^7.2"
+faker = "^17.6"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

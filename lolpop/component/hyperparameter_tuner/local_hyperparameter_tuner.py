@@ -32,7 +32,7 @@ class LocalHyperparameterTuner(AbstractHyperparameterTuner):
 
         #save data splits
         for k,v in data.items(): 
-            vc_info = self.resource_version_control.version_data(model_version, v, key=k, file_suffix=k)
+            vc_info = self.resource_version_control.version_data(model_version, v, key=k)
             self.metadata_tracker.register_vc_resource(model_version, vc_info, key=k, file_type="csv")
 
         #now, we determine overall best experiment and save into model_version

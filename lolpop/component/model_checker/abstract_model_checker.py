@@ -21,12 +21,14 @@ class AbstractModelChecker(AbstractComponent):
         perf_metric = self._get_config("perf_metric")
         model_metrics = model.calculate_metrics(data, test_predictions, [perf_metric])
         baseline_metrics = model.calculate_metrics(data, baseline_predictions, [perf_metric])
+        for split in baseline_metrics.keys(): 
+            self.metrics_tracker.log_metric(model_version, "baseline_%s_%s" %(split, perf_metric), baseline_metrics[split][perf_metric])
         is_baseline_better, metric_diff = self._get_metric_comparison(model_metrics, baseline_metrics, perf_metric)
 
         self.metrics_tracker.log_metric(model_version, "model_test_performance_over_baseline", metric_diff)
 
         if is_baseline_better: 
-            self.notify("Model performed worse than baseline by %s" %metric_diff, level="WARNING")
+            self.notify("Model performed worse than baseline by %s%%" %metric_diff, level="WARN")
 
         return metric_diff 
 
@@ -78,25 +80,24 @@ class AbstractModelChecker(AbstractComponent):
 
         return baseline_predictions 
 
-    def _get_metric_comparison(self, champion_metric, challenge_metric, perf_metric): 
+    def _get_metric_comparison(self, champion_metric, challenger_metric, perf_metric): 
         old_metric = champion_metric.get("test").get(perf_metric)
-        new_metric = challenge_metric.get("test").get(perf_metric)
+        new_metric = challenger_metric.get("test").get(perf_metric)
         lower_is_better = utils.get_metric_direction(perf_metric)
 
         if lower_is_better: #True = perf_metric is better if lower
-            is_baseline_better = (new_metric >= old_metric) 
+            is_challenger_better = (new_metric < old_metric) 
+            metric_diff = (new_metric - old_metric) / max(old_metric, 0.00001) * 100
         else: #wants higher perf metric
-            is_baseline_better = (new_metric <= old_metric )
+            is_challenger_better = (new_metric > old_metric)
+            metric_diff = (old_metric - new_metric) / max(old_metric, 0.00001) * 100 
 
-        metric_diff = (old_metric - new_metric) / max(old_metric,0.00001) 
-
-        return is_baseline_better, metric_diff
+        return is_challenger_better, metric_diff
 
     def _compare_model_performance(self, model, deployed_model, data, perf_metric, current_model_version): 
         current_predictions = model.predict(data)
         deployed_predictions = deployed_model.predict(data)
 
-        per_metric = self._get_config("perf_metric")
         current_metrics = model.calculate_metrics(data, current_predictions, [perf_metric])
         deployed_metrics = deployed_model.calculate_metrics(data, deployed_predictions, [perf_metric])
 

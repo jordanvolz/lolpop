@@ -1,4 +1,4 @@
-from lolpop.component.base_component import BaseComponent
+from lolpop.component import BaseComponent
 
 
 class Base{{cookiecutter.ComponentType}}(BaseComponent):
@@ -11,6 +11,11 @@ class Base{{cookiecutter.ComponentType}}(BaseComponent):
     __DEFAULT_CONF__ = {
         "config": {}
     }
+
+    def __init__(self, conf, pipeline_conf, runner_conf, **kwargs):
+        self.__file_path__ = __file__
+        #set normal config
+        super().__init__(conf, pipeline_conf, runner_conf, **kwargs)
 
     # Write your functions here. The Base Class should primarily just implement an interface for 
     # other classes to implement.   

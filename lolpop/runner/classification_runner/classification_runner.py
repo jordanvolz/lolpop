@@ -8,19 +8,19 @@ class ClassificationRunner(AbstractRunner):
     __REQUIRED_CONF__ = {
         "pipelines": ["process", "train", "deploy", "predict"],
         "components": ["metadata_tracker", "metrics_tracker", "resource_version_control"],
-        "config": ["table_train", "table_eval", "table_prediction", "model_target", "drop_columns"]
+        "config": ["train_data", "eval_data", "prediction_data", "model_target", "drop_columns"]
     }
 
-    def __init__(self, conf):
-        super().__init__(conf, problem_type="classification")
+    def __init__(self, conf, *args, **kwargs):
+        super().__init__(conf, problem_type="classification", *args, **kwargs)
 
     def process_data(self, source_data = "train"):
         #run data transformations and encodings
-        source_table_name = self._get_config("table_%s" % source_data)
-        data = self.process.transform_data(source_table_name)  # maybe better called get_training_data?
+        source_data_name = self._get_config("%s_data" % source_data)
+        data = self.process.transform_data(source_data_name)  # maybe better called get_training_data?
 
         #track & version data
-        dataset_version = self.process.track_data(data, source_table_name)
+        dataset_version = self.process.track_data(data, source_data_name)
 
         #profile data
         self.process.profile_data(data, dataset_version)
@@ -76,9 +76,9 @@ class ClassificationRunner(AbstractRunner):
 
         return model_version, model, is_new_model_better
 
-    def deploy_model(self, model_version):
+    def deploy_model(self, model_version, model):
         #promote model
-        promotion = self.deploy.promote_model(model_version)
+        promotion = self.deploy.promote_model(model_version, model)
 
         #check if model is approved
         is_approved = self.deploy.check_approval(promotion)
@@ -93,8 +93,8 @@ class ClassificationRunner(AbstractRunner):
         if model is None: 
             if model_version is not None: 
                 experiment = self.metadata_tracker.get_winning_experiment(model_version)
-                model_obj = self.resource_version_control.get_model(experiment, key="model_artifact")
-                model = self.train.load_model(model_obj, model_version, model)
+                model_obj = self.resource_version_control.get_model(experiment)
+                model = self.metadata_tracker.load_model(model_obj, model_version, model)
         
         #compare evaluation data to training data
         self.predict.compare_data(model_version, dataset_version, data)
@@ -112,7 +112,7 @@ class ClassificationRunner(AbstractRunner):
         self.predict.check_predictions(data.drop(["explanations", "predictions_proba"],axis=1, errors="ignore"), prediction_job)
 
         #run save predictions
-        self.predict.save_predictions(data, self._get_config("table_prediction"))
+        self.predict.save_predictions(data, self._get_config("prediction_data"))
 
         return data, prediction_job
 
@@ -124,10 +124,10 @@ class ClassificationRunner(AbstractRunner):
         
         #get prediciton data 
         vc_info = self.metadata_tracker.get_vc_info(prediction_job)
-        prediction_data = self.resource_version_control.get_data(prediction_job, vc_info, key = "data_csv") 
+        prediction_data = self.resource_version_control.get_data(prediction_job, vc_info) 
         
         #get *current* training data
-        train_data = self.process.transform_data(self._get_config("table_train"))
+        train_data = self.process.transform_data(self._get_config("train_data"))
         
         #let's find common index values that exist in both the training dataset and the prediction set
         index = self._get_config("model_index")
@@ -146,8 +146,8 @@ class ClassificationRunner(AbstractRunner):
             #get model object and calculate metrics
             model_version = self.metadata_tracker.get_prediction_job_model_version(prediction_job)
             experiment = self.metadata_tracker.get_winning_experiment(model_version)
-            model_obj = self.resource_version_control.get_model(experiment, key="model_artifact")
-            model = self.train.load_model(model_obj, model_version, None)
+            model_obj = self.resource_version_control.get_model(experiment)
+            model = self.metadata_tracker.load_model(model_obj, model_version, None)
             metrics_val = model.calculate_metrics(ground_truth, predictions, self.train._get_config("metrics"))
 
             #log stuff

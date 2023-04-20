@@ -1,26 +1,26 @@
 import subprocess 
 import os 
+import sys
 from importlib import import_module
 from git import Repo
 from omegaconf import OmegaConf, dictconfig
 from datetime import datetime
 from functools import wraps 
+import pandas as pd 
+from pathlib import Path 
 
 #
 ##should decide if these things go into the common_utils class or just the abstract classes. 
 #
 
 #shell command wrapper
-def execute_cmd(cmd, print_it=False):
-	popen = subprocess.Popen([cmd], stdout=subprocess.PIPE, universal_newlines=True, shell=True)
-	output = popen.stdout.read()
-	exit_code = popen.wait()
-	if print_it:
-		print(output)
-		#print("exit code: %s" %exit_code)
-	return (output,exit_code)
+def execute_cmd(cmd, logger=None):
+    if logger: 
+        logger.log("Executing command: `%s`" %(" ".join(cmd)))
+    p = subprocess.run(cmd, stdout=subprocess.PIPE, universal_newlines=True, shell=False)
+    return (p.stdout, p.returncode)
 
-# pulls keys out of config or gets form env variable
+# pulls keys out of config or gets from env variable
 # i.e. either handle secret manager before getting here and pass in 
 # or populate via env vars
 def load_config(config_keys, conf): 
@@ -35,48 +35,89 @@ def load_config(config_keys, conf):
     return config
 
 #comits a single file to git
-def git_commit_file(file_path, repo_path=None, msg="Commiting file from mlops-jumpstart"):
+def git_commit_file(file_path, repo_path=None, msg="Commiting file from lolpop", push=True, logger=None):
     repo = Repo(repo_path)
     repo.index.add(file_path)
     hexsha = repo.index.commit(msg).hexsha
 
-    origin = repo.remotes[0]
-    origin.push
+    if push: 
+        origin = repo.remotes[0]
+        result = origin.push()
+        if logger: 
+            logger.log("Committed and pushed file %s. Result: %s" %(file_path, result[0].summary))
 
     return hexsha
 
-#get the id from the fully qualified name 
-#it's odd that this lives in common_utils, but it's currently needed
-#while wildcard loookup doesn't work in Continual. When that is fixed we shouldn't need it anymore. 
-#def truncate_id(id): 
-#    if "/" in id: 
-#        id = id.split("/")[-1] #get the last piece, i.e. it's a continual name
-#    return id 
+def load_plugin(plugin_path): 
+    if plugin_path.is_dir(): 
+        sys.path.append(str(plugin_path))
+        plugin_name = plugin_path.name
+    elif plugin_path.is_file():
+        sys.path.append(str(plugin_path.parent))
+        plugin_name = plugin_path.stem
+    else: 
+        print(plugin_path)
+    mod = import_module(plugin_name)
+    return mod
 
 #load class object
-def load_class(class_name, class_type="component"): 
-    module = import_module("lolpop.%s" %class_type)
+def load_class(class_name, class_type="component", parent="lolpop"): 
+    module = import_module("%s.%s" %(parent, class_type))
     cl = getattr(module, class_name)
     return cl
 
+#load class object from plugins
+def load_class_from_plugin(class_name, plugin_mods, class_type="component"):
+    #try to load from each plugin
+    cl = None 
+    for plugin in plugin_mods: 
+        try: 
+            cl = load_class(class_name, class_type=class_type, parent=plugin)
+            break 
+        except Exception as e: 
+            #if multiple plugins are used, the one we are looking for will not be in most of them, so just ignore any errors
+            continue 
+    return cl
+
 #register component class as an attribute of the provided object
-def register_component_class(self_obj, conf, component_type, default_class_name=None, pipeline_conf = {}, runner_conf = {}, parent_process = "runner", problem_type = None, dependent_components = None): 
+def register_component_class(self_obj, conf, component_type, default_class_name=None, pipeline_conf = {}, runner_conf = {}, parent_process = "runner", problem_type = None, dependent_components = {}, plugin_mods=[]): 
     obj = None
     component_class_name = conf.components.get(component_type, default_class_name)
     if component_class_name is not None:
-        cl = load_class(component_class_name) 
-        obj = cl(conf.get(component_type,{}), pipeline_conf, runner_conf, parent_process = parent_process, problem_type=problem_type, components = dependent_components) 
-        setattr(self_obj, component_type, obj)
+        obj = None
+        try: 
+            cl = load_class(component_class_name) 
+        except: 
+            self_obj.log(
+            	"Unable to find class %s in built-in components. Searching plugins modules in %s..." %(component_class_name, str(plugin_mods)))
+            cl = load_class_from_plugin(component_class_name, plugin_mods)
+            if cl is not None: 
+                self_obj.log("Found class %s in plugins!" % component_class_name)
+            else: 
+                self_obj.log("Unable to find class %s in plugins!" %component_class_name)
+        if cl is not None: 
+            obj = cl(conf.get(component_type,{}), pipeline_conf, runner_conf, parent_process = parent_process, problem_type=problem_type, components = dependent_components) 
+            setattr(self_obj, component_type, obj)
     return obj 
 
 #registers pipeline as an attribute of the provided object
-def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=None, runner_conf = {}, parent_process = "runner", problem_type = None, dependent_components = None): 
+def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=None, runner_conf = {}, parent_process = "runner", problem_type = None, dependent_components = {}, plugin_mods=[]): 
     obj = None 
     pipeline_class_name = conf.pipelines.get(pipeline_type, default_class_name)
     if pipeline_class_name is not None: 
-        cl = load_class(pipeline_class_name, class_type="pipeline")
-        obj = cl(conf.get(pipeline_type,{}), runner_conf, parent_process = parent_process, problem_type = problem_type, components = dependent_components)
-        setattr(self_obj, pipeline_type, obj)
+        try: 
+            cl = load_class(pipeline_class_name, class_type="pipeline")
+        except: 
+            self_obj.log(
+            	"Unable to find pipeline %s in built-in pipelines. Searching plugins..." % pipeline_class_name)
+            cl = load_class_from_plugin(
+            	pipeline_class_name, plugin_mods, class_type="pipeline")
+            self_obj.log(
+            	"Found class %s in plugins!" % pipeline_class_name)
+        obj = None
+        if cl is not None: 
+            obj = cl(conf.get(pipeline_type,{}), runner_conf, parent_process = parent_process, problem_type = problem_type, components = dependent_components, plugin_mods=plugin_mods)
+            setattr(self_obj, pipeline_type, obj)
     return obj
 
 def lower_conf(conf): 
@@ -124,10 +165,10 @@ def validate_conf(config, required_conf, components_objs={}):
                 else: 
                     val_key = val
                     val_value = None
-                if conf.get(k,{}).get(val_key.lower(),None) is None: 
+                if lconf.get(k,{}).get(val_key.lower(),None) is None: 
                     missing_k.append(val) 
                 elif val_value is not None: 
-                    if conf.get(k,{}).get(val_key.lower()) not in val_value: 
+                    if lconf.get(k,{}).get(val_key.lower()) not in val_value: 
                         missing_k.append(val)
             missing[k] = missing_k
         for v in missing.values(): 
@@ -139,7 +180,7 @@ def validate_conf(config, required_conf, components_objs={}):
 def resolve_conf_variables(conf, main_conf=None):
     if main_conf is None: #need to always have the full conf lineage because variables can pont to arbitrary nodes
         main_conf = conf
-    if conf is not None: 
+    if conf is not None and len(conf) > 0: 
         for k,v in conf.items(): 
             if isinstance(v, dictconfig.DictConfig):
                 OmegaConf.update(conf, k, resolve_conf_variables(v, main_conf)) 
@@ -150,6 +191,19 @@ def resolve_conf_variables(conf, main_conf=None):
                     #conf[k] = get_conf_value(v[1:], main_conf)
     return conf
 
+# returns configuration from conf object (file location or python dict)
+def get_conf(conf_obj): 
+    if isinstance(conf_obj, str):
+        conf = OmegaConf.load(conf_obj)
+    elif type(conf_obj) is dict: 
+        conf = OmegaConf.create(conf_obj)
+    elif isinstance(conf_obj, dictconfig.DictConfig):
+        conf = conf_obj
+    else: 
+        raise Exception("Invalid configuration. Configuration must be a file or a a dict.")
+    
+    return conf 
+
 #returns node value in conf specified by var in the form 'node1.node2.node3...'
 def get_conf_value(var, conf): 
     var_arr = var.split(".")
@@ -157,13 +211,36 @@ def get_conf_value(var, conf):
         conf = conf.get(i)
     return conf 
 
+def get_plugin_mods(self_obj, plugin_paths=[], file_path=None):
+    # if no plugin_dir is provided, then try to use the parent directory.
+    # if the parent directory is lolpop, then it is a built-in runner and we can ignore
+    if file_path is not None:
+        #directory should be something like <module_name>/<runner>/<runner_type>/<runner_class>.py
+        plugin_dir = os.path.dirname(os.path.dirname(
+            os.path.dirname(os.path.realpath(file_path))))
+        plugin_paths.append(plugin_dir)
+
+    plugin_paths = [Path(dir) for dir in plugin_paths if dir != "lolpop"]
+
+    #load up all plugin modules
+    plugin_mods = []
+    for dir in plugin_paths:
+        if dir.exists():
+            plugin = load_plugin(dir)
+            if plugin is not None: 
+                plugin_mods.append(plugin.__name__)
+        else:
+            self_obj.log("Plugin path not found: %s" % str(dir))
+    
+    return plugin_mods
+
 def log(obj, msg, level): 
     current_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S.%f")
     msg = "%s [%s] <%s> ::: %s " %(current_time, level, obj.name, msg)
     obj.logger.log(msg, level)
 
 #wraps logging calls around function execution
-def log_execution(level="INFO", start_msg = None, end_msg = None):
+def log_execution(level="DEBUG", start_msg = None, end_msg = None):
     def log_decorator(func):
         @wraps(func)
         def wrapper(obj, *args, **kwargs):
@@ -174,6 +251,7 @@ def log_execution(level="INFO", start_msg = None, end_msg = None):
             if not end: 
                 end = "Finished execution of %s" %(func.__name__)
             obj.log(start, level)
+            obj.log("args: %s, kwargs: %s" %(args, kwargs), "TRACE")
             result = func(obj, *args, **kwargs)
             obj.log(end, level)
             return result
@@ -248,3 +326,16 @@ def get_multiclass(labels):
         classification_type = "multiclass"
 
     return classification_type
+
+
+def create_df_from_file(source_file, engine="pyarrow", **kwargs): 
+    _, source_file_type = str(source_file).split("/")[-1].split(".")
+    data = pd.DataFrame()
+    if source_file_type == "csv":
+        data = pd.read_csv(source_file, engine=engine, **kwargs)
+    elif source_file_type in ["parquet", "pq"]:
+        data = pd.read_parquet(source_file, engine=engine, **kwargs)
+    else:
+        raise Exception("Unsupported file type: %s" % source_file_type)
+    
+    return data

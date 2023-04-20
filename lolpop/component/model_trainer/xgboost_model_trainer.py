@@ -5,6 +5,8 @@ from xgboost import XGBClassifier, XGBRegressor
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class XGBoostModelTrainer(AbstractModelTrainer): 
 
+    mlflow_module = "xgboost"
+
     #should set self.model in init
     def __init__(self, conf, pipeline_conf, runner_conf, params=None, problem_type="classification", *args, **kwargs): 
         #set normal config

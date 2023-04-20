@@ -23,7 +23,9 @@ class AlibiModelExplainer(AbstractModelExplainer):
         explanations = explainer.explain(data)
 
         #generate shap_plots 
-        self._get_shap_plots(explanations.shap_values, explanations.expected_value, data, model._get_model(), label, model_version, classification_type)
+        skip_explainer_plots = self._get_config("skip_explainer_plots", False)
+        if not skip_explainer_plots:
+            self._get_shap_plots(explanations.shap_values, explanations.expected_value, data, model._get_model(), label, model_version, classification_type)
 
         #log feature importance         
         self.metadata_tracker.log_metadata(model_version, id = "%s_global_feature_importance" %label, data = explanations.raw.get("importances").get("aggregated"))
@@ -35,7 +37,7 @@ class AlibiModelExplainer(AbstractModelExplainer):
 
     def get_feature_importance(self, data_dict, model, model_version, *args, **kwargs): 
         #generate train/test datasets
-        (train_X, train_y), (test_X, test_y) = self.data_splitter._get_train_test_dfs(data_dict, combine_xy=False) 
+        (train_X, train_y), (test_X, test_y) = self.data_splitter.get_train_test_dfs(data_dict, combine_xy=False) 
         if self.problem_type == "classification": 
             classification_type = utils.get_multiclass(train_y.unique())
         else: 
