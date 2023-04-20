@@ -17,21 +17,21 @@ class AbstractPipeline:
         #set basic properties like configs
         self.name = type(self).__name__
         conf = utils.get_conf(conf)
-        self.config = conf.get("config", {})
         self.parent_process = parent_process
         self.pipeline_type = pipeline_type
         self.runner_conf = runner_conf
         self.problem_type = problem_type
 
+        #resolve any variables
+        conf = utils.resolve_conf_variables(conf)
+        #merge into default conf
+        omega_conf = utils.copy_config_into(OmegaConf.create(conf), self.__DEFAULT_CONF__)
         #merge pipeline conf into runner conf
-        omega_conf = OmegaConf.create(conf)
-        OmegaConf.update(omega_conf, "config",
-                         utils.copy_config_into(self.config, runner_conf)
-                         )
-
-        #merge into default conf & validate the result
-        conf = utils.copy_config_into(omega_conf, self.__DEFAULT_CONF__)
-        self._validate_conf(omega_conf, components)
+        valid_conf = omega_conf.copy()
+        OmegaConf.update(valid_conf, "config", utils.copy_config_into(valid_conf.get("config", {}), runner_conf))
+        #validate configuration
+        self._validate_conf(valid_conf, components)
+        self.config = omega_conf.get("config", {})
 
         #set up reference to each component that is passed in from runner. 
         for component in components.keys(): 
@@ -44,7 +44,10 @@ class AbstractPipeline:
         if len(plugin_mods) == 0: 
             if len(plugin_paths) == 0:
                 plugin_paths = self._get_config("plugin_paths", [])
-            plugin_mods = utils.get_plugin_mods(self, plugin_paths, self.__file_path__)
+            file_path = None
+            if hasattr(self, "__file_path__"):
+                file_path = self.__file_path__
+            plugin_mods = utils.get_plugin_mods(self, plugin_paths, file_path)
         self.plugin_mods = plugin_mods
 
         #now handle all components explicitly set for pipeline
@@ -65,7 +68,6 @@ class AbstractPipeline:
             obj._update_components(components = pipeline_components)
 
     def _validate_conf(self, conf, components):
-        conf = utils.resolve_conf_variables(conf)
         missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__, components)
         if total_missing > 0: 
             #check to see if missing components are provided by runner via kwargs

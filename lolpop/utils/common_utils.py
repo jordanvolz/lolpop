@@ -14,13 +14,13 @@ from pathlib import Path
 #
 
 #shell command wrapper
-def execute_cmd(cmd):
-	popen = subprocess.Popen([cmd], stdout=subprocess.PIPE, universal_newlines=True, shell=True)
-	output = popen.stdout.read()
-	exit_code = popen.wait()
-	return (output ,exit_code)
+def execute_cmd(cmd, logger=None):
+    if logger: 
+        logger.log("Executing command: `%s`" %(" ".join(cmd)))
+    p = subprocess.run(cmd, stdout=subprocess.PIPE, universal_newlines=True, shell=False)
+    return (p.stdout, p.returncode)
 
-# pulls keys out of config or gets form env variable
+# pulls keys out of config or gets from env variable
 # i.e. either handle secret manager before getting here and pass in 
 # or populate via env vars
 def load_config(config_keys, conf): 
@@ -35,21 +35,30 @@ def load_config(config_keys, conf):
     return config
 
 #comits a single file to git
-def git_commit_file(file_path, repo_path=None, msg="Commiting file from mlops-jumpstart"):
+def git_commit_file(file_path, repo_path=None, msg="Commiting file from lolpop", push=True, logger=None):
     repo = Repo(repo_path)
     repo.index.add(file_path)
     hexsha = repo.index.commit(msg).hexsha
 
-    origin = repo.remotes[0]
-    origin.push
+    if push: 
+        origin = repo.remotes[0]
+        result = origin.push()
+        if logger: 
+            logger.log("Committed and pushed file %s. Result: %s" %(file_path, result[0].summary))
 
     return hexsha
 
 def load_plugin(plugin_path): 
-    sys.path.append(str(plugin_path))
-    plugin_name = plugin_path.name
+    if plugin_path.is_dir(): 
+        sys.path.append(str(plugin_path))
+        plugin_name = plugin_path.name
+    elif plugin_path.is_file():
+        sys.path.append(str(plugin_path.parent))
+        plugin_name = plugin_path.stem
+    else: 
+        print(plugin_path)
     mod = import_module(plugin_name)
-    return mod.__name__
+    return mod
 
 #load class object
 def load_class(class_name, class_type="component", parent="lolpop"): 
@@ -66,6 +75,7 @@ def load_class_from_plugin(class_name, plugin_mods, class_type="component"):
             cl = load_class(class_name, class_type=class_type, parent=plugin)
             break 
         except Exception as e: 
+            #if multiple plugins are used, the one we are looking for will not be in most of them, so just ignore any errors
             continue 
     return cl
 
@@ -79,10 +89,12 @@ def register_component_class(self_obj, conf, component_type, default_class_name=
             cl = load_class(component_class_name) 
         except: 
             self_obj.log(
-            	"Unable to find class %s in built-in components. Searching plugins..." %component_class_name)
+            	"Unable to find class %s in built-in components. Searching plugins modules in %s..." %(component_class_name, str(plugin_mods)))
             cl = load_class_from_plugin(component_class_name, plugin_mods)
-            self_obj.log(
-            	"Found class %s in plugins!" %component_class_name) 
+            if cl is not None: 
+                self_obj.log("Found class %s in plugins!" % component_class_name)
+            else: 
+                self_obj.log("Unable to find class %s in plugins!" %component_class_name)
         if cl is not None: 
             obj = cl(conf.get(component_type,{}), pipeline_conf, runner_conf, parent_process = parent_process, problem_type=problem_type, components = dependent_components) 
             setattr(self_obj, component_type, obj)
@@ -153,10 +165,10 @@ def validate_conf(config, required_conf, components_objs={}):
                 else: 
                     val_key = val
                     val_value = None
-                if conf.get(k,{}).get(val_key.lower(),None) is None: 
+                if lconf.get(k,{}).get(val_key.lower(),None) is None: 
                     missing_k.append(val) 
                 elif val_value is not None: 
-                    if conf.get(k,{}).get(val_key.lower()) not in val_value: 
+                    if lconf.get(k,{}).get(val_key.lower()) not in val_value: 
                         missing_k.append(val)
             missing[k] = missing_k
         for v in missing.values(): 
@@ -168,7 +180,7 @@ def validate_conf(config, required_conf, components_objs={}):
 def resolve_conf_variables(conf, main_conf=None):
     if main_conf is None: #need to always have the full conf lineage because variables can pont to arbitrary nodes
         main_conf = conf
-    if conf is not None: 
+    if conf is not None and len(conf) > 0: 
         for k,v in conf.items(): 
             if isinstance(v, dictconfig.DictConfig):
                 OmegaConf.update(conf, k, resolve_conf_variables(v, main_conf)) 
@@ -181,10 +193,12 @@ def resolve_conf_variables(conf, main_conf=None):
 
 # returns configuration from conf object (file location or python dict)
 def get_conf(conf_obj): 
-    if type(conf_obj) is str: 
+    if isinstance(conf_obj, str):
         conf = OmegaConf.load(conf_obj)
     elif type(conf_obj) is dict: 
         conf = OmegaConf.create(conf_obj)
+    elif isinstance(conf_obj, dictconfig.DictConfig):
+        conf = conf_obj
     else: 
         raise Exception("Invalid configuration. Configuration must be a file or a a dict.")
     
@@ -197,23 +211,24 @@ def get_conf_value(var, conf):
         conf = conf.get(i)
     return conf 
 
-def get_plugin_mods(self_obj, plugin_paths, file_path):
+def get_plugin_mods(self_obj, plugin_paths=[], file_path=None):
     # if no plugin_dir is provided, then try to use the parent directory.
     # if the parent directory is lolpop, then it is a built-in runner and we can ignore
-    if len(plugin_paths) == 0:
+    if file_path is not None:
         #directory should be something like <module_name>/<runner>/<runner_type>/<runner_class>.py
         plugin_dir = os.path.dirname(os.path.dirname(
             os.path.dirname(os.path.realpath(file_path))))
-        if plugin_dir != "lolpop":
-            plugin_paths = [Path(plugin_dir)]
-    else:
-        plugin_paths = [Path(dir) for dir in plugin_paths]
+        plugin_paths.append(plugin_dir)
+
+    plugin_paths = [Path(dir) for dir in plugin_paths if dir != "lolpop"]
 
     #load up all plugin modules
     plugin_mods = []
     for dir in plugin_paths:
         if dir.exists():
-            plugin_mods.append(load_plugin(dir))
+            plugin = load_plugin(dir)
+            if plugin is not None: 
+                plugin_mods.append(plugin.__name__)
         else:
             self_obj.log("Plugin path not found: %s" % str(dir))
     
@@ -225,7 +240,7 @@ def log(obj, msg, level):
     obj.logger.log(msg, level)
 
 #wraps logging calls around function execution
-def log_execution(level="INFO", start_msg = None, end_msg = None):
+def log_execution(level="DEBUG", start_msg = None, end_msg = None):
     def log_decorator(func):
         @wraps(func)
         def wrapper(obj, *args, **kwargs):
@@ -236,6 +251,7 @@ def log_execution(level="INFO", start_msg = None, end_msg = None):
             if not end: 
                 end = "Finished execution of %s" %(func.__name__)
             obj.log(start, level)
+            obj.log("args: %s, kwargs: %s" %(args, kwargs), "TRACE")
             result = func(obj, *args, **kwargs)
             obj.log(end, level)
             return result

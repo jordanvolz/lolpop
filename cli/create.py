@@ -24,7 +24,7 @@ def component(
     component_class: str = typer.Argument(..., help="Component class name (Should be snake_case)."),
     template_path: str = typer.Argument(
         lolpop_template_path + "/component_template", help="Path to the template file. Or a git url of a template file."),
-    component_dir: Path = typer.Option(os.getcwd() + "/src/component",
+    component_dir: Path = typer.Option(os.getcwd() + "/extension/component",
                                        help="Parent directory for the new component."),
 ): 
     create_template("component", component_type,
@@ -38,7 +38,7 @@ def pipeline(
         ..., help="Pipeline class name (Should be snake_case)."),
     template_path: str = typer.Argument(
         lolpop_template_path + "/pipeline_template", help="Path to the template file. Or a git url of a template file."),
-    pipeline_dir: Path = typer.Option(os.getcwd() + "/src/pipeline",
+    pipeline_dir: Path = typer.Option(os.getcwd() + "/extention/pipeline",
                                        help="Parent directory for the new pipeline."),
 ): 
     create_template("pipeline", pipeline_type,
@@ -51,7 +51,7 @@ def runner(
     runner_class: str = typer.Argument(..., help="Component class name (Should be snake_case)."),
     template_path: str = typer.Argument(
         lolpop_template_path + "/runner_template", help="Path to the template file. Or a git url of a template file."),
-    runner_dir: Path = typer.Option(os.getcwd() + "/src/runner",
+    runner_dir: Path = typer.Option(os.getcwd() + "/extension/runner",
                                        help="Parent directory for the new component."),
 ): 
     create_template("runner", runner_type,

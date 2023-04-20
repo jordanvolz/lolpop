@@ -1,32 +1,37 @@
 # lolpop
-A software engineering framework forto jumpstart your MLOps projects
+A software engineering framework to jumpstart your Machine Learning projects
 
 ## install 
 
 Install lolpop by cd'ing to the this directory and executing: 
 
 ```
+poetry install 
 pip install -e .
 ``` 
 
+Note: getting the poetry install to work has been difficult, due to some of conflicts among packages (I think primarly `dbt`. If you're having issues getting it to work, feel free to try removing things that are troublesome and/or moving it into a requirements.txt file and installing via `pip`)
+
 ## running 
 
-Try out the classification example in `examples`. To run it, simply execute
+Try out the classification example in `examples/classification/mlflow`. To run it, simply execute
 
 ```
-python examples/classification/mlrunner.py 
+python3 examples/classification/mlflow/mlrunner.py 
 ```
-Note: You'll want to update `examples/classification/main_local.yaml` with your own snowflake & dbt config. 
+Note: You'll want to update `examples/classification/mlflow/local_dev.yaml` with your own configuration. In particular, update the mlflow configuration. You also need to download the `test.csv` and `train.csv` files 
+from [Kaggle](https://www.kaggle.com/competitions/petfinder-adoption-prediction/data) and update your conf to point to their locations. 
 
+You'll probably hit a few errors in trying to run the first time. Let me know what they are. 
 ## contributing 
 
 If you're interested in contributing, there is a basic CLI tool that can boostrap a new runner/pipeline/component for you. 
 To use, simply execute: 
 
 ```
-python cli/cli.py create component <component_type> <componenet_class>
+python3 cli/cli.py create component/pipeline/runner <component_type> <componenet_class>
 ```
 
-Component type should be one of component, pipeline, or runner. This will create a new component type in the specified directory in lolpop.  
-
+Component type should be something like metadata_tracker, metrics_tracker, model_trainer, etc, and component class is the name of the class. This will create a new component type in the specified directory in lolpop.  
+This will boostrap a cookiecutter project in the provided `--component-dir` which you can then edit as desired. 
 

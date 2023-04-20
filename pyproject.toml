@@ -41,7 +41,7 @@ alibi = {version = "0.8.0", extras = ["shap"]}
 yellowbrick="1.4"
 aif360="0.5.0"
 #aif360[all] #fails if R is not installed
-continual="^2.0.0a34"
+continual="^2.0.0a51"
 ydata-profiling="4.0.0"
 snowflake-sqlalchemy="1.4.6"
 tqdm="4.64.1"

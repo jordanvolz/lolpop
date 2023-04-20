@@ -14,7 +14,7 @@ class Base{{cookiecutter.RunnerType}}(BaseRunner):
 
     def __init__(self, conf, **kwargs):
         #set normal config
-        self.__file_path == __file__
+        self.__file_path__ == __file__
         super().__init__(conf, **kwargs)
         #Add any additional class initialization code here.
 

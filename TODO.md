@@ -2,11 +2,13 @@
 --> change src --> lolpop -- DONE 
 --> docstrings -- IN PROGRESS
 --> pre-commit hook for python formatting
-00. pipeline extensibility
+00. mlflow integration -- DONE
+000. pipeline extensibility
 00.1 i.e. using metaflow as pipeline instead of default pipelines
 1. CLI
 1.1. runner/pipeline/component templates -- DONE
-1.2 Project templates 
+1.2 Project templates -- DONE
+1.3 Need to think more about custom runner/pipeline/component packaging/installation. Might be good to have lolpop/adapters/<component/pipeline/runner> and then in lolpop/<component/pipeline/runner> we add that to the dir/path. This would then give a bath for people to build then our and install from binary into site-packages/lolpop. 
 2. packaging strategy/setup.py/requirements.txts
 --> poetry setup -- DONE 
 --> try to use extras_require to pull in individual requirements.txt from components?
@@ -45,8 +47,9 @@ i.e. do we need an 'operator' concept?
 14. Data synthesizer + data seeding for better local experience -- DONE 
 15. Notebook to lolpop component conversions
 16. ChatGPT to write documentation of your workflow. And maybe docstrings/unit tests/etc?
+17. visual dag of workflows/dependencies (networkx?) --> gets more into governance stuff
 XX. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc
-
+--> would be good to map the concepts between metadata stores as well
 
 To build, MVP: 
 1. 1 Additional Pipeline Extension (MetaFlow? mlflow?)

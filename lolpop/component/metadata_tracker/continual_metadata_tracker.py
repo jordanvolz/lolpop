@@ -193,6 +193,9 @@ class ContinualMetadataTracker(BaseMetadataTracker):
             setattr(resource,k,v)
         resource.update(paths=value_dict.keys())
 
+    def clean_resource(self, resource, type): 
+        pass 
+
     def get_prev_resource_version(self, resource_version): 
         previous_resource_version = None
         name_arr = resource_version.name.split("/")

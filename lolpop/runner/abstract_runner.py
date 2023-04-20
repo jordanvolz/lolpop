@@ -29,7 +29,10 @@ class AbstractRunner:
         #handle plugins
         if len(plugin_paths) == 0: 
             plugin_paths=conf.get("plugin_paths",[])
-        plugin_mods = utils.get_plugin_mods(self, plugin_paths, self.__file_path__)
+        file_path = None
+        if hasattr(self, "__file_path__"): 
+            file_path = self.__file_path__
+        plugin_mods = utils.get_plugin_mods(self, plugin_paths, file_path)
         self.plugin_mods = plugin_mods
 
         #config defines all pipelines in `pipelines`
@@ -69,7 +72,7 @@ class AbstractRunner:
             self.log("Loaded class %s into component %s" %(type(self.metadata_tracker).__name__, "metadata_tracker"))
         else: 
             #for local dev you may turn off metadata_tracker, so let's not strictly enforce that it exists for now
-            self.log("Unable to load metadata_tracker component. Lolpop will try to proceed but this is likely an error.")
+            raise Exception("Unable to load metadata_tracker component.")
 
         #build all other components
         for component in conf.components.keys(): 
@@ -81,7 +84,7 @@ class AbstractRunner:
                     self.log("Loaded class %s into component %s" %(type(getattr(self, component)).__name__, component))
                     runner_components[component] = obj
                 else: 
-                    self.log("Unable to load class for component %s" %component)
+                    raise Exception("Unable to load class for component %s" %component)
 
         #now that all component classes are built, we want to update all components so that they know about each other. 
         # there is probably a more elegant way to do this

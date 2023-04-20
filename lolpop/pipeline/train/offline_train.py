@@ -57,24 +57,30 @@ class OfflineTrain(AbstractTrain):
         self.model_checker.get_baseline_comparison(data_dict, model, model_version)
 
         #create some eye candy
-        self.model_visualizer.generate_viz(data_dict, model, model_version)
+        self.model_visualizer.generate_viz(data_dict, model._get_model(), model_version)
 
 
     def compare_models(self, data_dict, model, model_version): 
         #get currently deployed model version/previous model version and winning experiment
         prev_model_version = self.metadata_tracker.get_currently_deployed_model_version(model_version)
-        prev_experiment = self.metadata_tracker.get_winning_experiment(prev_model_version)
 
-        #get the prev model version object from resource version control and load it into a model trainer
-        prev_model_obj = self.resource_version_control.get_model(prev_experiment, key = "model_artifact")
-        prev_model = self.load_model(prev_model_obj, prev_model_version, model)
+        if prev_model_version is not None: 
+            prev_experiment = self.metadata_tracker.get_winning_experiment(prev_model_version)
 
-        #compare model to the last version 
-        report, file_path = self.model_checker.calculate_model_drift(data_dict, model, prev_model)
-        self.metadata_tracker.log_artifact(model_version, id="model_drift_report", path = file_path, external = False)
-        is_new_model_better = self.model_checker.compare_models(data_dict, model, prev_model, model_version, prev_model_version)
+            #get the prev model version object from resource version control and load it into a model trainer
+            prev_model_obj = self.resource_version_control.get_model(prev_experiment)
+            prev_model = self.metadata_tracker.load_model(prev_model_obj, model_version, model)
+
+            #compare model to the last version 
+            report, file_path = self.model_checker.calculate_model_drift(data_dict, model, prev_model)
+            self.metadata_tracker.log_artifact(model_version, id="model_drift_report", path = file_path, external = False)
+            is_new_model_better = self.model_checker.compare_models(data_dict, model, prev_model, model_version, prev_model_version)
+            
+            return is_new_model_better 
         
-        return is_new_model_better 
+        else: 
+            self.log("No previous model version found for model: %s" %self.metadata_tracker.get_resource_if(model_version))
+            return True 
 
     def check_model_bias(self, data_dict, model, model_version):
         #check model bias
@@ -85,6 +91,6 @@ class OfflineTrain(AbstractTrain):
             model, experiment = self.model_trainer.rebuild_model(data, model_version)
         else: 
             #if no model_trainer is specified in config, we can rebuild using the winning_exp_model_trainer
-            winning_exp_model = self.load_model(None, model_version, ref_model=ref_model)
+            winning_exp_model = self.metadata_tracker.load_model(None, model_version, ref_model=ref_model)
             model, experiment = winning_exp_model.rebuild_model(data, model_version)
             return model, experiment

@@ -61,7 +61,8 @@ def initialize(
         cookiecutter(template=template_path,
                     extra_context={"project_name": project_name},
                     output_dir=project_path, no_input=True)
-        typer.secho("Successfully created lolpop project %s at location %s" %(project_name, project_path), fg="green")
+        typer.secho("Successfully created lolpop project %s at location %s/%s" %
+                    (project_name, project_path, project_name), fg="green")
     except Exception as e: 
         typer.secho("Failed to create template for %s %s: %s" %(template_type, object_class, str(e)), fg="red") 
 

@@ -25,7 +25,8 @@ class OptunaHyperparameterTuner(AbstractHyperparameterTuner):
         for algo in training_params: 
             #need to create study w/ sampler so that the results are reproducible later on
             sampler = optuna.samplers.TPESampler(seed=42) 
-            study = optuna.create_study(direction=direction, sampler=sampler)
+            study_name = self.metadata_tracker.get_resource_id(model_version)
+            study = optuna.create_study(direction=direction, sampler=sampler, study_name=study_name)
             if param_type == "fixed":
                 grid = self._build_training_grid(training_params[algo])
                 #enqueue all fixed params
@@ -47,7 +48,7 @@ class OptunaHyperparameterTuner(AbstractHyperparameterTuner):
 
         #save data splits
         for k,v in data.items(): 
-            vc_info = self.resource_version_control.version_data(model_version, v, key=k, file_suffix=k)
+            vc_info = self.resource_version_control.version_data(model_version, v, key=k)
             self.metadata_tracker.register_vc_resource(model_version, vc_info, key=k, file_type="csv")
 
         #now, we determine overall best experiment and save into model_version
@@ -58,8 +59,8 @@ class OptunaHyperparameterTuner(AbstractHyperparameterTuner):
 
         #log important stuff to model version
         self.metrics_tracker.copy_metrics(winning_exp, model_version)
-        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_id", data={"winning_experiment_id" : winning_exp_id})
-        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_model_trainer", data={"winning_experiment_model_trainer" : winning_exp_model_trainer})
+        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_id", data=winning_exp_id)
+        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_model_trainer", data=winning_exp_model_trainer)
       
         return best_model
 
@@ -90,6 +91,9 @@ class OptunaHyperparameterTuner(AbstractHyperparameterTuner):
         experiment_list[experiment_id] = perf_metric_value
         model_list[experiment_id] = model
         
+        #clean up resource
+        self.metadata_tracker.clean_resource(experiment, type="experiment")
+
         #objective function needs to return perf value for so optuna can do comparison
         return perf_metric_value
 
@@ -123,7 +127,7 @@ class OptunaHyperparameterTuner(AbstractHyperparameterTuner):
 
     def _log_trial(self, trial, model_params, model, experiment, algo):
         #log params + trainer
-        self.metadata_tracker.log_metadata(experiment, id="optuna_trial_number", data={"optuna_trial_number": trial.number})
+        self.metadata_tracker.log_metadata(experiment, id="optuna_trial_number", data=trial.number)
         self.metadata_tracker.update_resource(experiment, {"start_time": trial.datetime_start, "end_time":datetime.utcnow()})
         
         #save model
@@ -135,30 +139,35 @@ class OptunaHyperparameterTuner(AbstractHyperparameterTuner):
     def _log_study(self, study, model_version, algo): 
         if optuna.visualization.is_available(): 
             plot = optuna.visualization.plot_edf(study)
-            self._save_plot("plot_edf.html",plot, model_version,algo)
+            self._save_plot("optuna_plot_edf.html",plot, model_version,algo)
 
             #only useful if using intermediate values and pruning
             #plot = optuna.visualization.plot_intermediate_values(study)
-            #self._save_plot("plot_intermediate_values.html",plot, model_version,algo)
+            #self._save_plot("optuna_plot_intermediate_values.html",plot, model_version,algo)
 
             plot = optuna.visualization.plot_optimization_history(study)
-            self._save_plot("plot_optimization_history.html",plot, model_version,algo)
+            self._save_plot("optuna_plot_optimization_history.html",
+                            plot, model_version, algo)
 
             plot = optuna.visualization.plot_parallel_coordinate(study)
-            self._save_plot("plot_parallel_coordinate.html",plot, model_version,algo)
+            self._save_plot("optuna_plot_parallel_coordinate.html",
+                            plot, model_version, algo)
 
             plot = optuna.visualization.plot_param_importances(study)
-            self._save_plot("plot_param_importances.html",plot, model_version,algo)
+            self._save_plot("optuna_plot_param_importances.html",
+                            plot, model_version, algo)
 
             #only used for multi-objective studies
             #optuna.visualization.plot_pareto_front(study)
-            #self._save_plot("plot_pareto_front.html",plot, model_version,algo)
+            #self._save_plot("optuna_plot_pareto_front.html",plot, model_version,algo)
 
             plot = optuna.visualization.plot_slice(study)
-            self._save_plot("plot_slice.html",plot, model_version,algo)
+            self._save_plot("optuna_plot_slice.html",
+                            plot, model_version, algo)
 
             plot = optuna.visualization.plot_contour(study)
-            self._save_plot("plot_contour.html",plot, model_version,algo)
+            self._save_plot("optuna_plot_contour.html",
+                            plot, model_version, algo)
     
     #saves plot 
     def _save_plot(self, name, plot, model_version, algo): 

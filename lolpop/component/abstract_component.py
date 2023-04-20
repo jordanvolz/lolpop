@@ -15,25 +15,28 @@ class AbstractComponent:
         #set basic properties, like name and configs
         self.name = type(self).__name__
         config = utils.get_conf(config)
-        self.config = config.get("config", {})
         self.pipeline_conf = pipeline_conf
         self.runner_conf = runner_conf
         self.parent_process = parent_process
         self.problem_type = problem_type
 
-        # update config.config with runner and pipeline config. 
+        #resolve variables
+        confif = utils.resolve_conf_variables(config)
+        # copy config into the default config
+        omega_conf = utils.copy_config_into(OmegaConf.create(config), self.__DEFAULT_CONF__)
+        # set config. This ensures that we pick up any default config as well
+        valid_conf = omega_conf.copy()
+        # update config.config with runner and pipeline config.
         # Needs to be done in this order to keep config precedence
-        omega_conf = OmegaConf.create(config)
-        OmegaConf.update(omega_conf, "config", 
-                         utils.copy_config_into(self.config, 
+        OmegaConf.update(valid_conf, "config",
+                         utils.copy_config_into(valid_conf.get("config", {}),
                                                 utils.copy_config_into(pipeline_conf, runner_conf)
                                                 )
                         )
-           # copy config into the default config
-        config = utils.copy_config_into(omega_conf, self.__DEFAULT_CONF__)
-        
+
         #Now we validate config to make sure the component has everything it needs
-        self._validate_conf(omega_conf, components)
+        self._validate_conf(valid_conf, components)
+        self.config = omega_conf.get("config", {})
 
         #if the config looks good, then we can set all our components 
         for component in components.keys(): 
@@ -44,7 +47,6 @@ class AbstractComponent:
             setattr(self, component, components.get(component))
 
     def _validate_conf(self, conf, components):
-        conf = utils.resolve_conf_variables(conf)
         missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__, components)
         if total_missing>0: 
             #check to see if missing components are provided by runner
