@@ -79,7 +79,7 @@ class OfflineTrain(AbstractTrain):
             return is_new_model_better 
         
         else: 
-            self.log("No previous model version found for model: %s" %self.metadata_tracker.get_resource_if(model_version))
+            self.log("No previous model version found for model: %s" %self.metadata_tracker.get_resource_id(model_version))
             return True 
 
     def check_model_bias(self, data_dict, model, model_version):
