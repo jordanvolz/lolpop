@@ -21,7 +21,7 @@ class AbstractComponent:
         self.problem_type = problem_type
 
         #resolve variables
-        confif = utils.resolve_conf_variables(config)
+        config = utils.resolve_conf_variables(config)
         # copy config into the default config
         omega_conf = utils.copy_config_into(OmegaConf.create(config), self.__DEFAULT_CONF__)
         # set config. This ensures that we pick up any default config as well
@@ -76,3 +76,7 @@ class AbstractComponent:
             if not value: 
                 value = utils.lower_conf(self.runner_conf).get(key, default_value)
         return value
+
+    def _set_config(self, key, value): 
+        key = key.lower()
+        self.config[key]=value

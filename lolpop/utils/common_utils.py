@@ -48,16 +48,31 @@ def git_commit_file(file_path, repo_path=None, msg="Commiting file from lolpop",
 
     return hexsha
 
-def load_plugin(plugin_path): 
+def load_plugins(plugin_paths=[]):
+    plugins = []
+    for dir in plugin_paths:
+        if dir.exists():
+            plugin = load_plugin(dir)
+            plugins.append(plugin)
+    return plugins
+
+def load_plugin(plugin_path, obj=None): 
     if plugin_path.is_dir(): 
-        sys.path.append(str(plugin_path))
+        plugin_dir = str(plugin_path)
         plugin_name = plugin_path.name
     elif plugin_path.is_file():
-        sys.path.append(str(plugin_path.parent))
+        plugin_dir = str(plugin_path.parent)
         plugin_name = plugin_path.stem
     else: 
-        print(plugin_path)
-    mod = import_module(plugin_name)
+        raise Exception("Invalid plugin path: %s. Path is not a file nor a directory." %plugin_path)
+    if plugin_dir: 
+        sys.path.append(plugin_dir)
+    if plugin_name: 
+        mod = import_module(plugin_name)
+    if obj: 
+        plugin_paths = obj._get_config("plugin_paths",[]) 
+        plugin_paths.append(plugin_dir)
+        obj._set_config("plugin_paths", plugin_paths)
     return mod
 
 #load class object
@@ -223,16 +238,29 @@ def get_plugin_mods(self_obj, plugin_paths=[], file_path=None):
     plugin_paths = [Path(dir) for dir in plugin_paths if dir != "lolpop"]
 
     #load up all plugin modules
+    plugins = load_plugins(plugin_paths)
     plugin_mods = []
-    for dir in plugin_paths:
-        if dir.exists():
-            plugin = load_plugin(dir)
-            if plugin is not None: 
-                plugin_mods.append(plugin.__name__)
-        else:
-            self_obj.log("Plugin path not found: %s" % str(dir))
+    for plugin in plugins: 
+        if plugin is not None: 
+            plugin_mods.append(plugin.__name__)
     
     return plugin_mods
+
+#for a given lolpop object, get all plugin paths in children
+def get_all_plugin_paths(obj):
+    children = [x for x in dir(obj) if not x.startswith("_")]
+    plugin_paths=[]
+
+    for child in children: 
+        child_obj = getattr(obj, child)
+        if hasattr(child_obj, "_get_config"): 
+            paths = child_obj._get_config("plugin_paths", None)
+            if paths is not None: 
+                plugin_paths = plugin_paths + paths
+    
+    plugin_paths = [Path(path) for path in set(plugin_paths)]
+
+    return plugin_paths
 
 def log(obj, msg, level): 
     current_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S.%f")

@@ -2,6 +2,8 @@
 --> change src --> lolpop -- DONE 
 --> docstrings -- IN PROGRESS
 --> pre-commit hook for python formatting
+--> change all __init__ calls to use keyword args only. This allows for easier inheritance and multiple inheritence as other
+classes can super().__init__ and just pass all **kwargs
 00. mlflow integration -- DONE
 000. pipeline extensibility
 00.1 i.e. using metaflow as pipeline instead of default pipelines
@@ -46,6 +48,7 @@ i.e. do we need an 'operator' concept?
 --> also suppress import messaging when loading lolpop
 14. Data synthesizer + data seeding for better local experience -- DONE 
 15. Notebook to lolpop component conversions
+    --> some interesting tools in this space. see for example: https://github.com/kubeflow-kale/kale
 16. ChatGPT to write documentation of your workflow. And maybe docstrings/unit tests/etc?
 17. visual dag of workflows/dependencies (networkx?) --> gets more into governance stuff
 XX. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc
@@ -53,7 +56,8 @@ XX. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, 
 
 To build, MVP: 
 1. 1 Additional Pipeline Extension (MetaFlow? mlflow?)
-2. 1 Additional Metadata Tracker Extension (MLFlow? w&b)
+2. 1 Additional Metadata Tracker Extension (MLFlow? w&b) 
+    -- MLFlow DONE
 3. 2 Additional Data Integrations: (bigquery/redshift/s3/gcs/databricks)
 4. 2 Additional Use Case Examples: (Regression/Classification/Recommender/NLP)
 5. Testing Framework
