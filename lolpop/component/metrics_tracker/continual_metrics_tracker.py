@@ -92,7 +92,7 @@ class ContinualMetricsTracker(BaseMetricsTracker):
             #create new metric for each metric
             new_metric = self.create_metric(to_resource,id=old_metric.id, display_name=old_metric.display_name)
             #iterate through all metric vaules in old_metric. These will have type MetricValue
-            for value in old_metric.values: 
+            for value in old_metric.values(): 
                 #log a new value for each MetricValue
                 new_metric.log( 
                     value = value.value, 

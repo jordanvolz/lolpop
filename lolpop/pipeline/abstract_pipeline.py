@@ -94,3 +94,7 @@ class AbstractPipeline:
         if not value: 
             value = utils.lower_conf(self.runner_conf).get(key, default_value)
         return value 
+
+    def _set_config(self, key, value): 
+        key = key.lower()
+        self.config[key]=value

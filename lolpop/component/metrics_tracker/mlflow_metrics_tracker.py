@@ -4,8 +4,11 @@ from lolpop.utils import common_utils as utils
 from lolpop.component.metadata_tracker.mlflow_metadata_tracker import MLFlowMetadataTracker
 from lolpop.utils import mlflow_utils
 import json 
+import mlflow
 
-@utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
+@utils.decorate_all_methods([utils.error_handler, 
+                             utils.log_execution(), 
+                             mlflow_utils.check_active_mlflow_run(mlflow)])
 class MLFlowMetricsTracker(BaseMetricsTracker):
     #Override required or default configurations here for your class
     ##Add required configuration here

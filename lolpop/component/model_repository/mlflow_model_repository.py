@@ -5,7 +5,10 @@ from lolpop.component.metadata_tracker.mlflow_metadata_tracker import MLFlowMeta
 from lolpop.utils import mlflow_utils
 import mlflow
 
-@utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
+
+@utils.decorate_all_methods([utils.error_handler, 
+                             utils.log_execution(), 
+                             mlflow_utils.check_active_mlflow_run(mlflow)])
 class MLFlowModelRepository(AbstractModelRepository):
     __REQUIRED_CONF__ = {
         "components": ["metadata_tracker|MLFlowMetadataTracker"],
@@ -32,7 +35,6 @@ class MLFlowModelRepository(AbstractModelRepository):
 
             self.log("Using MLFlow in experiment %s with run id: %s" %(experiment_name, self.run.info.run_id), level="INFO")
 
-
     def register_model(self, model_version, model, *args, **kwargs):
         # Log the sklearn model and register as version 1
         model_module = getattr(mlflow, model.mlflow_module.lower()) 
@@ -40,7 +42,7 @@ class MLFlowModelRepository(AbstractModelRepository):
         model_id = self.metadata_tracker.get_resource_id(model_version)
         reg_name = model_id + "_reg"
 
-        #note: if model is already register, this will simply bump up the verison number
+        #note: if model is already registered, this will simply bump up the verison number
         model_module.log_model(model._get_model(), 
                                artifact_path = "%s_model" %model_id, 
                                registered_model_name=reg_name,

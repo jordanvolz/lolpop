@@ -21,7 +21,7 @@ class LocalDataTransformer(BaseDataTransformer):
         transformer_func = self._get_config("transformer_func", "transform")
         
         if transformer_path.exists(): 
-            transformer = utils.load_plugin(transformer_path)
+            transformer = utils.load_plugin(transformer_path, self)
 
             self._transform = getattr(transformer, transformer_func)
         else: 

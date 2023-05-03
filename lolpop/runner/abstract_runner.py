@@ -121,3 +121,6 @@ class AbstractRunner:
         value = utils.lower_conf(self.config).get(key, None)
         return value
         
+    def _set_config(self, key, value): 
+        key = key.lower()
+        self.config[key]=value

@@ -1,6 +1,7 @@
 #runner config
 pipelines: 
-  process: OfflineProcess 
+  wrapper: MetaflowPipelineWrapper
+  process: OfflineProcess
   train: OfflineTrain
   deploy: OfflineDeploy
   predict: OfflinePredict
@@ -20,6 +21,11 @@ config:
   local_dir: /tmp/artifacts/
 
 #pipelines config
+wrapper: 
+  config: 
+    metaflow_script: /Users/jordanvolz/Downloads/mlflow_int/scripts/example_metaflow.py
+    flow_id: LinearFlow
+
 process: 
   components: 
     data_transformer: LocalDataTransformer

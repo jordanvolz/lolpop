@@ -1,16 +1,16 @@
 from lolpop.component.metadata_tracker.base_metadata_tracker import BaseMetadataTracker
 from lolpop.utils import common_utils as utils
+from lolpop.utils import mlflow_utils
 #import your libraries here
 import mlflow
 from mlflow.tracking import MlflowClient as client
 from pathlib import Path
-import json 
-
-from lolpop.utils import mlflow_utils
 
 
 
-@utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
+@utils.decorate_all_methods([utils.error_handler, 
+                             utils.log_execution(), 
+                             mlflow_utils.check_active_mlflow_run(mlflow)])
 class MLFlowMetadataTracker(BaseMetadataTracker):
     #Override required or default configurations here for your class
     ##Add required configuration here
@@ -72,7 +72,6 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
 
 
     def get_metadata(self, resource, id, *args, **kwargs):
-        run = mlflow_utils.get_run(self.client, resource[1].info.run_id)
         value = self.get_tag(resource, id)
         return value
 

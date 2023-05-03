@@ -1,9 +1,9 @@
 #runner config
 pipelines: 
-  process: OfflineProcess 
-  train: OfflineTrain
-  deploy: OfflineDeploy
-  predict: OfflinePredict
+  process: MetaflowOfflineProcess 
+  train: MetaflowOfflineTrain
+  deploy: MetaflowOfflineDeploy
+  predict: MetaflowOfflinePredict
 components: 
   metadata_tracker: MLFlowMetadataTracker
   metrics_tracker: MLFlowMetricsTracker
