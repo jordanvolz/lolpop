@@ -15,21 +15,12 @@ class MetaflowClassificationRunner(AbstractRunner):
         super().__init__(conf, problem_type="classification", *args, **kwargs)
 
     def process_data(self, source_data = "train"):
-        #run data transformations and encodings
+        #run the metaflow process pipeline
         source_data_name = self._get_config("%s_data" % source_data)
-        data = self.process.transform_data(source_data_name)  # maybe better called get_training_data?
+        self.process.run(source_data_name)
 
-        #track & version data
-        dataset_version = self.process.track_data(data, source_data_name)
-
-        #profile data
-        self.process.profile_data(data, dataset_version)
-
-        #run data checks
-        self.process.check_data(data, dataset_version)
-
-        #run data comparison/drift
-        self.process.compare_data(data, dataset_version)
+        #retrieve artifacts from metaflow pipeline
+        data, dataset_version = self.process.get_artifacts(["data", "dataset_version"])
 
         #return data
         return data, dataset_version
@@ -45,47 +36,22 @@ class MetaflowClassificationRunner(AbstractRunner):
                     "No data provided. Can't train a model", level="ERROR")
                 raise Exception("No data provided. Can't train a model.")
 
-        #split data
-        data_dict = self.train.split_data(data)
+        #run the metaflow train pipeline
+        self.train.run(data)
 
-        #train a model
-        model, model_version = self.train.train_model(data_dict)
-
-        #analyze the model
-        self.train.analyze_model(data_dict, model, model_version)
-
-        #run model checks
-        self.train.check_model(data_dict, model, model_version)
-
-        #run bias checks
-        self.train.check_model_bias(data_dict, model, model_version)
-
-        #build lineage
-        self.metadata_tracker.build_model_lineage(
-            model_version, self.process.datasets_used)
-
-        #run comparison to previous model verison
-        is_new_model_better = self.train.compare_models(
-            data_dict, model, model_version)
-
-        #if new model is better, retrain on all data if specified
-        if is_new_model_better:
-            if self.train._get_config("retrain_all"):
-                model, experiment = self.train.retrain_model_on_all_data(
-                    data_dict, model_version, ref_model=model)
+        #retrieve artifacts from metaflow pipeline
+        model_version, model, is_new_model_better = self.train.get_artifacts(
+            ["model_version", "model", "is_new_model_better"])
 
         return model_version, model, is_new_model_better
 
     def deploy_model(self, model_version, model):
-        #promote model
-        promotion = self.deploy.promote_model(model_version, model)
+        #run the metaflow deploy pipeline
+        self.deploy.run(model, model_version)
 
-        #check if model is approved
-        is_approved = self.deploy.check_approval(promotion)
-
-        #if approved, deploy model
-        if is_approved:
-            deployment = self.deploy.deploy_model(promotion, model_version)
+        #retrieve artifacts from metaflow pipeline
+        deployment = self.deploy.get_artifacts(
+            ["deployment"])
 
         return deployment
 
@@ -95,27 +61,16 @@ class MetaflowClassificationRunner(AbstractRunner):
                 experiment = self.metadata_tracker.get_winning_experiment(model_version)
                 model_obj = self.resource_version_control.get_model(experiment)
                 model = self.metadata_tracker.load_model(model_obj, model_version, model)
-        
-        #compare evaluation data to training data
-        self.predict.compare_data(model_version, dataset_version, data)
 
-        #get predictions
-        data, prediction_job = self.predict.get_predictions(model, model_version, data)
+        #run the metaflow predict pipeline
+        self.predict.run(model, model_version, data, dataset_version)
 
-        #version data
-        self.predict.track_predictions(prediction_job, data)
-
-        #calculate drift
-        self.predict.analyze_prediction_drift(dataset_version, prediction_job, data)
-
-        #run prediction checks
-        self.predict.check_predictions(data.drop(["explanations", "predictions_proba"],axis=1, errors="ignore"), prediction_job)
-
-        #run save predictions
-        self.predict.save_predictions(data, self._get_config("prediction_data"))
+        #retrieve artifacts
+        data, prediction_job = self.predict.get_artifacts(["data", "prediction_job"])
 
         return data, prediction_job
 
+    #todo: move this into a new pipeline type: "evaluate"?
     def evaluate_ground_truth(self, prediction_job=None): 
         #if prediction job isn't known, get the most recent job
         if prediction_job == None: 

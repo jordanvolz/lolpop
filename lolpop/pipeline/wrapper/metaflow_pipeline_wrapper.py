@@ -1,10 +1,10 @@
-from lolpop.pipeline.process.abstract_process import AbstractPipeline
+from lolpop.pipeline.wrapper.base_wrapper import BaseWrapper
 from lolpop.utils import common_utils as utils
 
 from metaflow import Flow
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
-class MetaflowPipelineWrapper(AbstractPipeline):
+class MetaflowPipelineWrapper(BaseWrapper):
 
     def run(self):
         metaflow_path = self._get_config("metaflow_script") 

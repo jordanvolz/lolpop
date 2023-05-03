@@ -199,11 +199,13 @@ def resolve_conf_variables(conf, main_conf=None):
         for k,v in conf.items(): 
             if isinstance(v, dictconfig.DictConfig):
                 OmegaConf.update(conf, k, resolve_conf_variables(v, main_conf)) 
-                #conf[k] = resolve_conf_variables(v, main_conf)
             elif isinstance(v, str): 
                 if v[0] == "$": 
-                    OmegaConf.update(conf,k, get_conf_value(v[1:], main_conf))
-                    #conf[k] = get_conf_value(v[1:], main_conf)
+                    resolved_value = get_conf_value(v[1:], main_conf)
+                    if resolved_value: 
+                        OmegaConf.update(conf,k, resolved_value)
+                    else: 
+                        raise Exception("Unable to resolve configuration value: %s" %v)
     return conf
 
 # returns configuration from conf object (file location or python dict)
@@ -222,9 +224,13 @@ def get_conf(conf_obj):
 #returns node value in conf specified by var in the form 'node1.node2.node3...'
 def get_conf_value(var, conf): 
     var_arr = var.split(".")
-    for i in var_arr: 
-        conf = conf.get(i)
-    return conf 
+    out = conf
+    try: 
+        for i in var_arr: 
+            out = out.get(i)
+    except: 
+        out = None 
+    return out 
 
 def get_plugin_mods(self_obj, plugin_paths=[], file_path=None):
     # if no plugin_dir is provided, then try to use the parent directory.

@@ -1,6 +1,7 @@
 #runner config
 pipelines: 
-  process: MetaflowPipelineWrapper
+  wrapper: MetaflowPipelineWrapper
+  process: OfflineProcess
   train: OfflineTrain
   deploy: OfflineDeploy
   predict: OfflinePredict
@@ -20,6 +21,11 @@ config:
   local_dir: /tmp/artifacts/
 
 #pipelines config
+wrapper: 
+  config: 
+    metaflow_script: /Users/jordanvolz/Downloads/mlflow_int/scripts/example_metaflow.py
+    flow_id: LinearFlow
+
 process: 
   components: 
     data_transformer: LocalDataTransformer
@@ -28,9 +34,6 @@ process:
   data_transformer: 
     config: 
       transformer_path: /Users/jordanvolz/github/lolpop/examples/classification/mlflow/process_petfinder.py
-  config: 
-    metaflow_script: /Users/jordanvolz/Downloads/mlflow_int/scripts/example_metaflow.py
-    flow_id: LinearFlow
 
 train: 
   components: 
@@ -108,10 +111,8 @@ metadata_tracker:
     mlflow_experiment_name: petfinder_adoption_speed
 metrics_tracker: 
   config: 
-    continual_endpoint: $metadata_tracker.config.continual_endpoint
-    continual_apikey: $metadata_tracker.config.continual_apikey
-    continual_project: $metadata_tracker.config.continual_project
-    continual_environment: $metadata_tracker.config.continual_environment
+    mlflow_tracking_uri: file:///Users/jordanvolz/Downloads/mlruns
+    mlflow_experiment_name: petfinder_adoption_speed
 notifier: 
   config: 
     gcloud_credentials_file: /home/jordanvolz/.config/gcloud/email-notification-account.json
