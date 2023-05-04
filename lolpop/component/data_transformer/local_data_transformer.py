@@ -13,9 +13,8 @@ class LocalDataTransformer(BaseDataTransformer):
         "config": ["transformer_path"]
     }
 
-    def __init__(self, conf, pipeline_conf, runner_conf, components={}, *args, **kwargs):
-        super().__init__(conf, pipeline_conf, runner_conf,
-                         components=components, *args, **kwargs)
+    def __init__(self, components={}, *args, **kwargs):
+        super().__init__(components=components, *args, **kwargs)
 
         transformer_path = Path(self._get_config("transformer_path")) 
         transformer_func = self._get_config("transformer_func", "transform")
@@ -33,7 +32,8 @@ class LocalDataTransformer(BaseDataTransformer):
             "data_connector_config", {})
         data_connector_cl = utils.load_class(data_connector_cl_name)
         data_connector = data_connector_cl(
-            data_connector_config, {}, {}, components={"logger": self.logger})
+            conf = data_connector_config, pipeline_conf = {}, runner_conf = {}, 
+            components={"logger": self.logger})
         self.data_connector = data_connector
 
     def transform(self, input_data, *args, **kwargs):

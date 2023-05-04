@@ -1,4 +1,4 @@
-from lolpop.component.resource_version_control.abstract_resource_version_control import AbstractResourceVersionControl
+from lolpop.component.resource_version_control.base_resource_version_control import BaseResourceVersionControl
 from lolpop.component.metadata_tracker.continual_metadata_tracker import ContinualMetadataTracker
 from lolpop.utils import common_utils as utils
 from lolpop.utils import continual_utils as cutils
@@ -7,13 +7,13 @@ import joblib
 import pandas as pd
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class ContinualVersionControl(AbstractResourceVersionControl): 
+class ContinualVersionControl(BaseResourceVersionControl): 
     __REQUIRED_CONF__ = {
         "config" : ["local_dir"]
     }
-    def __init__(self, conf, pipeline_conf, runner_conf, description=None, run_id=None, components = {}, **kwargs): 
+    def __init__(self, description=None, run_id=None, components = {}, *args, **kwargs): 
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, components=components, **kwargs)
+        super().__init__(components=components, *args, **kwargs)
         
         # if we are using continual for metadata tracking then we won't have to set up connection to continual
         # if not, then we do. If would be weird to have to do this, but just in case. 
@@ -21,7 +21,7 @@ class ContinualVersionControl(AbstractResourceVersionControl):
             self.client = self.metadata_tracker.client
             self.run = self.metadata_tracker.run
         else: 
-            secrets = utils.load_config(["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"], conf.get("config",{}))
+            secrets = utils.load_config(["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"], self.config)
             self.client = cutils.get_client(secrets)
             self.run = cutils.get_run(self.client, description=description, run_id=run_id)
 

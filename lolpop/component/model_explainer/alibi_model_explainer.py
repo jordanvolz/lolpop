@@ -1,4 +1,4 @@
-from lolpop.component.model_explainer.abstract_model_explainer import AbstractModelExplainer
+from lolpop.component.model_explainer.base_model_explainer import BaseModelExplainer
 from lolpop.utils import common_utils as utils
 import alibi.explainers as alibi
 import shap 
@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class AlibiModelExplainer(AbstractModelExplainer): 
+class AlibiModelExplainer(BaseModelExplainer): 
     __REQUIRED_CONF__ = {
         "config" : ["explainer_class", "local_dir"]
     }

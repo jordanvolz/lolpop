@@ -1,8 +1,8 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 from lolpop.utils import common_utils as utils
 import numpy as np 
 
-class AbstractModelChecker(AbstractComponent): 
+class BaseModelChecker(BaseComponent): 
 
     def check_model(self, data, model, **kwargs): 
         pass 

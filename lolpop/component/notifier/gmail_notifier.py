@@ -1,4 +1,4 @@
-from lolpop.component.notifier.abstract_notifier import AbstractNotifier
+from lolpop.component.notifier.base_notifier import BaseNotifier
 import base64
 from email.mime.text import MIMEText
 from google.auth.transport.requests import Request
@@ -16,14 +16,14 @@ import os
 #
 #Note: this works but requires browser auth due to oauth2 for the initial authorization. 
 #Not sure if there's a more streamlined version to do this w/ gmail. May have to just use generic smtp server/SMTPNotificer.
-class GMailNotifier(AbstractNotifier): 
+class GMailNotifier(BaseNotifier): 
     __REQUIRED_CONF__ = {
         "config" : ["gcloud_credentials_file", "gcloud_credentails_token", "sender_email", "receipient_email"]
     }
 
-    def __init__(self, conf, *args, **kwargs): 
+    def __init__(self, *args, **kwargs): 
         #set normal config
-        super().__init__(conf, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         creds_file = self._get_config("gcloud_credentials_file")
         token_file = self._get_config("gcloud_credentials_token")
         SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
@@ -55,6 +55,6 @@ class GMailNotifier(AbstractNotifier):
         try:
             message = (self.service.users().messages().send(userId=self._get_config("sender_email"),body=create_message).execute())
             self.log('Sent notification email: %s' %message)
-        except HTTPError as error:
+        except Exception as error:
             self.log('An error occurred: %s' %error, "ERROR")
             message = None

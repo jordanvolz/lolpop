@@ -1,6 +1,6 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 
-class AbstractResourceVersionControl(AbstractComponent): 
+class BaseResourceVersionControl(BaseComponent): 
 
     def version_data(self, id, data, *args, **kwargs): 
         pass 

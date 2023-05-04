@@ -3,7 +3,7 @@ def __map_runners__():
     import os
     from importlib import import_module
     from inspect import isclass
-    from lolpop.runner import AbstractRunner
+    from lolpop.runner import BaseRunner
     import warnings
 
     warnings.filterwarnings("ignore")
@@ -21,7 +21,7 @@ def __map_runners__():
                 subdir.split("/")[-2], subdir.split("/")[-1], file[:-3]))
             classes = [x for x in dir(module) if isclass(getattr(module, x))]
             runners = [x for x in classes if issubclass(
-                getattr(module, x), AbstractRunner)]
+                getattr(module, x), BaseRunner)]
             globals().update({name: getattr(module, name) for name in runners})
 
     warnings.resetwarnings()

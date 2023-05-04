@@ -1,6 +1,6 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 
-class BaseMetadataTracker(AbstractComponent): 
+class BaseMetadataTracker(BaseComponent): 
 
     url: str = "https://replace.me"
 

@@ -1,11 +1,11 @@
-from lolpop.component.model_checker.abstract_model_checker import AbstractModelChecker
+from lolpop.component.model_checker.base_model_checker import BaseModelChecker
 from lolpop.utils import common_utils as utils
 from deepchecks.tabular import Dataset
 from deepchecks.tabular.suites import model_evaluation
 from deepchecks.tabular.checks import TrainTestLabelDrift
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class DeepchecksModelChecker(AbstractModelChecker): 
+class DeepchecksModelChecker(BaseModelChecker): 
 
     def check_model(self, data_dict, model, **kwargs): 
         model_target = self._get_config("MODEL_TARGET")

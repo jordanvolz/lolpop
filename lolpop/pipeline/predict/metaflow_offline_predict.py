@@ -1,4 +1,4 @@
-from lolpop.pipeline.predict.abstract_predict import AbstractPredict
+from lolpop.pipeline.predict.base_predict import BasePredict
 from lolpop.utils import common_utils as utils
 from lolpop.utils import metaflow_utils as meta_utils
 from metaflow import FlowSpec, step
@@ -8,7 +8,7 @@ METAFLOW_CLASS = "MetaflowOfflinePredictSpec"
 PLUGIN_PATHS = "plugin_paths.txt"
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
-class MetaflowOfflinePredict(AbstractPredict):
+class MetaflowOfflinePredict(BasePredict):
     __REQUIRED_CONF__ = {
         "components": ["data_connector", "metadata_tracker", "resource_version_control", "model_explainer", "data_checker", "data_profiler"],
         "config": []

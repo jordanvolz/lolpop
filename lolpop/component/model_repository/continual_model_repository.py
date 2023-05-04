@@ -1,18 +1,18 @@
-from lolpop.component.model_repository.abstract_model_repository import AbstractModelRepository
+from lolpop.component.model_repository.base_model_repository import BaseModelRepository
 from lolpop.utils import common_utils as utils
 from lolpop.component.metadata_tracker.continual_metadata_tracker import ContinualMetadataTracker
 from lolpop.utils import continual_utils as cutils
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
-class ContinualModelRepository(AbstractModelRepository):
+class ContinualModelRepository(BaseModelRepository):
     __REQUIRED_CONF__ = {
         "components": ["metadata_tracker|ContinualMetadataTracker"],
         "config": []
     }
 
-    def __init__(self, conf, pipeline_conf, runner_conf, description=None, run_id=None, components={}, **kwargs):
+    def __init__(self, description=None, run_id=None, components={}, *args, **kwargs):
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, components=components, **kwargs)
+        super().__init__(components=components, *args, **kwargs)
 
         # if we are using continual for metadata tracking then we won't have to set up connection to continual
         # if not, then we do. If would be weird to have to do this, but just in case.
@@ -21,7 +21,7 @@ class ContinualModelRepository(AbstractModelRepository):
             self.run = self.metadata_tracker.run
         else:
             secrets = utils.load_config(["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT",
-                                        "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"], conf.get("config", {}))
+                                        "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"], self.config)
             self.client = cutils.get_client(secrets)
             self.run = cutils.get_run(
                 self.client, description=description, run_id=run_id)

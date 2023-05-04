@@ -1,7 +1,7 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 
 
-class BaseDataSynthesizer(AbstractComponent):
+class BaseDataSynthesizer(BaseComponent):
 
     def load_data(self, source_file, *args, **kwargs):
         pass

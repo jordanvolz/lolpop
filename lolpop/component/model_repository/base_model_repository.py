@@ -1,6 +1,6 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 
-class AbstractModelRepository(AbstractComponent): 
+class BaseModelRepository(BaseComponent): 
 
     def register_model(self, model, *args, **kwargs): 
         pass 

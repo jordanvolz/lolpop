@@ -1,1 +1,1 @@
-#from .abstract_predict import AbstractPredict
+#from .abstract_predict import BasePredict

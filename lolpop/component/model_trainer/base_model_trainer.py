@@ -1,16 +1,16 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 from sklearn import metrics as sk_metrics
 import pandas as pd 
 
-class AbstractModelTrainer(AbstractComponent): 
+class BaseModelTrainer(BaseComponent): 
 
     model = None 
     mlflow_module = "you_need_to_implement_this_for_mlflow_use"
     
     #predictions = {}
-    def __init__(self, conf, pipeline_conf, runner_conf, params=None, problem_type="classification", *args, **kwargs): 
+    def __init__(self, params=None, *args, **kwargs): 
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, problem_type = problem_type, *args, **kwargs)
+        super().__init__(params=params, *args, **kwargs)
         self.params = params
 
     def fit(self, data, *args, **kwargs): 

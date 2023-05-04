@@ -1,8 +1,8 @@
-from lolpop.pipeline.abstract_pipeline import AbstractPipeline
+from lolpop.pipeline.base_pipeline import BasePipeline
 
-class BaseWrapper(AbstractPipeline):
-    def __init__(self, conf, runner_conf, pipeline_type="wrapper", **kwargs):
-        super().__init__(conf, runner_conf, pipeline_type=pipeline_type, **kwargs)
+class BaseWrapper(BasePipeline):
+    def __init__(self, pipeline_type="wrapper", *args, **kwargs):
+        super().__init__(pipeline_type=pipeline_type, *args, **kwargs)
 
     def run(self, *args, **kwargs):
         pass

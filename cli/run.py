@@ -29,7 +29,7 @@ def workflow(
     typer.secho("Loaded %s!" %runner_class, fg="green")
 
     typer.secho("Initializing class %s with config file %s" %(runner_class, config_file), fg="blue")
-    runner = runner_cl(config_file)
+    runner = runner_cl(conf=config_file)
     typer.secho("Initialized!", fg="green")
     
     if hasattr(runner, build_method): 

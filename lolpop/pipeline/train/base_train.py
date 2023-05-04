@@ -1,9 +1,9 @@
-from lolpop.pipeline.abstract_pipeline import AbstractPipeline
+from lolpop.pipeline.base_pipeline import BasePipeline
 from lolpop.utils import common_utils as utils
 
-class AbstractTrain(AbstractPipeline): 
-    def __init__(self, conf, runner_conf, pipeline_type = "train", **kwargs):
-        super().__init__(conf, runner_conf, pipeline_type = pipeline_type, **kwargs)
+class BaseTrain(BasePipeline): 
+    def __init__(self, pipeline_type = "train", *args, **kwargs):
+        super().__init__(pipeline_type = pipeline_type, *args, **kwargs)
 
     def split_data(self, data, *args, **kwargs): 
         pass 

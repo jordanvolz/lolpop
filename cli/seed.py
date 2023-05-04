@@ -32,7 +32,7 @@ def seed_file(
     typer.secho("Loading data loader class %s" % data_loader_class, fg="blue")
     data_loader_cl = utils.load_class(data_loader_class, "component")
     logger_cl = utils.load_class("StdOutLogger", "component")
-    data_loader = data_loader_cl({}, {}, {}, components={"logger": logger_cl()}, **json.loads(dataloader_kwargs))
+    data_loader = data_loader_cl(conf={}, pipeline_conf={}, runner_conf={}, components={"logger": logger_cl()}, **json.loads(dataloader_kwargs))
     data_loader.suppress_logger = True
     data_loader.suppress_notifier = True
     typer.secho("Successfully loaded data loader class %s" %

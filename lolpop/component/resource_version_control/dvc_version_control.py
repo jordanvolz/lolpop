@@ -1,4 +1,4 @@
-from lolpop.component.resource_version_control.abstract_resource_version_control import AbstractResourceVersionControl
+from lolpop.component.resource_version_control.base_resource_version_control import BaseResourceVersionControl
 from lolpop.utils import common_utils as utils
 import os 
 import joblib
@@ -9,7 +9,7 @@ import pandas as pd
 # this is specified by the DVC_DIR variable. And a remote has been set up with 
 # the id given in DVC_REMOTE 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class dvcVersionControl(AbstractResourceVersionControl): 
+class dvcVersionControl(BaseResourceVersionControl): 
     __REQUIRED_CONF__ = {
         "config" : ["DVC_DIR", "DVC_REMOTE"]
     }
@@ -18,11 +18,12 @@ class dvcVersionControl(AbstractResourceVersionControl):
         "config": {"dvc_dir": "dvc/", "dvc_remote": "local"}
     }
 
-    def __init__(self, conf, pipeline_conf, runner_conf, description=None, run_id=None, **kwargs): 
+    def __init__(self, *args, **kwargs): 
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, **kwargs)
+        super().__init__(*args, **kwargs)
         
-        secrets = utils.load_config(["DVC_DIR", "DVC_REMOTE"], utils.copy_config_into(self.config,self.__DEFAULT_CONF__.get("config",{})))
+        secrets = utils.load_config(["DVC_DIR", "DVC_REMOTE"], 
+                                    utils.copy_config_into(self.config,self.__DEFAULT_CONF__.get("config",{})))
 
         self.dvc_dir = secrets.get("DVC_DIR")
         if self.dvc_dir[-1] != "/":

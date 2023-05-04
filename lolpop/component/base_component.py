@@ -1,6 +1,7 @@
 from lolpop.utils import common_utils as utils
 from omegaconf import OmegaConf
-class AbstractComponent: 
+
+class BaseComponent: 
     __REQUIRED_CONF__ = {
         "config" : []
     }
@@ -11,10 +12,10 @@ class AbstractComponent:
     suppress_logger = False
     suppress_notifier = False 
 
-    def __init__(self, config={}, pipeline_conf={}, runner_conf={}, parent_process=None, problem_type = None, components = {}, *args, **kwargs):
+    def __init__(self, conf={}, pipeline_conf={}, runner_conf={}, parent_process=None, problem_type = None, components = {}, *args, **kwargs):
         #set basic properties, like name and configs
         self.name = type(self).__name__
-        config = utils.get_conf(config)
+        config = utils.get_conf(conf)
         self.pipeline_conf = pipeline_conf
         self.runner_conf = runner_conf
         self.parent_process = parent_process

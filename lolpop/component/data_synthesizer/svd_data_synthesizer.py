@@ -4,7 +4,7 @@ import pandas as pd
 from sdv.metadata import SingleTableMetadata
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
-class SVDDataSynthesizer(BaseDataSynthesizer):
+class SDVDataSynthesizer(BaseDataSynthesizer):
 
     __DEFAULT_CONF__ = {
         "config": {

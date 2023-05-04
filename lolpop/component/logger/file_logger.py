@@ -1,12 +1,12 @@
-from lolpop.component.logger.abstract_logger import AbstractLogger
+from lolpop.component.logger.base_logger import BaseLogger
 import logging 
 
-class FileLogger(AbstractLogger): 
+class FileLogger(BaseLogger): 
 
-    def __init__(self, config, *args, **kwargs):
-        super().__init__(config, *args, **kwargs)
-        filname = self_get_config("filename") or "mlops-jumpstart.log"
-        level = self._get_config("level") or "INFO"
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        filename = self._get_config("filename","lolpop.log")
+        level = self._get_config("level", "INFO")
         logging.basicConfig(filename=filename, level=level) 
 
     def log(self, msg, level): 

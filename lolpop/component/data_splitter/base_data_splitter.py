@@ -1,6 +1,6 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 
-class BaseDataSplitter(AbstractComponent): 
+class BaseDataSplitter(BaseComponent): 
 
     def split_data(self, data, *args, **kwargs): 
         pass 
