@@ -1,8 +1,8 @@
-from lolpop.component.model_deployer.abstract_model_deployer import AbstractModelDeployer
+from lolpop.component.model_deployer.base_model_deployer import BaseModelDeployer
 from lolpop.utils import common_utils as utils
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class SeldonModelDeployer(AbstractModelDeployer): 
+class SeldonModelDeployer(BaseModelDeployer): 
     __REQUIRED_CONF__ = {
         "config" : []
     }

@@ -1,4 +1,4 @@
-from lolpop.pipeline.deploy.abstract_deploy import AbstractDeploy
+from lolpop.pipeline.deploy.base_deploy import BaseDeploy
 from lolpop.utils import common_utils as utils
 from lolpop.utils import metaflow_utils as meta_utils
 from metaflow import FlowSpec, step
@@ -8,7 +8,7 @@ METAFLOW_CLASS = "MetaflowOfflineDeploySpec"
 PLUGIN_PATHS = "plugin_paths.txt"
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
-class MetaflowOfflineDeploy(AbstractDeploy):
+class MetaflowOfflineDeploy(BaseDeploy):
 
     def run(self, model, model_version, **kwargs):
         #get flow class object from this file

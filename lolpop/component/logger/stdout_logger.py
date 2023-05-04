@@ -1,6 +1,5 @@
-from lolpop.component.logger.abstract_logger import AbstractLogger
-
-class StdOutLogger(AbstractLogger): 
+from lolpop.component.logger.base_logger import BaseLogger
+class StdOutLogger(BaseLogger): 
     
     #def __init__(self, config, *args, **kwargs):
     #    super().__init__(config, *args, **kwargs)

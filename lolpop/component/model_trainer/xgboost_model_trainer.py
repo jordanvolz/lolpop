@@ -1,25 +1,24 @@
-from lolpop.component.model_trainer.abstract_model_trainer import AbstractModelTrainer
+from lolpop.component.model_trainer.base_model_trainer import BaseModelTrainer
 from lolpop.utils import common_utils as utils
 from xgboost import XGBClassifier, XGBRegressor 
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class XGBoostModelTrainer(AbstractModelTrainer): 
+class XGBoostModelTrainer(BaseModelTrainer): 
 
     mlflow_module = "xgboost"
 
     #should set self.model in init
-    def __init__(self, conf, pipeline_conf, runner_conf, params=None, problem_type="classification", *args, **kwargs): 
+    def __init__(self, problem_type=None, params={}, *args, **kwargs): 
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, problem_type = problem_type, *args, **kwargs)
-        self.params = params 
-
+        super().__init__(problem_type = problem_type, params=params, *args, **kwargs)
+ 
         #set up model based on problem_type
         if self.problem_type == "classification": 
             self.model = XGBClassifier(**params)
         elif self.problem_type == "regression": 
             self.model == XGBRegressor(**params)
         else: 
-            msg = "Unsupported problem type (%s) in trainer %s" %(problem_type,type(self).__name__)
+            msg = "Unsupported problem type (%s) in trainer %s" %(problem_type, self.name)
             self.notify(msg)
             raise Exception(msg)
 

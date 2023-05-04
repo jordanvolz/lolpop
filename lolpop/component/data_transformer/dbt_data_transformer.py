@@ -10,8 +10,8 @@ class dbtDataTransformer(BaseDataTransformer):
         "config" : ["data_connector"]
     }
 
-    def __init__(self, conf, pipeline_conf, runner_conf, components={}, *args, **kwargs): 
-        super().__init__(conf, pipeline_conf, runner_conf, components=components, *args, **kwargs)
+    def __init__(self, components={}, *args, **kwargs): 
+        super().__init__(components=components, *args, **kwargs)
 
         self.dbt_config = utils.load_config(["DBT_TARGET", "DBT_PROFILE", "DBT_PROJECT_DIR", "DBT_PROFILES_DIR"], self.config)
 

@@ -20,7 +20,7 @@ def default(ctx: typer.Context):
 def create(
     source_file: Path = typer.Argument(
         ..., help="Path to the source file."),
-    datagen_class: str = typer.Option("SVDDataSynthesizer", "--datagen-class", "-c", help="Data Synthesizer class name."),
+    datagen_class: str = typer.Option("SDVDataSynthesizer", "--datagen-class", "-c", help="Data Synthesizer class name."),
     synthesizer_class: str = typer.Option(
         "SingleTablePreset", "--synthesizer-class", "-s", help="Class name in the data synthesizer to use to build a synthesizer model."),
 

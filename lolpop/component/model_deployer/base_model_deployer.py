@@ -1,6 +1,6 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 
-class AbstractModelDeployer(AbstractComponent): 
+class BaseModelDeployer(BaseComponent): 
 
     def deploy_model(self, model, *args, **kwargs): 
         pass 

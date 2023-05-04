@@ -1,10 +1,10 @@
-from lolpop.component.model_bias_checker.abstract_model_bias_checker import AbstractModelBiasChecker
+from lolpop.component.model_bias_checker.base_model_bias_checker import BaseModelBiasChecker
 from lolpop.utils import common_utils as utils
 from aif360.datasets import StandardDataset
 from aif360.metrics import BinaryLabelDatasetMetric, ClassificationMetric
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class AIFairnessModelBiasChecker(AbstractModelBiasChecker): 
+class AIFairnessModelBiasChecker(BaseModelBiasChecker): 
 
     def check_model_bias(self, data, model, model_version, *args, **kwargs): 
         #set up data/predictions

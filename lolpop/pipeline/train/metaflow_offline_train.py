@@ -1,4 +1,4 @@
-from lolpop.pipeline.train.abstract_train import AbstractTrain
+from lolpop.pipeline.train.base_train import BaseTrain
 from lolpop.utils import common_utils as utils
 from lolpop.utils import metaflow_utils as meta_utils
 from metaflow import FlowSpec, step
@@ -9,7 +9,7 @@ PLUGIN_PATHS = "plugin_paths.txt"
 
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
-class MetaflowOfflineTrain(AbstractTrain):
+class MetaflowOfflineTrain(BaseTrain):
     __REQUIRED_CONF__ = {
         "components": ["data_splitter", "metadata_tracker", "model_checker", "model_explainer", "model_visualizer", "model_bias_checker"],
         "config": []

@@ -9,9 +9,9 @@ class ContinualMetricsTracker(BaseMetricsTracker):
         "config" : ["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"]
     }
     
-    def __init__(self, conf, pipeline_conf, runner_conf,  description=None, run_id=None, components = {}, **kwargs): 
+    def __init__(self, description=None, run_id=None, components = {}, *args, **kwargs): 
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, components = components, **kwargs)
+        super().__init__(components = components, *args, **kwargs)
         
         # if we are using continual for metadata tracking then we won't have to set up connection to continual
         # if not, then we do. If would be weird to have to do this, but just in case. 
@@ -19,7 +19,7 @@ class ContinualMetricsTracker(BaseMetricsTracker):
             self.client = self.metadata_tracker.client
             self.run = self.metadata_tracker.run
         else: 
-            secrets = utils.load_config(["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"], conf.get("config",{}))
+            secrets = utils.load_config(["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"], self.config)
             self.client = cutils.get_client(secrets)
             self.run = cutils.get_run(self.client, description=description, run_id=run_id)
 

@@ -1,15 +1,12 @@
-from lolpop.pipeline.process.abstract_process import AbstractProcess
+from lolpop.pipeline.process.base_process import BaseProcess
 from lolpop.utils import common_utils as utils
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class OfflineProcess(AbstractProcess): 
+class OfflineProcess(BaseProcess): 
     __REQUIRED_CONF__ = {
         "components": ["data_transformer", "metadata_tracker", "resource_version_control", "data_profiler", "data_checker"], 
         "config": []
     }
-
-    def __init__(self, conf, runner_conf, **kwargs): 
-        super().__init__(conf, runner_conf, **kwargs)
 
     def transform_data(self, source_data_name): 
         ##get source data

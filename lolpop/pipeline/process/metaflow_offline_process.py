@@ -1,4 +1,4 @@
-from lolpop.pipeline.process.abstract_process import AbstractProcess
+from lolpop.pipeline.process.base_process import BaseProcess
 from lolpop.utils import common_utils as utils
 from lolpop.utils import metaflow_utils as meta_utils
 from metaflow import FlowSpec, step
@@ -9,7 +9,7 @@ PLUGIN_PATHS = "plugin_paths.txt"
 
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
-class MetaflowOfflineProcess(AbstractProcess):
+class MetaflowOfflineProcess(BaseProcess):
     __REQUIRED_CONF__ = {
         "components": ["data_transformer", "metadata_tracker", "resource_version_control", "data_profiler", "data_checker"],
         "config": []

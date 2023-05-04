@@ -3,7 +3,7 @@ from lolpop.utils import common_utils as utils
 import os 
 from pathlib import Path
 
-class AbstractRunner: 
+class BaseRunner: 
 
     __REQUIRED_CONF__ = {
         "pipelines": [], 
@@ -17,10 +17,10 @@ class AbstractRunner:
     suppress_logger = False 
     suppress_notifier = False
 
-    def __init__(self, conf_file, problem_type = "unspecified_problem_type", plugin_paths=[]):
+    def __init__(self, conf={}, problem_type = "unspecified_problem_type", plugin_paths=[]):
         #handle configuration 
         self.name = type(self).__name__
-        conf = utils.get_conf(conf_file)
+        conf = utils.get_conf(conf)
         conf = utils.copy_config_into(conf, self.__DEFAULT_CONF__) 
         conf = self._validate_conf(conf)
         self.config = conf.get("config", {})

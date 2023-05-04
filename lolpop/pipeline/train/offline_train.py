@@ -1,15 +1,12 @@
-from lolpop.pipeline.train.abstract_train import AbstractTrain
+from lolpop.pipeline.train.base_train import BaseTrain
 from lolpop.utils import common_utils as utils
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class OfflineTrain(AbstractTrain): 
+class OfflineTrain(BaseTrain): 
     __REQUIRED_CONF__ = {
         "components": ["data_splitter", "metadata_tracker", "model_checker", "model_explainer", "model_visualizer", "model_bias_checker"], 
         "config": []
     }
-
-    def __init__(self, conf, runner_conf, **kwargs): 
-        super().__init__(conf, runner_conf, **kwargs)
 
     def split_data(self, data, **kwargs): 
         #split data. returns dictionary of train/vali/test dataframes

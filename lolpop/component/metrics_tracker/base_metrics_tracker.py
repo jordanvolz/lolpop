@@ -1,6 +1,6 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 
-class BaseMetricsTracker(AbstractComponent): 
+class BaseMetricsTracker(BaseComponent): 
 
     def log_metric(self, id, value, time, **kwargs): 
         pass 

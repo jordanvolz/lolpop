@@ -8,6 +8,7 @@ from datetime import datetime
 from functools import wraps 
 import pandas as pd 
 from pathlib import Path 
+import time
 
 #
 ##should decide if these things go into the common_utils class or just the abstract classes. 
@@ -111,7 +112,8 @@ def register_component_class(self_obj, conf, component_type, default_class_name=
             else: 
                 self_obj.log("Unable to find class %s in plugins!" %component_class_name)
         if cl is not None: 
-            obj = cl(conf.get(component_type,{}), pipeline_conf, runner_conf, parent_process = parent_process, problem_type=problem_type, components = dependent_components) 
+            obj = cl(conf=conf.get(component_type, {}), pipeline_conf=pipeline_conf, runner_conf=runner_conf,
+                     parent_process=parent_process, problem_type=problem_type, components=dependent_components)
             setattr(self_obj, component_type, obj)
     return obj 
 
@@ -131,7 +133,8 @@ def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=No
             	"Found class %s in plugins!" % pipeline_class_name)
         obj = None
         if cl is not None: 
-            obj = cl(conf.get(pipeline_type,{}), runner_conf, parent_process = parent_process, problem_type = problem_type, components = dependent_components, plugin_mods=plugin_mods)
+            obj = cl(conf=conf.get(pipeline_type, {}), runner_conf=runner_conf, parent_process=parent_process,
+                     problem_type=problem_type, components=dependent_components, plugin_mods=plugin_mods)
             setattr(self_obj, pipeline_type, obj)
     return obj
 
@@ -274,7 +277,7 @@ def log(obj, msg, level):
     obj.logger.log(msg, level)
 
 #wraps logging calls around function execution
-def log_execution(level="DEBUG", start_msg = None, end_msg = None):
+def log_execution(level="DEBUG", start_msg = None, end_msg = None, timeit=True):
     def log_decorator(func):
         @wraps(func)
         def wrapper(obj, *args, **kwargs):
@@ -286,7 +289,11 @@ def log_execution(level="DEBUG", start_msg = None, end_msg = None):
                 end = "Finished execution of %s" %(func.__name__)
             obj.log(start, level)
             obj.log("args: %s, kwargs: %s" %(args, kwargs), "TRACE")
+            start_time = time.process_time()
             result = func(obj, *args, **kwargs)
+            end_time = time.process_time()
+            if timeit: 
+                end = end + ". Completed in %s seconds." %(str(end_time - start_time))
             obj.log(end, level)
             return result
         return wrapper

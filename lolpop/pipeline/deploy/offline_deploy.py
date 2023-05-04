@@ -1,12 +1,9 @@
-from lolpop.pipeline.deploy.abstract_deploy import AbstractDeploy
+from lolpop.pipeline.deploy.base_deploy import BaseDeploy
 from lolpop.utils import common_utils as utils
 
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
-class OfflineDeploy(AbstractDeploy):
-
-    def __init__(self, conf, runner_conf, **kwargs):
-        super().__init__(conf, runner_conf, **kwargs)
+class OfflineDeploy(BaseDeploy):
 
     def promote_model(self, model_version, model=None, *args, **kwargs):
         #get model from RVC if not provided.

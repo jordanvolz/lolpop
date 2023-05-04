@@ -22,9 +22,9 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
     #    "config": {}
     #}
 
-    def __init__(self, conf, pipeline_conf, runner_conf, **kwargs):
+    def __init__(self, *args, **kwargs):
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, **kwargs)
+        super().__init__(*args, **kwargs)
 
         tracking_uri = self._get_config("mlflow_tracking_uri")
         experiment_name = self._get_config("mlflow_experiment_name")
@@ -268,7 +268,7 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
             config = {}
             parent_process = self.parent_process
             params = {}
-        model = model_cl(config, self.config, self.runner_conf, parent_process=parent_process,
+        model = model_cl(conf=config, pipeline_conf=self.config, runner_conf=self.runner_conf, parent_process=parent_process,
                          problem_type=self.problem_type, params=params, components=dependent_components)
         #if you passed in a model_obj, we assume you have a pre-trained model object you wish to use
         if model_obj is not None:

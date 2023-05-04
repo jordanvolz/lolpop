@@ -5,7 +5,7 @@ def __map_components__():
     import os
     from importlib import import_module
     from inspect import isclass
-    from lolpop.component import AbstractComponent
+    from lolpop.component import BaseComponent
     import warnings
 
     warnings.filterwarnings("ignore")
@@ -23,7 +23,7 @@ def __map_components__():
                 subdir.split("/")[-2], subdir.split("/")[-1], file[:-3]))
             classes = [x for x in dir(module) if isclass(getattr(module, x))]
             components = [x for x in classes if issubclass(
-                getattr(module, x), AbstractComponent)]
+                getattr(module, x), BaseComponent)]
             globals().update({name: getattr(module, name)
                               for name in components})
 

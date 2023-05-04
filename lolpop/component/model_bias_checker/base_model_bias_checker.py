@@ -1,6 +1,6 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 
-class AbstractModelBiasChecker(AbstractComponent): 
+class BaseModelBiasChecker(BaseComponent): 
     __REQUIRED_CONF__ = {
         "config" : []
     }

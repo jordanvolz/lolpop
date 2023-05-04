@@ -4,7 +4,7 @@ def __map_pipelines__():
     import os
     from importlib import import_module
     from inspect import isclass
-    from .abstract_pipeline import AbstractPipeline
+    from .base_pipeline import BasePipeline
     import warnings
 
     warnings.filterwarnings("ignore")
@@ -18,7 +18,7 @@ def __map_pipelines__():
         for file in files: 
             module = import_module("lolpop.%s.%s.%s" %(subdir.split("/")[-2],subdir.split("/")[-1],file[:-3]))
             classes = [x for x in dir(module) if isclass(getattr(module,x))]
-            pipelines = [x for x in classes if issubclass(getattr(module, x), AbstractPipeline)]
+            pipelines = [x for x in classes if issubclass(getattr(module, x), BasePipeline)]
             globals().update({name: getattr(module,name) for name in pipelines})
 
     warnings.resetwarnings()

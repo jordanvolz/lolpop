@@ -1,9 +1,9 @@
-from lolpop.runner.abstract_runner import AbstractRunner
+from lolpop.runner.base_runner import BaseRunner
 from lolpop.utils import common_utils as utils
 
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
-class MetaflowClassificationRunner(AbstractRunner):
+class MetaflowClassificationRunner(BaseRunner):
 
     __REQUIRED_CONF__ = {
         "pipelines": ["process", "train", "deploy", "predict"],
@@ -11,8 +11,8 @@ class MetaflowClassificationRunner(AbstractRunner):
         "config": ["train_data", "eval_data", "prediction_data", "model_target", "drop_columns"]
     }
 
-    def __init__(self, conf, *args, **kwargs):
-        super().__init__(conf, problem_type="classification", *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(problem_type="classification", *args, **kwargs)
 
     def process_data(self, source_data = "train"):
         #run the metaflow process pipeline

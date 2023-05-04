@@ -1,16 +1,14 @@
-from lolpop.pipeline.predict.abstract_predict import AbstractPredict
+from lolpop.pipeline.predict.base_predict import BasePredict
 from lolpop.utils import common_utils as utils
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class OfflinePredict(AbstractPredict): 
+class OfflinePredict(BasePredict): 
     __REQUIRED_CONF__ = {
         "components": ["data_connector", "metadata_tracker", "resource_version_control", "model_explainer", "data_checker", "data_profiler"], 
         "config": []
     }
 
-    def __init__(self, conf, runner_conf, **kwargs): 
-        super().__init__(conf, runner_conf, **kwargs)
-        
+       
     def compare_data(self, model_version, dataset_version, data):
         #get training dataset version and df 
         vc_info = self.metadata_tracker.get_vc_info(model_version, key="X_train_hexsha")

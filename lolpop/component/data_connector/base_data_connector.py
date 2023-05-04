@@ -1,7 +1,7 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 
 
-class BaseDataConnector(AbstractComponent):
+class BaseDataConnector(BaseComponent):
 
     def get_data(self, source, *args, **kwargs):
         pass

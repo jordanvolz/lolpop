@@ -1,4 +1,4 @@
-from lolpop.component.model_visualizer.abstract_model_visualizer import AbstractModelVisualizer
+from lolpop.component.model_visualizer.base_model_visualizer import BaseModelVisualizer
 from lolpop.utils import common_utils as utils
 from yellowbrick.classifier import ClassificationReport, ConfusionMatrix, ROCAUC, PrecisionRecallCurve, DiscriminationThreshold, ClassPredictionError
 from yellowbrick.target import ClassBalance, FeatureCorrelation
@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class YellowbrickModelVisualizer(AbstractModelVisualizer): 
+class YellowbrickModelVisualizer(BaseModelVisualizer): 
 
     def generate_viz(self, data, model, model_version): 
         

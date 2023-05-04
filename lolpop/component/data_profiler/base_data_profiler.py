@@ -1,6 +1,6 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 
-class BaseDataProfiler(AbstractComponent): 
+class BaseDataProfiler(BaseComponent): 
 
     def profile_data(self, data, *args, **kwargs): 
         pass 

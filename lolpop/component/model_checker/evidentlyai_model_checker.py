@@ -1,4 +1,4 @@
-from lolpop.component.model_checker.abstract_model_checker import AbstractModelChecker
+from lolpop.component.model_checker.base_model_checker import BaseModelChecker
 from lolpop.utils import common_utils as utils
 from evidently.test_suite import TestSuite
 from evidently.tests import TestColumnDrift
@@ -8,7 +8,7 @@ from evidently.metric_preset import DataDriftPreset, TargetDriftPreset, DataQual
 from evidently import ColumnMapping
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class EvidentlyAIModelChecker(AbstractModelChecker): 
+class EvidentlyAIModelChecker(BaseModelChecker): 
 
     def check_model(self, data_dict, model, **kwargs):
         if self.problem_type == "classification": 

@@ -1,11 +1,11 @@
-from lolpop.component.hyperparameter_tuner.abstract_hyperparameter_tuner import AbstractHyperparameterTuner
+from lolpop.component.hyperparameter_tuner.base_hyperparameter_tuner import BaseHyperparameterTuner
 from lolpop.utils import common_utils as utils
 import optuna
 from datetime import datetime
 import os
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class OptunaHyperparameterTuner(AbstractHyperparameterTuner): 
+class OptunaHyperparameterTuner(BaseHyperparameterTuner): 
 
     def run_experiment(self, data, model_version, n_trials=100, timeout=600, *args, **kwargs): 
         #set up params

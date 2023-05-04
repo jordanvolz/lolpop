@@ -1,8 +1,8 @@
-from lolpop.component.hyperparameter_tuner.abstract_hyperparameter_tuner import AbstractHyperparameterTuner
+from lolpop.component.hyperparameter_tuner.base_hyperparameter_tuner import BaseHyperparameterTuner
 from lolpop.utils import common_utils as utils
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
-class LocalHyperparameterTuner(AbstractHyperparameterTuner): 
+class LocalHyperparameterTuner(BaseHyperparameterTuner): 
 
     def run_experiment(self, data, model_version, *args, **kwargs): 
     # params can call different algos and user hyperparam tuning, etc 

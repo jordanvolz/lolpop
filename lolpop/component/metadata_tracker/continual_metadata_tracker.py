@@ -26,7 +26,7 @@ class ContinualMetadataTracker(BaseMetadataTracker):
         "config" : ["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"]
     }
 
-    def __init__(self, conf, pipeline_conf, runner_conf, description=None, run_id=None, *args, **kwargs):
+    def __init__(self, description=None, run_id=None, *args, **kwargs):
         """
         Initialize the ContinualMetadataTracker object.
 
@@ -40,9 +40,9 @@ class ContinualMetadataTracker(BaseMetadataTracker):
             **kwargs: Arbitrary keyword arguments.
         """
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-        secrets = utils.load_config(["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"], conf.get("config",{}))
+        secrets = utils.load_config(["CONTINUAL_APIKEY", "CONTINUAL_ENDPOINT", "CONTINUAL_PROJECT", "CONTINUAL_ENVIRONMENT"], self.config)
         
         self.client = cutils.get_client(secrets)
         

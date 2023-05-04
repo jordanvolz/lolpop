@@ -1,6 +1,7 @@
 from lolpop.utils import common_utils as utils
 from omegaconf import OmegaConf
-class AbstractPipeline: 
+
+class BasePipeline: 
 
     __REQUIRED_CONF__ = {
         "components": [], 
@@ -13,7 +14,7 @@ class AbstractPipeline:
     suppress_logger = False
     suppress_notifier = False
 
-    def __init__(self, conf, runner_conf, parent_process="runner", problem_type=None, pipeline_type="abstract_pipeline", components={}, plugin_mods=[], plugin_paths=[], **kwargs):
+    def __init__(self, conf={}, runner_conf={}, parent_process="runner", problem_type=None, pipeline_type="base_pipeline", components={}, plugin_mods=[], plugin_paths=[], *args, **kwargs):
         #set basic properties like configs
         self.name = type(self).__name__
         conf = utils.get_conf(conf)

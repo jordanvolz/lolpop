@@ -21,9 +21,9 @@ class MLFlowMetricsTracker(BaseMetricsTracker):
     #    "config": {}
     #}
 
-    def __init__(self, conf, pipeline_conf, runner_conf, components={}, **kwargs):
+    def __init__(self, components={}, *args, **kwargs):
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, components=components, **kwargs)
+        super().__init__(components=components, *args, **kwargs)
 
         # if we are using mlflow for metadata tracking then we won't have to set up connection to mlflow
         # if not, then we do. If would be weird to have to do this, but just in case.

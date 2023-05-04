@@ -1,6 +1,6 @@
-from lolpop.component.abstract_component import AbstractComponent
+from lolpop.component.base_component import BaseComponent
 
-class BaseDataChecker(AbstractComponent): 
+class BaseDataChecker(BaseComponent): 
 
     def check_data(self, data, *args, **kwargs): 
         pass 
