@@ -3,7 +3,13 @@ A software engineering framework to jumpstart your Machine Learning projects
 
 ## install 
 
-Install lolpop by cd'ing to the this directory and executing: 
+You can install lolpop from pip: 
+
+```bash
+pip install lolpop
+```
+
+If you're working in dev mode, you can clone this repo and install lolpop by cd'ing to the this directory and executing: 
 
 ```bash
 poetry install 
