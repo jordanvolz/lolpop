@@ -5,7 +5,7 @@ A software engineering framework to jumpstart your Machine Learning projects
 
 Install lolpop by cd'ing to the this directory and executing: 
 
-```
+```bash
 poetry install 
 pip install -e .
 ``` 
@@ -16,7 +16,7 @@ Note: getting the poetry install to work has been difficult, due to some of conf
 
 Try out the classification example in `examples/classification/mlflow`. To run it, simply execute
 
-```
+```bash
 python3 examples/classification/mlflow/mlrunner.py 
 ```
 Note: You'll want to update `examples/classification/mlflow/local_dev.yaml` with your own configuration. In particular, update the mlflow configuration. You also need to download the `test.csv` and `train.csv` files 
@@ -29,8 +29,7 @@ You'll probably hit a few errors in trying to run the first time. Let me know wh
 If you're interested in contributing, there is a basic CLI tool that can boostrap a new runner/pipeline/component for you. 
 To use, simply execute: 
 
-```
-
+```bash
 python3 cli/cli.py create component/pipeline/runner <component_type> <componenet_class>
 ```
 
