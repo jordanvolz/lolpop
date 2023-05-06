@@ -25,12 +25,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install poetry
     - name: Build package
-      run: 
+      run: |
         poetry version $(git describe --tags --abbrev=0 --match "v*")
         poetry build
     - name: Publish package
       env:
         PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-      run: 
+      run: |
         poetry config pypi-token.pypi "$PYPI_API_TOKEN"
         poetry publish
