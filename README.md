@@ -36,7 +36,7 @@ If you're interested in contributing, there is a basic CLI tool that can boostra
 To use, simply execute: 
 
 ```bash
-python3 cli/cli.py create component/pipeline/runner <component_type> <componenet_class>
+python3 cli/cli.py create component/pipeline/runner <component_type> <component_class>
 ```
 
 Component type should be something like metadata_tracker, metrics_tracker, model_trainer, etc, and component class is the name of the class. This will create a new component type in the specified directory in lolpop.  
