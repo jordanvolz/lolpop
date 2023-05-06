@@ -1,16 +1,23 @@
 [tool.poetry]
 name = "lolpop"
-version = "0.1.0"
+version = "v0.1.0-alpha1"
 description = "A software engineering framework for machine learning workflows"
 authors = ["jordanvolz <jordan.volz@gmail.com>"]
+repository = "https://github.com/jordanvolz/lolpop"
+#hompage = 
+#documentation = 
+keywords = ["machine learning", "data science", "mlops"]
 license = "Apache-2.0"
 packages = [
     {include = "lolpop"},
     ]
-include = ["templates"]
+include = ["templates", "cli"]
 
+#should break this out into dependency groups/extras: 
+#https://python-poetry.org/docs/pyproject/#:~:text=See-,Dependency%20groups,-for%20a%20more
+#https://python-poetry.org/docs/pyproject/#extras
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.9"
 google-auth="2.16.1"
 google-auth-oauthlib="1.0.0"
 google-auth-httplib2="0.1.0" 
@@ -50,7 +57,12 @@ metaflow="2.8.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2"
-faker = "^17.6"
+faker = "^14.0"
+
+[tool.poetry.scripts]
+lolpop = "cli.cli:app"
+
+#[tool.poetry.plugins]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
