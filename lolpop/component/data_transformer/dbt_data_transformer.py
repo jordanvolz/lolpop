@@ -71,9 +71,20 @@ def get_dw_config_from_profile(dbt_config):
         dict: The DW configuration
     """
     conf = OmegaConf.load("%s/profiles.yml" %dbt_config.get("DBT_PROFILES_DIR")).get(dbt_config.get("DBT_PROFILE")).get("outputs").get(dbt_config.get("DBT_TARGET"))
-    config = {"%s_%s" %(conf.get("type").lower(), x.lower()):y 
+    #get backend_type and figure out what keys we need to map into lolpop 
+    backend_type = conf.get("type").lower()
+    if backend_type == "snowflake": 
+        config_keys = ["account", "database",
+                       "password", "schema", "user", "warehouse"]
+    elif backend_type == "duckdb": 
+        config_keys = ["path"]
+    else: 
+        config_keys = ["account", "database", "password", "schema", "user", "warehouse"]
+
+    #extract keys and map into lolpop 
+    config = {"%s_%s" %(backend_type, x.lower()):y 
               for x,y in conf.items() 
-              if x.lower() in ["account", "database", "password", "schema", "user", "warehouse"]}
+              if x.lower() in config_keys}
     config = OmegaConf.create(
         {"components": {}, "data_connector": {"config": config}})
     
