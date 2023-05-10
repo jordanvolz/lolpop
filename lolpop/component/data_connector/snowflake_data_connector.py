@@ -87,10 +87,10 @@ class SnowflakeDataConnector(BaseDataConnector):
         elif col_type.kind == 'b':
             # boolean columns in pandas are converted to 'bool' dtype, which corresponds to 'boolean' in Snowflake
             column_type = 'BOOLEAN'
-        elif col_type.kind == 'i':
+        elif col_type.kind == 'i' or col_type.kind == 'u':
             # integer columns in pandas are converted to 'int64' dtype, which corresponds to 'integer' in Snowflake
             column_type = 'INTEGER'
-        elif col_type.kind == 'f':
+        elif col_type.kind == 'f' or col_type.kind == 'c':
             # float columns in pandas are converted to 'float64' dtype, which corresponds to 'float' in Snowflake
             column_type = 'FLOAT'
         else:

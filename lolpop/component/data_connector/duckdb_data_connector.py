@@ -41,9 +41,9 @@ class DuckDBDataConnector(BaseDataConnector):
                sql = "ALTER TABLE %s " % (table)
                for col_name in new_features:
                     col_type = data.dtypes[col_name]
-                    sf_type = self._map_pandas_col_type_to_sf_type(col_type)
+                    duckdb_type = self._map_pandas_col_type_to_duckdb_type(col_type)
                     sql = sql + ("ADD COLUMN %s %s" %
-                                 (col_name.upper(), sf_type))
+                                 (col_name.upper(), duckdb_type))
                self.get_data(None, sql=sql)
 
            #if we've deleted any features, then just add blank rows to the dataframe
@@ -71,6 +71,32 @@ class DuckDBDataConnector(BaseDataConnector):
         else: 
             con.sql("INSERT INTO %s as SELECT * from data" % table_name)
 
+    def _map_pandas_col_type_to_duckdb_type(self, col_type):
+        """_summary_
 
+        Args:
+            col_type (_type_): _description_
 
-#save to snowflake
+        Returns:
+            _type_: _description_
+        """
+        if col_type.kind == 'M':
+            # datetime and timestamp columns in pandas are converted to datetime64[ns] dtype, which corresponds to 'TIMESTAMP'
+            column_type = 'TIMESTAMP'
+        elif col_type.kind == 'm':
+            # timedelta columns in pandas are converted to timedelta64[ns] dtype, which corresponds to 'INTERVAL'
+            column_type = 'INTERVAL'
+        elif col_type.kind == 'b':
+            # boolean columns in pandas are converted to 'bool' dtype, which corresponds to 'boolean'
+            column_type = 'BOOLEAN'
+        elif col_type.kind == 'i': 
+            column_type = 'BIGINT'
+        elif col_type.kind == 'u':
+            column_type = 'UBIGINT'
+        elif col_type.kind == 'f' or col_type.kind == 'c':
+            # float columns in pandas are converted to 'float64' dtype, which corresponds to 'float'
+            column_type = 'FLOAT'
+        else:
+            # All other column types in pandas are assumed to be string columns, which correspond to 'varchar' in Snowflake
+            column_type = 'VARCHAR'
+        return column_type
