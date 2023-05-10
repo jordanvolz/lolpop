@@ -17,7 +17,7 @@ class DuckDBDataConnector(BaseDataConnector):
                 sql = "SELECT * FROM %s" % table
             else:
                 raise Exception(
-                    "Table or SQL command must be provided to DuckDBDataTransformer in order to retrieve data.")
+                    "Table or SQL command must be provided to DuckDBDataConnector in order to retrieve data.")
 
         data = self._load_data(sql, self.path)
 
