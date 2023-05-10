@@ -68,7 +68,7 @@ class DatabricksSQLDataConnector(BaseDataConnector):
 
      #load data into df
     @classmethod
-    def _load_data(self, config):
+    def _load_data(self, sql, config):
         df = pd.DataFrame()
         with sql.connect(server_hostname=config.get("DATABRICKS_SERVER_HOSTNAME"),
                          http_path=config.get("DATABRICKS_HTTP_PATH"),
