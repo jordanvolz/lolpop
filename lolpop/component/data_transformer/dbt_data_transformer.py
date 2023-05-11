@@ -81,7 +81,7 @@ def get_dw_config_from_profile(dbt_config):
         config_keys = ["catalog", "schema", "host", "http_path", "token"]
     elif backend_type == "bigquery": 
         method = config.get("method")
-        if method == "service-account"
+        if method == "service-account":
             config_keys=["project", "dataset", "keyfile"]
         else: #using oauth, so assume default application credentials are already set
             config_keys = ["project", "dataset"]
