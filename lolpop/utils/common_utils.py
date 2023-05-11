@@ -380,3 +380,6 @@ def create_df_from_file(source_file, engine="pyarrow", **kwargs):
         raise Exception("Unsupported file type: %s" % source_file_type)
     
     return data
+
+def chunker(seq, size):
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))

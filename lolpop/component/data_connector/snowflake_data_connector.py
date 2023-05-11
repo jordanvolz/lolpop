@@ -143,6 +143,9 @@ def get_from_snowflake(sql, account, user, password, database, schema, warehouse
     #otherwise they end up as strings and mess stuff up
     df = pd.DataFrame.from_records(
         iter(cur), columns=[x[0] for x in cur.description], coerce_float=True)
+    
+    connection.close()
+    
     return df
 
 #save to snowflake
@@ -161,7 +164,7 @@ def save_to_snowflake(df, table_name, account, user, password, database, schema,
     connection = engine.connect()
     df = df.rename(columns=str.upper)
     with tqdm(total=len(df), desc="Upload to %s.%s.%s" % (database, schema, table_name)) as pbar:
-        for i, cdf in enumerate(chunker(df, chunksize)):
+        for i, cdf in enumerate(utils.chunker(df, chunksize)):
             cdf.to_sql(table_name.replace(" ", "_").upper(), con=engine,
                         index=False, if_exists="append", chunksize=chunksize,
                         method=snow_conn.pandas_tools.pd_writer)
@@ -169,6 +172,3 @@ def save_to_snowflake(df, table_name, account, user, password, database, schema,
     connection.close()
     engine.dispose()
 
-
-def chunker(seq, size):
-    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
