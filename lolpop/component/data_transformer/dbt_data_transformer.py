@@ -74,10 +74,21 @@ def get_dw_config_from_profile(dbt_config):
     #get backend_type and figure out what keys we need to map into lolpop 
     backend_type = conf.get("type").lower()
     if backend_type == "snowflake": 
-        config_keys = ["account", "database",
-                       "password", "schema", "user", "warehouse"]
+        config_keys = ["account", "database","password", "schema", "user", "warehouse"]
     elif backend_type == "duckdb": 
         config_keys = ["path"]
+    elif backend_type == "databricks": 
+        config_keys = ["catalog", "schema", "host", "http_path", "token"]
+    elif backend_type == "bigquery": 
+        method = config.get("method")
+        if method == "service-account"
+            config_keys=["project", "dataset", "keyfile"]
+        else: #using oauth, so assume default application credentials are already set
+            config_keys = ["project", "dataset"]
+    elif backend_type == "redshift": 
+        config_keys=["host", "port", "user", "password", "dbname", "schema"]
+    elif backend_type == "postgres": 
+        config_keys = ["host", "port", "user", "password", "dbname", "schema"]
     else: 
         config_keys = ["account", "database", "password", "schema", "user", "warehouse"]
 

@@ -100,7 +100,7 @@ class GCSDataConnector(BaseDataConnector):
         elif os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") is not None: 
             client = storage.Client(project=project)
         else: 
-            raise Exception("Must either provide GOOGLE_SERVICE_ACCOUNT_KEYFILE in lolpop configuration or set environment variable GOOGLE_APPLICATION_CREDENTIALS.")
+            raise Exception("Must either provide GOOGLE_KEYFILE in lolpop configuration or set environment variable GOOGLE_APPLICATION_CREDENTIALS.")
 
         return client
     

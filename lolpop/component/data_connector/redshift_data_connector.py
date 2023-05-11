@@ -6,5 +6,5 @@ class PostgresDataConnector(PostgresDataConnector):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.redshift_config = utils.load_config(
-            ["REDSHIFT_HOST", "REDSHIFT_PORT", "REDSHIFT_USER", "REDSHIFT_PASSWORD", "REDSHIFT_DATABASE"], self.config)
+            ["REDSHIFT_HOST", "REDSHIFT_PORT", "REDSHIFT_USER", "REDSHIFT_PASSWORD", "REDSHIFT_DBNAME", "REDSHIFT_SCHEMA"], self.config)
         self.pg_config = {k.replace("REDSHIFT", "POSTGRES"):v for k,v in self.redshift_config.items()}

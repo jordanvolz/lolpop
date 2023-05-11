@@ -8,7 +8,7 @@ class BigQueryDataTransformer(BaseDataTransformer):
     def __init__(self, *args, **kwargs): 
         super().__init__(*args, **kwargs)
         self.bigquery_config = utils.load_config(
-            ["GOOGLE_SERVICE_ACCOUNT_KEYFILE", "GOOGLE_PROJECT", "GOOGLE_DATASET"], self.config)
+            ["GOOGLE_KEYFILE", "GOOGLE_PROJECT", "GOOGLE_DATASET"], self.config)
 
     def transform(self, sql, *args, **kwargs):
         data = BigQueryDataConnector._load_data(sql, self.bigquery_config)

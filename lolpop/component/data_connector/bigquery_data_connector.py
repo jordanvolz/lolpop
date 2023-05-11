@@ -14,7 +14,7 @@ class BigQueryDataConnector(BaseDataConnector):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.bigquery_config = utils.load_config(
-            ["GOOGLE_SERVICE_ACCOUNT_KEYFILE", "GOOGLE_PROJECT", "GOOGLE_DATASET"], self.config)
+            ["GOOGLE_KEYFILE", "GOOGLE_PROJECT", "GOOGLE_DATASET"], self.config)
   
 
     def get_data(self, table, sql=None, *args, **kwargs):
@@ -100,7 +100,7 @@ class BigQueryDataConnector(BaseDataConnector):
     @classmethod
     def _load_data(self, sql, config):
         result = pd.DataFrame()
-        client = self._get_client(config.get("GOOGLE_SERVICE_ACCOUNT_KEYFILE"), project=config.get("GOOGLE_PROJECT"))
+        client = self._get_client(config.get("GOOGLE_KEYFILE"), project=config.get("GOOGLE_PROJECT"))
 
         # Run a query to retrieve data from the table
         query = client.query(sql)
@@ -113,7 +113,7 @@ class BigQueryDataConnector(BaseDataConnector):
     def _save_data(self, data, table_name, config):
         # Set up the BigQuery client
         client = client = self._get_client(config.get(
-            "GOOGLE_SERVICE_ACCOUNT_KEYFILE"), project=config.get("GOOGLE_PROJECT"))
+            "GOOGLE_KEYFILE"), project=config.get("GOOGLE_PROJECT"))
 
         # Set up the table reference
         dataset = client.dataset(config.get("GOOGLE_DATASET"))
@@ -146,7 +146,7 @@ class BigQueryDataConnector(BaseDataConnector):
         elif os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") is not None: 
             client = bigquery.Client(project=project)
         else: 
-            raise Exception("Must either provide GOOGLE_SERVICE_ACCOUNT_KEYFILE in lolpop configuration or set environment variable GOOGLE_APPLICATION_CREDENTIALS.")
+            raise Exception("Must either provide GOOGLE_KEYFILE in lolpop configuration or set environment variable GOOGLE_APPLICATION_CREDENTIALS.")
 
         return client
     

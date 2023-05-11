@@ -13,7 +13,8 @@ class PostgresDataTransformer(BaseDataTransformer):
             "POSTGRES_PORT",
             "POSTGRES_USER",
             "POSTGRES_PASSWORD",
-            "POSTGRES_DATABASE",
+            "POSTGRES_DBNAME",
+            "POSTGRES_SCHEMA",
         ], self.config)
 
     def transform(self, sql, *args, **kwargs):

@@ -12,7 +12,7 @@ class PostgresDataConnector(BaseDataConnector):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.pg_config = utils.load_config(["POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DATABASE"], self.config)
+        self.pg_config = utils.load_config(["POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DBNAME", "POSTGRES_SCHEMA"], self.config)
 
     def get_data(self, table, sql=None, *args, **kwargs):
         if sql is None:
@@ -74,15 +74,15 @@ class PostgresDataConnector(BaseDataConnector):
 
     def _save_data(self, data, table, config):
         chunksize = 16384 
-        database = config.get("POSTGRES_DATABASE", "")
+        database = config.get("POSTGRES_DBNAME", "")
         engine = create_engine("postgresql://%s:%s@%s:%s/%s"
                                % (config.get("POSTGRES_USER"), config.get("POSTGRES_PASSWORD"),
                                   config.get("POSTGRES_HOST"), config.get("POSTGRES_PORT"), database))
         connection = engine.connect()
-
-        with tqdm(total=len(data), desc="Upload to %s.%s" % (database, table)) as pbar:
+        table_name = "%s.%s" % (table.replace(" ", "_"), config.get("POSTGRES_SCHEMA"))
+        with tqdm(total=len(data), desc="Upload to %s.%s" % (database, table_name)) as pbar:
             for i, cdf in enumerate(utils.chunker(data, chunksize)):
-                cdf.to_sql(table.replace(" ", "_"), con=engine,
+                cdf.to_sql(table_name, con=engine,
                            index=False, if_exists="append", chunksize=chunksize)
                 pbar.update(chunksize)
         connection.close()
@@ -122,7 +122,7 @@ class PostgresDataConnector(BaseDataConnector):
             port=config.get("POSTGRES_PORT"),
             user=config.get("POSTGRES_USER"),
             password=config.get("POSTGRES_PASSWORD"),
-            dbname=config.get("POSTGRES_DATABASE"),
+            dbname=config.get("POSTGRES_DBNAME"),
         )
 
         return conn 

@@ -13,7 +13,8 @@ class RedshiftDataTransformer(BaseDataTransformer):
             "REDSHIFT_PORT",
             "REDSHIFT_USER",
             "REDSHIFT_PASSWORD",
-            "REDSHIFT_DATABASE",
+            "REDSHIFT_DBNAME",
+            "REDSHIFT_SCHEMA",
         ], self.config)
         self.pg_config = {
             k.replace("REDSHIFT", "POSTGRES"): v for k, v in self.redshift_config.items()}
