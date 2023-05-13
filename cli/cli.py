@@ -64,7 +64,7 @@ def initialize(
         typer.secho("Successfully created lolpop project %s at location %s/%s" %
                     (project_name, project_path, project_name), fg="green")
     except Exception as e: 
-        typer.secho("Failed to create template for %s %s: %s" %(template_type, object_class, str(e)), fg="red") 
+        typer.secho("Failed to create project %s: %s" %(project_name, str(e)), fg="red") 
 
 @app.command("help", add_help_option=False, options_metavar="")
 def help(ctx: typer.Context):

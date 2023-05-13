@@ -54,6 +54,7 @@ snowflake-sqlalchemy="1.4.6"
 tqdm="4.64.1"
 sdv="1.0.0b1"
 metaflow="2.8.3"
+openai="^0.27.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2"
