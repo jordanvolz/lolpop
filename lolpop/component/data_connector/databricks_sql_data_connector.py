@@ -3,7 +3,7 @@ from lolpop.component.data_connector.base_data_connector import BaseDataConnecto
 from lolpop.utils import common_utils as utils
 
 import pandas as pd
-from databricks import sql
+from databricks import sql as databricks_sql
 from sqlalchemy import create_engine
 from tqdm import tqdm
 
@@ -70,7 +70,7 @@ class DatabricksSQLDataConnector(BaseDataConnector):
     @classmethod
     def _load_data(self, sql, config):
         df = pd.DataFrame()
-        with sql.connect(server_hostname=config.get("DATABRICKS_SERVER_HOSTNAME"),
+        with databricks_sql.connect(server_hostname=config.get("DATABRICKS_SERVER_HOSTNAME"),
                          http_path=config.get("DATABRICKS_HTTP_PATH"),
                          access_token=config.get("DATABRICKS_TOKEN")) as connection:
 
@@ -87,7 +87,7 @@ class DatabricksSQLDataConnector(BaseDataConnector):
         catalog = config.get("DATABRICKS_CATALOG", "")
         schema = config.get("DATABRICKS_SCHEMA", "")
         engine = create_engine("databricks://token:%s@%s?http_path=%s&catalog=%s&schema=%s"
-                               %(config.get("DATABRICKS_TOKEN"), config.get("DATABRICKS_SERVER_HOST"), 
+                               %(config.get("DATABRICKS_TOKEN"), config.get("DATABRICKS_SERVER_HOSTNAME"), 
                                  config.get("DATABRICKS_HTTP_PATH"), catalog, schema))
         connection = engine.connect()
 
