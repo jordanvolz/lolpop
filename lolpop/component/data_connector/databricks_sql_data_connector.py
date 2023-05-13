@@ -94,7 +94,7 @@ class DatabricksSQLDataConnector(BaseDataConnector):
         with tqdm(total=len(data), desc="Upload to %s.%s.%s" % (catalog, schema, table)) as pbar:
             for i, cdf in enumerate(utils.chunker(data, chunksize)):
                 cdf.to_sql(table.replace(" ", "_"), con=engine,
-                        index=False, if_exists="append", chunksize=chunksize)
+                        index=False, if_exists="append", chunksize=chunksize, method="multi")
                 pbar.update(chunksize)
         connection.close()
         engine.dispose()
