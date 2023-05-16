@@ -58,7 +58,7 @@ metaflow="^2.8.3"
 duckdb={version="^0.7.1", optional=true}
 databricks-sql-connector={version="^2.5.2", optional=true}
 boto3={version="^1.26.89", optional=true}
-db-dtypes=={version="^1.1.1", optional=true}
+db-dtypes={version="^1.1.1", optional=true}
 psychopg2={version="^2.9.6", optional=true}
 openai="^0.27.6"
 
