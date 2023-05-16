@@ -1,6 +1,6 @@
 from lolpop.utils import common_utils as utils
 from omegaconf import OmegaConf
-
+from inspect import currentframe
 class BaseComponent: 
     __REQUIRED_CONF__ = {
         "config" : []
@@ -58,9 +58,9 @@ class BaseComponent:
             if total_missing > 0:   
                 raise Exception ("Missing the following from %s component configuration: %s" %(type(self).__name__, missing))
 
-    def log(self, msg, level="INFO"): 
+    def log(self, msg, level="INFO", **kwargs): 
         if not self.suppress_logger:
-            utils.log(self, msg, level)
+            self.logger.log(msg, level, process_name=self.name, line_num=currentframe().f_back.f_lineno, **kwargs)
 
 
     def notify(self, msg, level="ERROR"): 

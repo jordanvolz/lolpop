@@ -59,8 +59,8 @@ To build, MVP:
 xx1. 1 Additional Pipeline Extension (MetaFlow? mlflow?) -- DONE
 xx2. 1 Additional Metadata Tracker Extension (MLFlow? w&b) 
     -- MLFlow DONE
-3. 2 Additional Data Integrations: (duckdb/bigquery/redshift/s3/gcs/databricks)
-4. 2 Additional Use Case Examples: (Regression/Classification/Recommender/NLP)
+xx3. 2 Additional Data Integrations: (duckdb/bigquery/redshift/s3/gcs/databricks) -- DONE
+4. 2 Additional Use Case Examples: (Regression/TS/Recommender/NLP)
 5. Testing Framework
 6. Project Templates -- WIP
 7. MVP Documentation

@@ -279,11 +279,6 @@ def get_all_plugin_paths(obj):
 
     return plugin_paths
 
-def log(obj, msg, level): 
-    current_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S.%f")
-    msg = "%s [%s] <%s> ::: %s " %(current_time, level, obj.name, msg)
-    obj.logger.log(msg, level)
-
 #wraps logging calls around function execution
 def log_execution(level="DEBUG", start_msg = None, end_msg = None, timeit=True):
     def log_decorator(func):

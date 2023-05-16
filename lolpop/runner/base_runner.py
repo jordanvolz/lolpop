@@ -2,7 +2,7 @@ from omegaconf import OmegaConf
 from lolpop.utils import common_utils as utils
 import os 
 from pathlib import Path
-
+from inspect import currentframe
 class BaseRunner: 
 
     __REQUIRED_CONF__ = {
@@ -106,9 +106,10 @@ class BaseRunner:
             raise Exception("Missing the following from runner configuration: %s" %missing) 
         return conf
 
-    def log(self, msg, level="INFO"): 
+    def log(self, msg, level="INFO", **kwargs): 
         if not self.suppress_logger: 
-            utils.log(self, msg, level)
+            self.logger.log(msg, level, process_name=self.name,
+                            line_num=currentframe().f_back.f_lineno, **kwargs)
 
     def notify(self, msg, level="ERROR"): 
         if not self.suppress_notifier: 
