@@ -1,7 +1,7 @@
 from lolpop.component.data_connector.postgres_data_connector import PostgresDataConnector
 from lolpop.utils import common_utils as utils
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
-class PostgresDataConnector(PostgresDataConnector):
+class RedshiftDataConnector(PostgresDataConnector):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

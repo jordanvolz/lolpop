@@ -11,7 +11,7 @@ license = "Apache-2.0"
 packages = [
     {include = "lolpop"},
     ]
-include = ["templates", "cli"]
+#include = ["templates", "cli"]
 
 #should break this out into dependency groups/extras: 
 #https://python-poetry.org/docs/pyproject/#:~:text=See-,Dependency%20groups,-for%20a%20more
@@ -75,7 +75,7 @@ pytest = "^7.2"
 faker = "^14.0"
 
 [tool.poetry.scripts]
-lolpop = "cli.cli:app"
+lolpop = "lolpop.cli.cli:app"
 
 #[tool.poetry.plugins]
 

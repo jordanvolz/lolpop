@@ -5,9 +5,6 @@ import os
 
 app = typer.Typer(help="Generate synthetic data from existing data.")
 
-LOLPOP_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-#PARENT_DIR = os.path.dirname(LOLPOP_DIR)
-
 
 @app.callback(invoke_without_command=True)
 def default(ctx: typer.Context):
