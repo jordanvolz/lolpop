@@ -1,7 +1,7 @@
 import subprocess 
 import os 
 import sys
-from importlib import import_module
+from importlib import import_module, util as import_util 
 from git import Repo
 from omegaconf import OmegaConf, dictconfig
 from datetime import datetime
@@ -94,6 +94,14 @@ def load_class_from_plugin(class_name, plugin_mods, class_type="component"):
             #if multiple plugins are used, the one we are looking for will not be in most of them, so just ignore any errors
             continue 
     return cl
+
+#loads a module from a file
+def load_module_from_file(file_path): 
+    spec = import_util.spec_from_file_location(file_path.stem, file_path)
+    mod = import_util.module_from_spec(spec)
+    sys.modules[spec.name]=mod #need to do this to properly register module
+    spec.loader.exec_module(mod)
+    return mod 
 
 #register component class as an attribute of the provided object
 def register_component_class(self_obj, conf, component_type, default_class_name=None, pipeline_conf = {}, runner_conf = {}, parent_process = "runner", problem_type = None, dependent_components = {}, plugin_mods=[]): 
@@ -270,11 +278,6 @@ def get_all_plugin_paths(obj):
     plugin_paths = [Path(path) for path in set(plugin_paths)]
 
     return plugin_paths
-
-def log(obj, msg, level): 
-    current_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S.%f")
-    msg = "%s [%s] <%s> ::: %s " %(current_time, level, obj.name, msg)
-    obj.logger.log(msg, level)
 
 #wraps logging calls around function execution
 def log_execution(level="DEBUG", start_msg = None, end_msg = None, timeit=True):

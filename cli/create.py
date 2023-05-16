@@ -1,8 +1,14 @@
 import typer 
-from cookiecutter.main import cookiecutter 
+import inspect 
+import os
+import json 
+
+from typing import List
+from cookiecutter.main import cookiecutter
 from pathlib import Path
-import os 
+
 from lolpop import __template_path__ as lolpop_template_path
+from lolpop.utils import common_utils as utils
 
 app = typer.Typer(help="Create new runners, piplines, and components.")
 
@@ -76,3 +82,115 @@ def create_template(template_type, object_type, object_class, template_path, obj
         typer.secho("Successfully created template at location %s" %object_dir, fg="green")
     except Exception as e: 
         typer.secho("Failed to create template for %s %s: %s" %(template_type, object_class, str(e)), fg="red") 
+
+
+@app.command("documentation", help="Create documentation for a class.")
+def create_documentation(
+    source_file: Path = typer.Argument(
+        ..., help="Path to the source file."),
+    class_name: str = typer.Option(
+        None, "--class-name", "-c", help="Class name in source_file to document."),
+    method_filter: List[str] = typer.Option([], "--method-filter", "-f", help="Methods to include in the documentation. default=all."),
+    generator_class: str = typer.Option(
+        "OpenAIChatbot", "--generator-class", "-g", help="Generative AI Chatbot class name."),
+    generator_kwargs: str = typer.Option(
+        "{}", "--kwargs", "-k", help="Keyword arguments to pass into the generator class"),
+    output_path: Path = typer.Option(None, "--output-path", "-o", help="The location to save the documentation"),
+):
+    typer.secho("Loading generator class %s..." % generator_class, fg="blue")
+    generator_cl = utils.load_class(generator_class, "component")
+    logger_cl = utils.load_class("StdOutLogger", "component")
+    chatbot = generator_cl(components={"logger": logger_cl()})
+    #suppress logging/notifying to reduce cli noise 
+    chatbot.suppress_logger = True
+    chatbot.suppress_notifier = True
+    typer.secho("Successfully loaded generator class %s" %
+                generator_class, fg="green")
+
+    typer.secho("Loading class %s from file %s and reading source code..." %
+                (class_name, source_file), fg="blue")
+    mod = utils.load_module_from_file(source_file)
+    class_code = inspect.getsource(getattr(mod, class_name))
+    num_lines = class_code.count("\n")
+    typer.secho("Successfully loaded class %s! Found %s lines of code" %(class_name, num_lines), fg="green")
+    
+    if num_lines > 0: 
+        typer.secho("Preparing prompt for chatbot...", fg="blue")
+        messages=[]
+        messages.append(chatbot.prepare_message(role="system", content="You are a technical writer for a software company."))
+        filter_text = "this class"
+        if len(method_filter)>0: 
+            filter_text = "these methods in the class: %s" %str(method_filter)
+        messages.append(chatbot.prepare_message(role="user", content="The following is a python class. I would like you to write technical documentation for %s. Include a description of each method in the class, as well as providing at least one example of using the class in a small code snippet. Please write your documentation in markdown format. Class Code: %s" %(filter_text,class_code)))
+        typer.secho("Prompting chatbot and awaiting a response ...", fg="blue")
+        response = chatbot.ask(messages=messages, **json.loads(generator_kwargs))
+        typer.secho("Successfully queried chatbot. Received response: \n\n %s" %response, fg="green")
+
+        if output_path: 
+            with open(output_path, "w+") as f: 
+                f.write(response)
+            typer.secho("Successfully wrote response out to file %s" %output_path)
+
+    else: 
+        typer.secho("No lines found for class %s, aborting. Please check your inputs and try again." %class_name)
+
+
+@app.command("tests", help="Create tests for a class.")
+def create_tests(
+    source_file: Path = typer.Argument(
+        ..., help="Path to the source file."),
+    class_name: str = typer.Option(
+        None, "--class-name", "-c", help="Class name in source_file to document."),
+    method_filter: List[str] = typer.Option(
+        [], "--method-filter", "-f", help="Methods to include in the documentation. default=all."),
+    generator_class: str = typer.Option(
+        "OpenAIChatbot", "--generator-class", "-g", help="Generative AI Chatbot class name."),
+    generator_kwargs: str = typer.Option(
+        "{}", "--kwargs", "-k", help="Keyword arguments to pass into the generator class"),
+    output_path: Path = typer.Option(
+        None, "--output-path", "-o", help="The location to save the documentation"),
+    testing_framework: str = typer.Option("pytest", "--testing-framework", "-t", help="The testing framework you would like the tests to be written in.")
+):
+    typer.secho("Loading generator class %s..." % generator_class, fg="blue")
+    generator_cl = utils.load_class(generator_class, "component")
+    logger_cl = utils.load_class("StdOutLogger", "component")
+    chatbot = generator_cl(components={"logger": logger_cl()})
+    #suppress logging/notifying to reduce cli noise
+    chatbot.suppress_logger = True
+    chatbot.suppress_notifier = True
+    typer.secho("Successfully loaded generator class %s" %
+                generator_class, fg="green")
+
+    typer.secho("Loading class %s from file %s and reading source code..." %
+                (class_name, source_file), fg="blue")
+    mod = utils.load_module_from_file(source_file)
+    class_code = inspect.getsource(getattr(mod, class_name))
+    num_lines = class_code.count("\n")
+    typer.secho("Successfully loaded class %s! Found %s lines of code" %
+                (class_name, num_lines), fg="green")
+
+    if num_lines > 0:
+        typer.secho("Preparing prompt for chatbot...", fg="blue")
+        messages = []
+        messages.append(chatbot.prepare_message(
+            role="system", content="You are an expert software developer for a software company."))
+        filter_text = "all methods in this class"
+        if len(method_filter) > 0:
+            filter_text = "these methods in the class: %s" % str(
+                method_filter)
+        messages.append(chatbot.prepare_message(role="user", content="The following is a python class. I would like you to write tests for %s. Use the %s testing framework and python to write your tests. Please write at least two tests for each method and respond in the form of a python file. Class Code: %s" % (filter_text, testing_framework, class_code)))
+        typer.secho("Prompting chatbot and awaiting a response ...", fg="blue")
+        response = chatbot.ask(messages=messages, **
+                               json.loads(generator_kwargs))
+        typer.secho(
+            "Successfully queried chatbot. Received response: \n\n %s" % response, fg="green")
+
+        if output_path:
+            with open(output_path, "w+") as f:
+                f.write(response)
+            typer.secho("Successfully wrote response out to file %s" %
+                        output_path)
+
+    else:
+        typer.secho(
+            "No lines found for class %s, aborting. Please check your inputs and try again." % class_name)
