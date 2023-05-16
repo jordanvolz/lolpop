@@ -13,7 +13,7 @@ xx1.2 Project templates -- DONE
 2. packaging strategy/setup.py/requirements.txts
 xx--> poetry setup -- DONE 
 --> try to use extras_require to pull in individual requirements.txt from components?
---> also, see: https://typer.tiangolo.com/tutorial/package/
+--> cli in pypi package
 --> idea is that users can package up their own stuff, i.e. add component and create binary, or docker image, or even docker image of embedded model, etc. 
 --> but also need to work through distributing lolpop's defaults
 --> Note; issue w/ evidently requiring pyyaml <6 and dbt-core >=6, currently can install via `pip3 install -e . --no-deps` to get by it. 
@@ -64,6 +64,7 @@ xx3. 2 Additional Data Integrations: (duckdb/bigquery/redshift/s3/gcs/databricks
 5. Testing Framework
 6. Project Templates -- WIP
 7. MVP Documentation
-8. Local Experience -- i.e. try it out w/o complicated installs/registrations
+xx8. Local Experience -- i.e. try it out w/o complicated installs/registrations
     -- DONE
-9. MVP packaing -- pip install
+xx9. MVP packaing -- pip install
+    -- DONE 

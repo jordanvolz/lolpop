@@ -2,13 +2,6 @@ from lolpop.component.data_transformer.base_data_transformer import BaseDataTran
 from lolpop.utils import common_utils as utils
 from lolpop.component.data_connector.snowflake_data_connector import SnowflakeDataConnector
 
-import pandas as pd
-import snowflake.connector as snow_conn
-from snowflake.sqlalchemy import URL
-from snowflake.connector.pandas_tools import pd_writer
-from sqlalchemy import create_engine
-from tqdm import tqdm
-
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class SnowflakeDataTransformer(BaseDataTransformer): 
 
