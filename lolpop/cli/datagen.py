@@ -2,8 +2,14 @@ import typer
 from lolpop.utils import common_utils as utils
 from pathlib import Path
 import os 
+from typer.core import TyperGroup
 
-app = typer.Typer(help="Generate synthetic data from existing data.")
+
+class NaturalOrderGroup(TyperGroup):
+    def list_commands(self, ctx):
+        return self.commands.keys()
+    
+app = typer.Typer(cls = NaturalOrderGroup, help="Generate synthetic data from existing data.")
 
 
 @app.callback(invoke_without_command=True)

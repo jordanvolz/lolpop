@@ -6,11 +6,17 @@ import json
 from typing import List
 from cookiecutter.main import cookiecutter
 from pathlib import Path
+from typer.core import TyperGroup
 
 from lolpop import __template_path__ as lolpop_template_path
 from lolpop.utils import common_utils as utils
 
-app = typer.Typer(help="Create new runners, piplines, and components.")
+
+class NaturalOrderGroup(TyperGroup):
+    def list_commands(self, ctx):
+        return self.commands.keys()
+    
+app = typer.Typer(cls = NaturalOrderGroup, help="Create new runners, piplines, and components.")
 
 LOLPOP_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 #PARENT_DIR = os.path.dirname(LOLPOP_DIR)
