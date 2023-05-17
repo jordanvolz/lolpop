@@ -4,8 +4,14 @@ from pathlib import Path
 import os 
 import json
 import pandas as pd 
+from typer.core import TyperGroup 
 
-app = typer.Typer(help="Upload local data into your data platform. ")
+class NaturalOrderGroup(TyperGroup):
+    def list_commands(self, ctx):
+        return self.commands.keys()
+    
+
+app = typer.Typer(cls = NaturalOrderGroup, help="Upload local data into your data platform. ")
 
 
 @app.callback(invoke_without_command=True)

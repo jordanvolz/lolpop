@@ -2,38 +2,41 @@ import typer
 import click 
 import os 
 
-import create, run, package, test, datagen, seed 
+from lolpop.cli import create, run, package, test, datagen, seed 
 from importlib.metadata import version
 from typing import Optional
 from pathlib import Path 
 from cookiecutter.main import cookiecutter
 from lolpop import __template_path__ as lolpop_template_path
+from typer.core import TyperGroup 
 
 try:
     __version__ = version("lolpop")
 except:
     __version__ = "local-dev"
 
-#class NaturalOrderGroup(click.Group):
-#    def list_commands(self, ctx):
-#        return self.commands.keys()
+class NaturalOrderGroup(TyperGroup):
+    def list_commands(self, ctx):
+        return self.commands.keys()
 
-app = typer.Typer(#cls=NaturalOrderGroup,
+app = typer.Typer(cls=NaturalOrderGroup,
                   help="lolpop: A software engineering framework for machine learning workflows.",
                   no_args_is_help=True)
 
 app.add_typer(run.app, name="run")
 app.add_typer(create.app, name="create")
-app.add_typer(test.app, name="test")
-app.add_typer(package.app, name="package")
 app.add_typer(datagen.app, name="datagen")
 app.add_typer(seed.app, name="seed")
+app.add_typer(test.app, name="test")
+app.add_typer(package.app, name="package")
+
 
 
 def version_callback(value: bool):
     if value:
         try:
-            typer.secho(f"lolpop version: %s" %__version__, fg="blue")
+            typer.secho("lolpop version: %s" % __version__, fg="blue")
+            raise typer.Exit()
         except Exception as e:
            raise typer.Exit()
 
@@ -48,7 +51,7 @@ def main(
         help="Print lolpop version",
     ),
 ):
-    return
+    return True
 
 @app.command("init", help="Initialize a lolpop project.")
 def initialize(
@@ -66,7 +69,7 @@ def initialize(
     except Exception as e: 
         typer.secho("Failed to create project %s: %s" %(project_name, str(e)), fg="red") 
 
-@app.command("help", add_help_option=False, options_metavar="")
+@app.command("help", add_help_option=False, options_metavar="", hidden=True)
 def help(ctx: typer.Context):
     """Show CLI usage help."""
     ctx.info_name = None

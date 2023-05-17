@@ -1,6 +1,12 @@
 import typer 
+from typer.core import TyperGroup
 
-app = typer.Typer(help="Package a lolpop workflow.")
+
+class NaturalOrderGroup(TyperGroup):
+    def list_commands(self, ctx):
+        return self.commands.keys()
+    
+app = typer.Typer(cls = NaturalOrderGroup, help="Package a lolpop workflow.")
 
 
 @app.callback(invoke_without_command=True)

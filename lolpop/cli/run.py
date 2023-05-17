@@ -3,8 +3,14 @@ from pathlib import Path
 from lolpop.utils import common_utils as utils
 from typing import List
 import json
+from typer.core import TyperGroup
 
-app = typer.Typer(help="Run workflows with lolpop.")
+
+class NaturalOrderGroup(TyperGroup):
+    def list_commands(self, ctx):
+        return self.commands.keys()
+    
+app = typer.Typer(cls = NaturalOrderGroup, help="Run workflows with lolpop.")
 
 
 @app.callback(invoke_without_command=True)
