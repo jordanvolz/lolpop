@@ -108,17 +108,21 @@ def register_component_class(self_obj, conf, component_type, default_class_name=
     obj = None
     component_class_name = conf.components.get(component_type, default_class_name)
     if component_class_name is not None:
-        obj = None
         try: 
             cl = load_class(component_class_name) 
         except: 
-            self_obj.log(
-            	"Unable to find class %s in built-in components. Searching plugins modules in %s..." %(component_class_name, str(plugin_mods)))
-            cl = load_class_from_plugin(component_class_name, plugin_mods)
-            if cl is not None: 
-                self_obj.log("Found class %s in plugins!" % component_class_name)
-            else: 
-                self_obj.log("Unable to find class %s in plugins!" %component_class_name)
+            try: 
+                self_obj.log("Unable to find component in build-in components. Searching extensions...")
+                cl = load_class(component_class_name, class_type="extension")
+                self_obj.log("Found class %s in extensions!" %component_class_name)
+            except: 
+                self_obj.log(
+                    "Unable to find class %s in extensions. Searching plugins modules in %s..." %(component_class_name, str(plugin_mods)))
+                cl = load_class_from_plugin(component_class_name, plugin_mods)
+                if cl is not None: 
+                    self_obj.log("Found class %s in plugins!" % component_class_name)
+                else: 
+                    self_obj.log("Unable to find class %s in plugins!" %component_class_name)
         if cl is not None: 
             obj = cl(conf=conf.get(component_type, {}), pipeline_conf=pipeline_conf, runner_conf=runner_conf,
                      parent_process=parent_process, problem_type=problem_type, components=dependent_components)
@@ -133,13 +137,19 @@ def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=No
         try: 
             cl = load_class(pipeline_class_name, class_type="pipeline")
         except: 
-            self_obj.log(
-            	"Unable to find pipeline %s in built-in pipelines. Searching plugins..." % pipeline_class_name)
-            cl = load_class_from_plugin(
-            	pipeline_class_name, plugin_mods, class_type="pipeline")
-            self_obj.log(
-            	"Found class %s in plugins!" % pipeline_class_name)
-        obj = None
+            try: 
+                self_obj.log(
+                    "Unable to find component in build-in components. Searching extensions...")
+                cl = load_class(pipeline_class_name, class_type="extension")
+                self_obj.log("Found class %s in extensions!" %
+                             pipeline_class_name)
+            except: 
+                self_obj.log(
+                    "Unable to find pipeline %s in built-in pipelines. Searching plugins..." % pipeline_class_name)
+                cl = load_class_from_plugin(
+                    pipeline_class_name, plugin_mods, class_type="pipeline")
+                self_obj.log(
+                    "Found class %s in plugins!" % pipeline_class_name)
         if cl is not None: 
             obj = cl(conf=conf.get(pipeline_type, {}), runner_conf=runner_conf, parent_process=parent_process,
                      problem_type=problem_type, components=dependent_components, plugin_mods=plugin_mods)
