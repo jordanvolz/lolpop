@@ -24,7 +24,7 @@ class OfflineTrain(BaseTrain):
             model = self.hyperparameter_tuner.run_experiment(data, model_version)
         else: 
             #TODO: this needs a better entry point. build_model doesn't actually log stuff
-            model = self.model_trainer.build_model(data, model_version)
+            model, _  = self.model_trainer.build_model(data, model_version)
 
         return model, model_version
 

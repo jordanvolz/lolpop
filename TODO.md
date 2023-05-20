@@ -9,11 +9,11 @@ xx00.1 i.e. using metaflow as pipeline instead of default pipelines -- DONE
 1. CLI
 xx1.1. runner/pipeline/component templates -- DONE
 xx1.2 Project templates -- DONE
-1.3 Need to think more about custom runner/pipeline/component packaging/installation. Might be good to have lolpop/adapters/<component/pipeline/runner> and then in lolpop/<component/pipeline/runner> we add that to the dir/path. This would then give a bath for people to build then our and install from binary into site-packages/lolpop. 
+xx1.3 Need to think more about custom runner/pipeline/component packaging/installation. Might be good to have lolpop/adapters/<component/pipeline/runner> and then in lolpop/<component/pipeline/runner> we add that to the dir/path. This would then give a bath for people to build then our and install from binary into site-packages/lolpop. --DONE 
 2. packaging strategy/setup.py/requirements.txts
 xx--> poetry setup -- DONE 
 --> try to use extras_require to pull in individual requirements.txt from components?
---> cli in pypi package
+xx--> cli in pypi package -- DONE
 --> idea is that users can package up their own stuff, i.e. add component and create binary, or docker image, or even docker image of embedded model, etc. 
 --> but also need to work through distributing lolpop's defaults
 --> Note; issue w/ evidently requiring pyyaml <6 and dbt-core >=6, currently can install via `pip3 install -e . --no-deps` to get by it. 

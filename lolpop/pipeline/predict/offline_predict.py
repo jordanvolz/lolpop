@@ -38,7 +38,8 @@ class OfflinePredict(BasePredict):
             data["predictions_proba"] = model._predict_proba_df(df, to_list=True)
 
         #get explanations
-        data["explanations"] = self.model_explainer.get_explanations(df, model, model_version, "predictions", to_list=True)
+        if not self._get_config("skip_prediction_explanations"):
+            data["explanations"] = self.model_explainer.get_explanations(df, model, model_version, "predictions", to_list=True)
 
         #log predictions
         self.metrics_tracker.log_prediction_metrics(prediction_job, data["predictions"])

@@ -11,6 +11,8 @@ class BaseModelTrainer(BaseComponent):
     def __init__(self, params=None, *args, **kwargs): 
         #set normal config
         super().__init__(params=params, *args, **kwargs)
+        if not params: #if params aren't passed in, try to retrieve from config
+            params = self._get_config("training_params", {})
         self.params = params
 
     def fit(self, data, *args, **kwargs): 
@@ -99,7 +101,7 @@ class BaseModelTrainer(BaseComponent):
 
         return metrics_out
 
-    def build_model(self, data, model_version, algo, params): 
+    def build_model(self, data, model_version, *args, **kwargs): 
         #fit model
         model_obj = self.fit(data)
 
@@ -137,12 +139,11 @@ class BaseModelTrainer(BaseComponent):
         train_data = {"X_train" : df_X, "y_train": df_y}
 
         #get params, class from winning experiment 
-        winning_experiment = self.metadata_tracker.get_winning_experiment(model_version)
-        params = self.metadata_tracker.get_metadata(winning_experiment, "training_params")
-        model_trainer = self.metadata_tracker.get_metadata(winning_experiment, "model_trainer")
+        #winning_experiment = self.metadata_tracker.get_winning_experiment(model_version)
+        #params = self.metadata_tracker.get_metadata(winning_experiment, "training_params")
+        #model_trainer = self.metadata_tracker.get_metadata(winning_experiment, "model_trainer")
         
         #rebuild model on all data 
-        #we need to use the single model entry point for this, as this doesn't log the rigth info
-        model, exp = self.build_model(train_data, model_version, model_trainer, params)                        
+        model, exp = self.build_model(train_data, model_version)                        
         
         return model, exp
