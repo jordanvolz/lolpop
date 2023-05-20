@@ -202,7 +202,7 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         
     def register_vc_resource(self, resource, vc_info, key=None, additional_metadata={}, *args, **kwargs):
         #check if a git commit is present. if so then we know we did an external save
-        if "hexsha" in vc_info.keys():
+        if vc_info and "hexsha" in vc_info.keys():
             uri = vc_info.get("uri")
             hexsha = vc_info.get("hexsha")
 

@@ -104,7 +104,9 @@ def load_module_from_file(file_path):
     return mod 
 
 #register component class as an attribute of the provided object
-def register_component_class(self_obj, conf, component_type, default_class_name=None, pipeline_conf = {}, runner_conf = {}, parent_process = "runner", problem_type = None, dependent_components = {}, plugin_mods=[]): 
+def register_component_class(self_obj, conf, component_type, default_class_name=None, 
+                             pipeline_conf = {}, runner_conf = {}, parent_process = "runner", 
+                             problem_type = None, dependent_components = {}, plugin_mods=[], *args, **kwargs): 
     obj = None
     component_class_name = conf.components.get(component_type, default_class_name)
     if component_class_name is not None:
@@ -125,12 +127,14 @@ def register_component_class(self_obj, conf, component_type, default_class_name=
                     self_obj.log("Unable to find class %s in plugins!" %component_class_name)
         if cl is not None: 
             obj = cl(conf=conf.get(component_type, {}), pipeline_conf=pipeline_conf, runner_conf=runner_conf,
-                     parent_process=parent_process, problem_type=problem_type, components=dependent_components)
+                     parent_process=parent_process, problem_type=problem_type, components=dependent_components, *args, **kwargs)
             setattr(self_obj, component_type, obj)
     return obj 
 
 #registers pipeline as an attribute of the provided object
-def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=None, runner_conf = {}, parent_process = "runner", problem_type = None, dependent_components = {}, plugin_mods=[]): 
+def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=None, runner_conf = {}, 
+                            parent_process = "runner", problem_type = None, dependent_components = {}, 
+                            plugin_mods=[], *args, **kwargs): 
     obj = None 
     pipeline_class_name = conf.pipelines.get(pipeline_type, default_class_name)
     if pipeline_class_name is not None: 
@@ -152,7 +156,7 @@ def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=No
                     "Found class %s in plugins!" % pipeline_class_name)
         if cl is not None: 
             obj = cl(conf=conf.get(pipeline_type, {}), runner_conf=runner_conf, parent_process=parent_process,
-                     problem_type=problem_type, components=dependent_components, plugin_mods=plugin_mods)
+                     problem_type=problem_type, components=dependent_components, plugin_mods=plugin_mods, *args, **kwargs)
             setattr(self_obj, pipeline_type, obj)
     return obj
 

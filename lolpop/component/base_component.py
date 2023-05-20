@@ -12,7 +12,8 @@ class BaseComponent:
     suppress_logger = False
     suppress_notifier = False 
 
-    def __init__(self, conf={}, pipeline_conf={}, runner_conf={}, parent_process=None, problem_type = None, components = {}, *args, **kwargs):
+    def __init__(self, conf={}, pipeline_conf={}, runner_conf={}, parent_process=None, problem_type = None, 
+                 components = {}, skip_config_validation=False, *args, **kwargs):
         #set basic properties, like name and configs
         self.name = type(self).__name__
         config = utils.get_conf(conf)
@@ -36,7 +37,8 @@ class BaseComponent:
                         )
 
         #Now we validate config to make sure the component has everything it needs
-        self._validate_conf(valid_conf, components)
+        if not skip_config_validation: 
+            self._validate_conf(valid_conf, components)
         self.config = omega_conf.get("config", {})
 
         #if the config looks good, then we can set all our components 

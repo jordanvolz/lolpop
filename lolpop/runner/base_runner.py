@@ -17,12 +17,15 @@ class BaseRunner:
     suppress_logger = False 
     suppress_notifier = False
 
-    def __init__(self, conf={}, problem_type = "unspecified_problem_type", plugin_paths=[]):
+    def __init__(self, conf={}, problem_type = "unspecified_problem_type", plugin_paths=[], 
+                 skip_config_validation=False, *args, **kwargs):
         #handle configuration 
         self.name = type(self).__name__
         conf = utils.get_conf(conf)
+        conf = utils.resolve_conf_variables(conf)
         conf = utils.copy_config_into(conf, self.__DEFAULT_CONF__) 
-        conf = self._validate_conf(conf)
+        if not skip_config_validation:
+            conf = self._validate_conf(conf)
         self.config = conf.get("config", {})
         self.problem_type = conf.get("problem_type", problem_type)
 
@@ -54,7 +57,9 @@ class BaseRunner:
         #set up logger first because we want to pass that to all children
         #we set this up separately from the other components in case you want access to the logger in the 
         #__init__ function
-        logger_obj = utils.register_component_class(self, conf, "logger", default_class_name="StdOutLogger", runner_conf = self.config, plugin_mods=plugin_mods)
+        logger_obj = utils.register_component_class(self, conf, "logger", default_class_name="StdOutLogger", 
+                                                    runner_conf = self.config, plugin_mods=plugin_mods, 
+                                                    skip_config_validation=skip_config_validation)
         if logger_obj is not None: 
             runner_components = {"logger" : logger_obj}
             self.log("Loaded class %s into component %s" %(type(self.logger).__name__, "logger"))
@@ -66,20 +71,22 @@ class BaseRunner:
         #it's unclear why you might not want to use a metadata tracker, 
         #but we sould consider this use case in the future 
         meta_obj = utils.register_component_class(self, conf, "metadata_tracker", runner_conf=self.config, parent_process=self.name,
-                                                  problem_type=self.problem_type, dependent_components=runner_components, plugin_mods=plugin_mods)
+                                                  problem_type=self.problem_type, dependent_components=runner_components, 
+                                                  plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
         if meta_obj is not None:
             runner_components["metadata_tracker"] = meta_obj
             self.log("Loaded class %s into component %s" %(type(self.metadata_tracker).__name__, "metadata_tracker"))
         else: 
             #for local dev you may turn off metadata_tracker, so let's not strictly enforce that it exists for now
-            raise Exception("Unable to load metadata_tracker component.")
+            self.log("Unable to load metadata_tracker component.")
 
         #build all other components
         for component in conf.components.keys(): 
             #ignore logger and metadata_tracker since we have already set those up
             if component != "logger" and component !="metadata_tracker": 
                 obj = utils.register_component_class(self, conf, component, runner_conf=self.config, parent_process=self.name,
-                                                     problem_type=self.problem_type, dependent_components=runner_components, plugin_mods=plugin_mods)
+                                                     problem_type=self.problem_type, dependent_components=runner_components, 
+                                                     plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
                 if obj is not None: 
                     self.log("Loaded class %s into component %s" %(type(getattr(self, component)).__name__, component))
                     runner_components[component] = obj
@@ -94,11 +101,11 @@ class BaseRunner:
         #build all pipelines 
         for pipeline in conf.pipelines.keys(): 
             utils.register_pipeline_class(self, conf, pipeline, runner_conf=self.config, parent_process=self.name,
-                                          problem_type=self.problem_type, dependent_components=runner_components, plugin_mods=plugin_mods)
+                                          problem_type=self.problem_type, dependent_components=runner_components, 
+                                          plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
             self.log("Loaded class %s into pipeline %s" %(type(getattr(self, pipeline)).__name__, pipeline))
 
     def _validate_conf(self, conf):
-        conf = utils.resolve_conf_variables(conf)
         missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__, conf.get("components"))
         if total_missing>0: 
             #logger is not necessarily set up yet

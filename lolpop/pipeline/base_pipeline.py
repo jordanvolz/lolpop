@@ -14,7 +14,9 @@ class BasePipeline:
     suppress_logger = False
     suppress_notifier = False
 
-    def __init__(self, conf={}, runner_conf={}, parent_process="runner", problem_type=None, pipeline_type="base_pipeline", components={}, plugin_mods=[], plugin_paths=[], *args, **kwargs):
+    def __init__(self, conf={}, runner_conf={}, parent_process="runner", problem_type=None, 
+                 pipeline_type="base_pipeline", components={}, plugin_mods=[], plugin_paths=[], 
+                 skip_config_validation=False, *args, **kwargs):
         #set basic properties like configs
         self.name = type(self).__name__
         conf = utils.get_conf(conf)
@@ -31,7 +33,8 @@ class BasePipeline:
         valid_conf = omega_conf.copy()
         OmegaConf.update(valid_conf, "config", utils.copy_config_into(valid_conf.get("config", {}), runner_conf))
         #validate configuration
-        self._validate_conf(valid_conf, components)
+        if not skip_config_validation:
+            self._validate_conf(valid_conf, components)
         self.config = omega_conf.get("config", {})
 
         #set up reference to each component that is passed in from runner. 
@@ -56,7 +59,10 @@ class BasePipeline:
         pipeline_components = {}
         if "components" in conf.keys(): 
             for component in conf.components.keys(): 
-                obj = utils.register_component_class(self, conf, component, pipeline_conf = pipeline_conf, runner_conf = runner_conf, parent_process=self.name, problem_type = self.problem_type, dependent_components=components, plugin_mods=plugin_mods)
+                obj = utils.register_component_class(self, conf, component, pipeline_conf = pipeline_conf, 
+                                                     runner_conf = runner_conf, parent_process=self.name, 
+                                                     problem_type = self.problem_type, dependent_components=components, 
+                                                     plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
                 if obj is not None: 
                     self.log("Loaded class %s into component %s" %(type(getattr(self, component)).__name__, component))
                     pipeline_components[component] = obj
@@ -68,7 +74,7 @@ class BasePipeline:
         for obj in pipeline_components.values(): 
             obj._update_components(components = pipeline_components)
 
-    def _validate_conf(self, conf, components):
+    def _validate_conf(self, conf, components, skip_validation=False):
         missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__, components)
         if total_missing > 0: 
             #check to see if missing components are provided by runner via kwargs

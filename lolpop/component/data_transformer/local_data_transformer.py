@@ -3,6 +3,7 @@ from lolpop.component.data_connector.local_data_connector import LocalDataConnec
 from lolpop.utils import common_utils as utils
 
 from pathlib import Path 
+from omegaconf import dictconfig
 
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
@@ -45,7 +46,12 @@ class LocalDataTransformer(BaseDataTransformer):
         Returns:
             pd.DataFrame: the transformed data
         """
-        data = self.data_connector.get_data(input_data)
+        if isinstance(input_data,dict) or isinstance(input_data, dictconfig.DictConfig): 
+            data = {k: self.data_connector.get_data(v) for k,v in input_data.items()}
+        elif isinstance(input_data,str): 
+            data = self.data_connector.get_data(input_data)
+        else: 
+            raise Exception("input_data not a valid type. Expecting dict or str. Found: %s" %str(type(input_data)))
         kwargs = self._get_config("transformer_kwargs",{})
 
         data_out = self._transform(data, **kwargs)
