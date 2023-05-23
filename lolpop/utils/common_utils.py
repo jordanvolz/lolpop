@@ -114,7 +114,7 @@ def register_component_class(self_obj, conf, component_type, default_class_name=
             cl = load_class(component_class_name) 
         except: 
             try: 
-                self_obj.log("Unable to find component in build-in components. Searching extensions...")
+                self_obj.log("Unable to find component %s in build-in components. Searching extensions..." %component_class_name)
                 cl = load_class(component_class_name, class_type="extension")
                 self_obj.log("Found class %s in extensions!" %component_class_name)
             except: 
@@ -358,7 +358,7 @@ def compare_data_schemas(obj, data, prev_data):
         except Exception as e: 
             obj.notify("Data Comparison failed. New and old dataframes do not have compatible column types. Error: %s" %str(e), "ERROR")
             raise 
-    return data, prev_data, True
+    return data, prev_data, ok
 
 def convert_col_types(data, prev_data):
     df_a = data.copy()
