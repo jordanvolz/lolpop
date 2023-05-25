@@ -27,20 +27,51 @@ class LocalDataSplitter(BaseDataSplitter):
 
         """
         data_out = data.drop(self._get_config("DROP_COLUMNS",[]),axis=1, errors="ignore")
-        data_out = self._split_data(
-            data_out, 
-            self._get_config("MODEL_TARGET"), 
-            split_column = self._get_config("SPLIT_COLUMN", None),
-            split_classes = self._get_config("SPLIT_CLASSES", {}),  
-            split_ratio = self._get_config("SPLIT_RATIO", [0.8, 0.2]), 
-            sample_num = self._get_config("SAMPLE_NUM", 100000), 
-            use_startified = self._get_config("USE_STRATIFIED", False),
-            include_test = self._get_config("INCLUDE_TEST", False),
+
+        if self.problem_type == "timeseries": 
+            data_out = self._split_timeseries_data(
+                data_out, 
+                self._get_config("time_index"), 
+                self._get_config("model_target"),
+                self._get_config("test_size"), 
+                self._get_config("validation_size"),
             )
+        else: 
+            data_out = self._split_data(
+                data_out, 
+                self._get_config("MODEL_TARGET"), 
+                split_column = self._get_config("SPLIT_COLUMN", None),
+                split_classes = self._get_config("SPLIT_CLASSES", {}),  
+                split_ratio = self._get_config("SPLIT_RATIO", [0.8, 0.2]), 
+                sample_num = self._get_config("SAMPLE_NUM", 100000), 
+                use_startified = self._get_config("USE_STRATIFIED", False),
+                include_test = self._get_config("INCLUDE_TEST", False),
+                )
         for key in data_out.keys():
             self.log("Created %s dataset with %s rows" %(key, data_out.get(key).shape[0]))
 
         return data_out
+
+    def _split_timeseries_data(self, data, time_index, target, test_size=0, validation_size=0,): 
+        #make sure data is ordered 
+        data_out = {}
+
+        data = data.sort_values(time_index).reset_index(drop=True)
+
+        test = None 
+        valid = None
+        train = data  
+        if test_size > 0: 
+            test = train[-test_size:]
+            train = train[:-test_size]
+        if validation_size > 0: 
+            valid = train[-validation_size:]
+            train = train[:-validation_size]
+        
+        data_out = self._build_split_dfs(train, valid, target, test=test)
+
+        return data_out 
+
 
     def _split_data(self, data, target,  split_column=None, split_classes={},  split_ratio=[0.8,0.2], sample_num=100000, use_startified=False, include_test=False): 
         """ Function to split data. 

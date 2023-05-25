@@ -1,6 +1,7 @@
 from lolpop.component.base_component import BaseComponent
 from sklearn import metrics as sk_metrics
 import pandas as pd 
+import numpy as np 
 
 class BaseModelTrainer(BaseComponent): 
 
@@ -11,7 +12,7 @@ class BaseModelTrainer(BaseComponent):
     def __init__(self, params=None, *args, **kwargs): 
         #set normal config
         super().__init__(params=params, *args, **kwargs)
-        if not params: #if params aren't passed in, try to retrieve from config
+        if params is None or params == {}: #if params aren't passed in, try to retrieve from config
             params = self._get_config("training_params", {})
         self.params = params
 
@@ -31,10 +32,13 @@ class BaseModelTrainer(BaseComponent):
         self.metadata_tracker.register_vc_resource(experiment, vc_info, additional_metadata = experiment_metadata)
 
 
-    def _predict_df(self, df):
+    def predict_df(self, df):
         pass 
 
-    def _predict_proba_df(self, df): 
+    def predict_proba_df(self, df): 
+        pass 
+
+    def get_artifacts():
         pass 
 
     def _get_model(self):
@@ -67,37 +71,107 @@ class BaseModelTrainer(BaseComponent):
                     metrics_out["valid"][metric] = sk_metrics.accuracy_score(data["y_valid"], predictions["valid"])
                 if test_exists:
                     metrics_out["test"][metric] = sk_metrics.accuracy_score(data["y_test"], predictions["test"])
-            if metric == "f1": 
+            
+            elif metric == "f1": 
                 metrics_out["train"][metric] = sk_metrics.f1_score(data["y_train"], predictions["train"], average = average)
                 if valid_exists: 
                     metrics_out["valid"][metric] = sk_metrics.f1_score(data["y_valid"], predictions["valid"], average = average)
                 if test_exists:
                     metrics_out["test"][metric] = sk_metrics.f1_score(data["y_test"], predictions["test"], average = average)
-            if metric == "rocauc": 
+            
+            elif metric == "rocauc": 
                 metrics_out["train"][metric] = sk_metrics.roc_auc_score(data["y_train"], predictions["train_proba"], average = average, multi_class = "ovr")
                 if valid_exists: 
                     metrics_out["valid"][metric] = sk_metrics.roc_auc_score(data["y_valid"], predictions["valid_proba"], average = average, multi_class = "ovr")
                 if test_exists:
                     metrics_out["test"][metric] = sk_metrics.roc_auc_score(data["y_test"], predictions["test_proba"], average = average, multi_class = "ovr")
-            if metric == "prauc": 
+            
+            elif metric == "prauc": 
                 if not multi_class: #only works for binary
                     metrics_out["train"][metric] = sk_metrics.average_precision_score(data["y_train"], predictions["train_proba"][:,1])
                     if valid_exists: 
                         metrics_out["valid"][metric] = sk_metrics.average_precision_score(data["y_valid"], predictions["valid_proba"][:,1])
                     if test_exists:
                         metrics_out["test"][metric] = sk_metrics.average_precision_score(data["y_test"], predictions["test_proba"][:,1])
-            if metric == "precision": 
+            
+            elif metric == "precision": 
                 metrics_out["train"][metric] = sk_metrics.precision_score(data["y_train"], predictions["train"], average = average)
                 if valid_exists:
                     metrics_out["valid"][metric] = sk_metrics.precision_score(data["y_valid"], predictions["valid"], average = average)
                 if test_exists:
                     metrics_out["test"][metric] = sk_metrics.precision_score(data["y_test"], predictions["test"], average = average)
-            if metric == "recall": 
+           
+            elif metric == "recall": 
                 metrics_out["train"][metric] = sk_metrics.recall_score(data["y_train"], predictions["train"], average = average)
                 if valid_exists:
                     metrics_out["valid"][metric] = sk_metrics.recall_score(data["y_valid"], predictions["valid"], average = average)
                 if test_exists:
                     metrics_out["test"][metric] = sk_metrics.recall_score(data["y_test"], predictions["test"], average = average)
+            
+            elif metric == "mse": 
+                metrics_out["train"][metric] = sk_metrics.mean_squared_error(data["y_train"], predictions["train"])
+                if valid_exists:
+                    metrics_out["valid"][metric] = sk_metrics.mean_squared_error(data["y_valid"], predictions["valid"])
+                if test_exists:
+                    metrics_out["test"][metric] = sk_metrics.mean_squared_error(data["y_test"], predictions["test"])
+            
+            elif metric == "rmse": 
+                metrics_out["train"][metric] = sk_metrics.mean_squared_error(data["y_train"], predictions["train"], squared=False)
+                if valid_exists:
+                    metrics_out["valid"][metric] = sk_metrics.mean_squared_error(data["y_valid"], predictions["valid"], squared=False)
+                if test_exists:
+                    metrics_out["test"][metric] = sk_metrics.mean_squared_error(data["y_test"], predictions["test"], squared=False)
+            
+            elif metric == "mae": 
+                metrics_out["train"][metric] = sk_metrics.mean_absolute_error(data["y_train"], predictions["train"])
+                if valid_exists:
+                    metrics_out["valid"][metric] = sk_metrics.mean_absolute_error(data["y_valid"], predictions["valid"])
+                if test_exists:
+                    metrics_out["test"][metric] = sk_metrics.mean_absolute_error(data["y_test"], predictions["test"]) 
+                
+            elif metric == "mape": 
+                metrics_out["train"][metric] = sk_metrics.mean_absolute_percentage_error(data["y_train"], predictions["train"])
+                if valid_exists:
+                    metrics_out["valid"][metric] = sk_metrics.mean_absolute_percentage_error(data["y_valid"], predictions["valid"])
+                if test_exists:
+                    metrics_out["test"][metric] = sk_metrics.mean_absolute_percentage_error(data["y_test"], predictions["test"])
+
+            elif metric == "mdae": 
+                metrics_out["train"][metric] = sk_metrics.median_absolute_error(data["y_train"], predictions["train"])
+                if valid_exists:
+                    metrics_out["valid"][metric] = sk_metrics.median_absolute_error(data["y_valid"], predictions["valid"])
+                if test_exists:
+                    metrics_out["test"][metric] = sk_metrics.median_absolute_error(data["y_test"], predictions["test"])
+
+            elif metric == "smape":
+                metrics_out["train"][metric] = symmetric_mean_absolute_percentage_error(data["y_train"], predictions["train"])
+                if valid_exists:
+                    metrics_out["valid"][metric] = symmetric_mean_absolute_percentage_error(data["y_valid"], predictions["valid"])
+                if test_exists:
+                    metrics_out["test"][metric] = symmetric_mean_absolute_percentage_error(data["y_test"], predictions["test"])
+                
+            elif metric == "r2":  
+                metrics_out["train"][metric] = sk_metrics.r2_score(data["y_train"], predictions["train"])
+                if valid_exists:
+                    metrics_out["valid"][metric] = sk_metrics.r2_score(data["y_valid"], predictions["valid"])
+                if test_exists:
+                    metrics_out["test"][metric] = sk_metrics.r2_score(data["y_test"], predictions["test"])
+
+            elif metric == "msle":
+                metrics_out["train"][metric] = sk_metrics.mean_squared_log_error(data["y_train"], predictions["train"])
+                if valid_exists:
+                    metrics_out["valid"][metric] = sk_metrics.mean_squared_log_error(data["y_valid"], predictions["valid"])
+                if test_exists:
+                    metrics_out["test"][metric] = sk_metrics.mean_squared_log_error(data["y_test"], predictions["test"])
+            
+            elif metric == "rmsle":
+                metrics_out["train"][metric] = sk_metrics.mean_squared_log_error(data["y_train"], predictions["train"], squared=False)
+                if valid_exists:
+                    metrics_out["valid"][metric] = sk_metrics.mean_squared_log_error(data["y_valid"], predictions["valid"], squared=False)
+                if test_exists:
+                    metrics_out["test"][metric] = sk_metrics.mean_squared_log_error(data["y_test"], predictions["test"], squared=False)
+  
+            
 
         return metrics_out
 
@@ -147,3 +221,13 @@ class BaseModelTrainer(BaseComponent):
         model, exp = self.build_model(train_data, model_version)                        
         
         return model, exp
+    
+
+def symmetric_mean_absolute_percentage_error(y_true, y_pred):
+    epsilon = np.finfo(np.float64).eps
+    smape = (
+        2
+        * np.abs(y_pred - y_true)
+        / np.maximum(np.abs(y_pred) + np.abs(y_true), epsilon)
+    )
+    return np.average(smape[~np.isnan(smape)])

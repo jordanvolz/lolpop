@@ -14,10 +14,11 @@ class ClassificationRunner(BaseRunner):
     def __init__(self, *args, **kwargs):
         super().__init__(problem_type="classification", *args, **kwargs)
 
-    def process_data(self, source_data = "train"):
+    def process_data(self, source = "train"):
         #run data transformations and encodings
-        source_data_name = self._get_config("%s_data" % source_data)
-        data = self.process.transform_data(source_data_name)  # maybe better called get_training_data?
+        source_data_name = "%s_data" % source
+        source_data = self._get_config(source_data_name)
+        data = self.process.transform_data(source_data)  # maybe better called get_training_data?
 
         #track & version data
         dataset_version = self.process.track_data(data, source_data_name)

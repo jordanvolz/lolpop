@@ -252,9 +252,8 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         mlflow_utils.stop_run(self.run.info.run_id, self.run.info.experiment_id)
 
     #should this live in model_repository?
-    def load_model(self, model_obj, model_version, ref_model, *args, **kwargs):
-        model_trainer = self.get_metadata(
-            model_version, "winning_experiment_model_trainer")
+    def load_model(self, model_obj, model_version, ref_model, pipeline_config={}, *args, **kwargs):
+        model_trainer = self.get_metadata(model_version, "winning_experiment_model_trainer")
         model_cl = utils.load_class(model_trainer)
         dependent_components = {"logger": self.logger, "notifier": self.notifier,  "metadata_tracker": self.metadata_tracker,
                                 "metrics_tracker": self.metrics_tracker, "resource_version_control": self.resource_version_control}
@@ -264,11 +263,16 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
             config = ref_model.config
             parent_process = ref_model.parent_process
             params = ref_model.params
+            pipeline_conf = ref_model.pipeline_conf
         else:
             config = {}
             parent_process = self.parent_process
             params = {}
-        model = model_cl(conf=config, pipeline_conf=self.config, runner_conf=self.runner_conf, parent_process=parent_process,
+            pipeline_conf = {}
+        if len(pipeline_config) > 0:
+            pipeline_conf = pipeline_config 
+        
+        model = model_cl(conf=config, pipeline_conf=pipeline_conf, runner_conf=self.runner_conf, parent_process=parent_process,
                          problem_type=self.problem_type, params=params, components=dependent_components)
         #if you passed in a model_obj, we assume you have a pre-trained model object you wish to use
         if model_obj is not None:
