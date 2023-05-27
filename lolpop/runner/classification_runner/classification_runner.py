@@ -166,7 +166,7 @@ class ClassificationRunner(BaseRunner):
         model_version, model, is_new_model_better = self.train_model(data, dataset_version)
         if is_new_model_better: 
             deployment = self.deploy_model(model_version)
-        eval_data, eval_dataset_version = self.process_data(source_data="eval")
+        eval_data, eval_dataset_version = self.process_data(source="eval")
         data, prediction_job = self.predict_data(model_version,model, eval_data, eval_dataset_version)
         self.evaluate_ground_truth(prediction_job)
     
