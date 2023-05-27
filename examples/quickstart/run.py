@@ -12,7 +12,7 @@ train_data = runner.process_data()
 model, model_version = runner.train_model(train_data)
 
 #run prediction
-eval_data = runner.process_data(source_data="eval")
+eval_data = runner.process_data(source="eval")
 data, _ = runner.predict_data(model, model_version, eval_data)
 
 #exit

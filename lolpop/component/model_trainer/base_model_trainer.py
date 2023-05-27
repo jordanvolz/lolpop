@@ -225,9 +225,5 @@ class BaseModelTrainer(BaseComponent):
 
 def symmetric_mean_absolute_percentage_error(y_true, y_pred):
     epsilon = np.finfo(np.float64).eps
-    smape = (
-        2
-        * np.abs(y_pred - y_true)
-        / np.maximum(np.abs(y_pred) + np.abs(y_true), epsilon)
-    )
+    smape = (2 * np.abs(y_pred - y_true) / np.maximum(np.abs(y_pred) + np.abs(y_true), epsilon))
     return np.average(smape[~np.isnan(smape)])

@@ -52,6 +52,28 @@ xx14. Data synthesizer + data seeding for better local experience -- DONE
     --> some interesting tools in this space. see for example: https://github.com/kubeflow-kale/kale
 16. ChatGPT to write documentation of your workflow. And maybe docstrings/unit tests/etc?
 17. visual dag of workflows/dependencies (networkx?) --> gets more into governance stuff
+18. Python Execution -- modal, ray, dask, spark, etc... 
+19. Broaden Model Trainer Support: 
+    classification: catboost, lightgbm, 
+    regression: sklearn, 
+    ts: orbit, autoarima, surprise, n-beats, es-rnn, sktime, darts, tsfresh, etc. 
+    recsys: surprise, annoy, lightfm, crab, tensorrec, rexy, lenskit, 
+    anomaly detection: pyod, adtk
+    nlp: hugginface, spacy, bertopic, gluonnlp, xlm
+    clustering: 
+    computer vision: fastai, pytrochcv, opencv, tensorflow
+    LLM: 
+    statistcial modeling: lifetimes, robyn
+    automl: ludwig, autogluon, autosklearn
+    geospatial
+    graph
+20. real-time workflow
+--> streaming transforms? 
+--> feature store 
+--> deployments 
+--> metrics tracking 
+--> etc 
+
 zz. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc
 --> would be good to map the concepts between metadata stores as well
 

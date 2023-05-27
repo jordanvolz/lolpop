@@ -99,7 +99,7 @@ class MetaflowOfflinePredictSpec(FlowSpec):
                        axis=1, errors="ignore")
 
         #make predictions
-        data["predictions"] = self.model._predict_df(df)
+        data["predictions"] = self.model.predict_df(df)
         if self.lolpop.problem_type == "classification":
             data["predictions_proba"] = self.model.predict_proba_df(
                 df, to_list=True)

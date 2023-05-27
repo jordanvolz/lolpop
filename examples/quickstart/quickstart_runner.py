@@ -14,9 +14,9 @@ class QuickstartRunner(BaseRunner):
     def __init__(self, *args, **kwargs):
         super().__init__(problem_type="classification", *args, **kwargs)
 
-    def process_data(self, source_data="train"):
+    def process_data(self, source="train"):
         #run data transformations and encodings
-        source_data_name = self._get_config("%s_data" % source_data)
+        source_data_name = self._get_config("%s_data" % source)
         # maybe better called get_training_data?
         data = self.process.transform_data(source_data_name)
 
