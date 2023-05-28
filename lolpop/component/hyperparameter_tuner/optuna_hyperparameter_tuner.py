@@ -21,7 +21,7 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
         #understand if we want to minimize or maximum objective for optuna
         reverse = utils.get_metric_direction(perf_metric)
         direction = "maximize"
-        if reverse: 
+        if not reverse: 
             direction = "minimize"
  
         exp_list = {} 
@@ -40,7 +40,7 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
                 for params in grid: 
                     study.enqueue_trial(params)   
             #run study
-            study.optimize(lambda trial: self._optuna_objective(trial, param_type, data, model_version, algo, training_params[algo], trainer_configs[algo], metrics, perf_metric, exp_list, model_list), n_trials=n_trials, timeout=timeout, n_jobs=n_jobs)
+            study.optimize(lambda trial: self._optuna_objective(trial, param_type, data, model_version, algo, training_params[algo], trainer_configs.get(algo,{}), metrics, perf_metric, exp_list, model_list), n_trials=n_trials, timeout=timeout, n_jobs=n_jobs)
             #log study
             #study.set_user_attr("perf_metric_name", perf_metric)
             #study.set_user_attr("perf_metric_val", study.best_value)
@@ -57,7 +57,7 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
             self.metadata_tracker.register_vc_resource(model_version, vc_info, key=k, file_type="csv")
 
         #now, we determine overall best experiment and save into model_version
-        winning_exp_id = self._get_winning_experiment(exp_list, perf_metric, reverse=utils.get_metric_direction(perf_metric))
+        winning_exp_id = self._get_winning_experiment(exp_list, perf_metric, reverse=reverse)
         winning_exp = self.metadata_tracker.get_resource(winning_exp_id, parent=model_version, type="experiment")
         winning_exp_model_trainer = self.metadata_tracker.get_metadata(winning_exp, id="model_trainer")
         best_model = model_list.get(winning_exp_id)

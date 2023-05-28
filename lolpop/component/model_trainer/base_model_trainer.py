@@ -38,7 +38,7 @@ class BaseModelTrainer(BaseComponent):
     def predict_proba_df(self, df): 
         pass 
 
-    def get_artifacts():
+    def get_artifacts(self, id):
         pass 
 
     def _get_model(self):

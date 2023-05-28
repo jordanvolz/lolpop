@@ -49,5 +49,6 @@ class BaseHyperparameterTuner(BaseComponent):
 
     #determines the winning experiment from the experiment list 
     def _get_winning_experiment(self, exp_list, perf_metric, reverse): 
-        new_list = sorted(exp_list.items(), key=lambda x: x[1], reverse=reverse) # sort list by values
+        # sort list by values. reverse=True is descending, False is ascending (Default)
+        new_list = sorted(exp_list.items(), key=lambda x: x[1], reverse=reverse) 
         return new_list[0][0]

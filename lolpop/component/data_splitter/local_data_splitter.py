@@ -62,10 +62,10 @@ class LocalDataSplitter(BaseDataSplitter):
         valid = None
         train = data  
         if test_size > 0: 
-            test = train[-test_size:]
+            test = train[-test_size:].reset_index(drop=True)
             train = train[:-test_size]
         if validation_size > 0: 
-            valid = train[-validation_size:]
+            valid = train[-validation_size:].reset_index(drop=True)
             train = train[:-validation_size]
         
         data_out = self._build_split_dfs(train, valid, target, test=test)

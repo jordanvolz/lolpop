@@ -363,11 +363,11 @@ def convert_col_types(data, prev_data):
                 df_a[col] = df_a[col].astype(df_b[col].dtype)
     return df_a
 
-#True = lower is better
+#True = higher is better (descending)
 def get_metric_direction(perf_metric): 
-    reverse = False 
+    reverse = True 
     if perf_metric in ["mse", "rmse", "mae", "mdae", "mape", "smape", "rmsle", "msle"]: 
-        reverse = True 
+        reverse = False 
     return reverse
 
 #labels should be something like data["y_train"].unique()

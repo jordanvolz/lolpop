@@ -91,44 +91,44 @@ class BaseModelChecker(BaseComponent):
                         
                 elif baseline_value.startswith("lag_mean"):
                     window_size = int(baseline_value.split("_")[-1])
-                    baseline_predictions["train"] = data["y_train"].shift(1).rolling(window_size, min_period=1).mean()
+                    baseline_predictions["train"] = data["y_train"].shift(1).rolling(window_size, min_periods=1).mean()
                     if has_valid: 
-                        baseline_predictions["valid"] = data["y_valid"].shift(1).rolling(window_size, min_period=1).mean()
+                        baseline_predictions["valid"] = data["y_valid"].shift(1).rolling(window_size, min_periods=1).mean()
                     if has_test: 
-                        baseline_predictions["test"] = data["y_test"].shift(1).rolling(window_size, min_period=1).mean()
+                        baseline_predictions["test"] = data["y_test"].shift(1).rolling(window_size, min_periods=1).mean()
 
                 elif baseline_value.startswith("lag_max"):
                     window_size = int(baseline_value.split("_")[-1])
                     baseline_predictions["train"] = data["y_train"].shift(
-                        1).rolling(window_size, min_period=1).max()
+                        1).rolling(window_size, min_periods=1).max()
                     if has_valid:
                         baseline_predictions["valid"] = data["y_valid"].shift(
-                            1).rolling(window_size, min_period=1).max()
+                            1).rolling(window_size, min_periods=1).max()
                     if has_test:
                         baseline_predictions["test"] = data["y_test"].shift(
-                            1).rolling(window_size, min_period=1).max()
+                            1).rolling(window_size, min_periods=1).max()
                         
                 elif baseline_value.startswith("lag_min"):
                     window_size = int(baseline_value.split("_")[-1])
                     baseline_predictions["train"] = data["y_train"].shift(
-                        1).rolling(window_size, min_period=1).min()
+                        1).rolling(window_size, min_periods=1).min()
                     if has_valid:
                         baseline_predictions["valid"] = data["y_valid"].shift(
-                            1).rolling(window_size, min_period=1).min()
+                            1).rolling(window_size, min_periods=1).min()
                     if has_test:
                         baseline_predictions["test"] = data["y_test"].shift(
-                            1).rolling(window_size, min_period=1).min()
+                            1).rolling(window_size, min_periods=1).min()
                         
                 elif baseline_value.startswith("lag_median"):
                     window_size = int(baseline_value.split("_")[-1])
                     baseline_predictions["train"] = data["y_train"].shift(
-                        1).rolling(window_size, min_period=1).median()
+                        1).rolling(window_size, min_periods=1).median()
                     if has_valid:
                         baseline_predictions["valid"] = data["y_valid"].shift(
-                            1).rolling(window_size, min_period=1).median()
+                            1).rolling(window_size, min_periods=1).median()
                     if has_test:
                         baseline_predictions["test"] = data["y_test"].shift(
-                            1).rolling(window_size, min_period=1).median()
+                            1).rolling(window_size, min_periods=1).median()
                         
                 #first value will be NaN, so set it to the second just to prevent errors. 
                 for key in baseline_predictions.keys(): 
@@ -142,7 +142,7 @@ class BaseModelChecker(BaseComponent):
     def _get_metric_comparison(self, champion_metric, challenger_metric, perf_metric): 
         old_metric = champion_metric.get("test").get(perf_metric)
         new_metric = challenger_metric.get("test").get(perf_metric)
-        lower_is_better = utils.get_metric_direction(perf_metric)
+        lower_is_better = not utils.get_metric_direction(perf_metric)
 
         if lower_is_better: #True = perf_metric is better if lower
             is_challenger_better = (new_metric < old_metric) 
