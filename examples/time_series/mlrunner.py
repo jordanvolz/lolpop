@@ -1,5 +1,3 @@
-import sys
-sys.path.append("/Users/jordanvolz/Downloads/ts_forecasting")
 from lolpop.extension import TimeSeriesRunner
 
 #create runner from config
