@@ -15,11 +15,11 @@ class MetaflowOfflineProcess(BaseProcess):
         "config": []
     }
 
-    def run(self, source_data_name, **kwargs):
+    def run(self, source_data_name, source_data, **kwargs):
         #get flow class object from this file
         mod_cl = meta_utils.get_flow_class(__file__, METAFLOW_CLASS)
 
-        flow = meta_utils.load_flow(mod_cl, self, PLUGIN_PATHS, source=source_data_name)
+        flow = meta_utils.load_flow(mod_cl, self, PLUGIN_PATHS, source_data=source_data, source_data_name=source_data_name)
         self.log("Loaded metaflow flow %s" % METAFLOW_CLASS)
 
         meta_utils.run_flow(flow, "run", __file__, PLUGIN_PATHS)
@@ -35,14 +35,16 @@ class MetaflowOfflineProcess(BaseProcess):
         return artifacts
 class MetaflowOfflineProcessSpec(FlowSpec):
 
-    def __init__(self, lolpop=None, source=None, use_cli=False, **kwargs):
+    def __init__(self, lolpop=None, source_data=None, source_data_name=None, use_cli=False, **kwargs):
         #you need to set local attributes before calling super
         #only the first time we create the class will these parameters be provided.
         #The rest of the calls are metaflow internal calls and we do not want to reset them
         if lolpop is not None:
             self.lolpop = lolpop
-        if source is not None:
-            self.source = source
+        if source_data is not None:
+            self.source_data = source_data
+        if source_data_name is not None: 
+            self.source_data_name = source_data_name
 
         #load plugins
         meta_utils.load_plugins(PLUGIN_PATHS)
@@ -58,7 +60,7 @@ class MetaflowOfflineProcessSpec(FlowSpec):
     def transform_data(self):
         #transform data
         self.data = self.lolpop.data_transformer.transform(
-            self.source)
+            self.source_data)
 
         self.next(self.track_data)
 
@@ -66,7 +68,7 @@ class MetaflowOfflineProcessSpec(FlowSpec):
     def track_data(self):
         #create dataset version
         dataset_version = self.lolpop.metadata_tracker.create_resource(
-            self.source, type="dataset_version")
+            self.source_data_name, type="dataset_version")
         self.dataset_version = dataset_version
         self.lolpop.datasets_used.append(dataset_version)
 

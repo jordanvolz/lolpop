@@ -46,6 +46,7 @@ class BaseModelChecker(BaseComponent):
     def _get_baseline_predictions(self, data, baseline_method, baseline_value): 
         
         has_test = "X_test" in data.keys()
+        has_valid = "X_valid" in data.keys()
         baseline_predictions = {}
 
         #column = user defined column should be used for baseline comparison
@@ -55,25 +56,83 @@ class BaseModelChecker(BaseComponent):
             if has_test: 
                 baseline_predictions["test"] = data["X_test"][baseline_value]
 
-        elif baseline_method == "value":    
-            labels = data["y_train"]
-            #this is kind of hacky but ... shrug
-            labels.index=labels.values
-            label_counts = labels.groupby(level=0).count()
+        elif baseline_method == "value":
+            if self.problem_type == "classification":    
+                labels = data["y_train"]
+                #this is kind of hacky but ... shrug
+                labels.index=labels.values
+                label_counts = labels.groupby(level=0).count()
 
-            if baseline_value == "class_avg": 
-                weights = [x/len(labels) for x in label_counts]
-                baseline_predictions["train"] = np.random.choice(label_counts.index, p=weights, size=len(data["X_train"]))
-                baseline_predictions["valid"] = np.random.choice(label_counts.index, p=weights, size=len(data["X_valid"]))
-                if has_test: 
-                    baseline_predictions["test"] = np.random.choice(label_counts.index, p=weights, size=len(data["X_test"]))
+                #classification
+                if baseline_value == "class_avg": 
+                    weights = [x/len(labels) for x in label_counts]
+                    baseline_predictions["train"] = np.random.choice(label_counts.index, p=weights, size=len(data["X_train"]))
+                    baseline_predictions["valid"] = np.random.choice(label_counts.index, p=weights, size=len(data["X_valid"]))
+                    if has_test: 
+                        baseline_predictions["test"] = np.random.choice(label_counts.index, p=weights, size=len(data["X_test"]))
 
-            elif baseline_value == "class_most_frequent": 
-                most_frequent_class = sorted(label_counts.items(), key=lambda x: x[1], reverse=True)[0][0] #get most frequent class 
-                baseline_predictions["train"] = [most_frequent_class] * len(data["X_train"])
-                baseline_predictions["valid"] = [most_frequent_class] * len(data["X_valid"])
-                if has_test: 
-                    baseline_predictions["test"] = [most_frequent_class] * len(data["X_test"])
+                #classification
+                elif baseline_value == "class_most_frequent": 
+                    most_frequent_class = sorted(label_counts.items(), key=lambda x: x[1], reverse=True)[0][0] #get most frequent class 
+                    baseline_predictions["train"] = [most_frequent_class] * len(data["X_train"])
+                    baseline_predictions["valid"] = [most_frequent_class] * len(data["X_valid"])
+                    if has_test: 
+                        baseline_predictions["test"] = [most_frequent_class] * len(data["X_test"])
+
+            elif self.problem_type == "timeseries":
+                #time series . should be in the form 'last_value_N'
+                if baseline_value.startswith("last_value"):
+                    shift_value = int(baseline_value.split("_")[-1]) 
+                    baseline_predictions["train"] = data["y_train"].shift(shift_value)
+                    if has_valid: 
+                        baseline_predictions["valid"] = data["y_valid"].shift(shift_value)
+                    if has_test: 
+                        baseline_predictions["test"] = data["y_test"].shift(shift_value)
+                        
+                elif baseline_value.startswith("lag_mean"):
+                    window_size = int(baseline_value.split("_")[-1])
+                    baseline_predictions["train"] = data["y_train"].shift(1).rolling(window_size, min_periods=1).mean()
+                    if has_valid: 
+                        baseline_predictions["valid"] = data["y_valid"].shift(1).rolling(window_size, min_periods=1).mean()
+                    if has_test: 
+                        baseline_predictions["test"] = data["y_test"].shift(1).rolling(window_size, min_periods=1).mean()
+
+                elif baseline_value.startswith("lag_max"):
+                    window_size = int(baseline_value.split("_")[-1])
+                    baseline_predictions["train"] = data["y_train"].shift(
+                        1).rolling(window_size, min_periods=1).max()
+                    if has_valid:
+                        baseline_predictions["valid"] = data["y_valid"].shift(
+                            1).rolling(window_size, min_periods=1).max()
+                    if has_test:
+                        baseline_predictions["test"] = data["y_test"].shift(
+                            1).rolling(window_size, min_periods=1).max()
+                        
+                elif baseline_value.startswith("lag_min"):
+                    window_size = int(baseline_value.split("_")[-1])
+                    baseline_predictions["train"] = data["y_train"].shift(
+                        1).rolling(window_size, min_periods=1).min()
+                    if has_valid:
+                        baseline_predictions["valid"] = data["y_valid"].shift(
+                            1).rolling(window_size, min_periods=1).min()
+                    if has_test:
+                        baseline_predictions["test"] = data["y_test"].shift(
+                            1).rolling(window_size, min_periods=1).min()
+                        
+                elif baseline_value.startswith("lag_median"):
+                    window_size = int(baseline_value.split("_")[-1])
+                    baseline_predictions["train"] = data["y_train"].shift(
+                        1).rolling(window_size, min_periods=1).median()
+                    if has_valid:
+                        baseline_predictions["valid"] = data["y_valid"].shift(
+                            1).rolling(window_size, min_periods=1).median()
+                    if has_test:
+                        baseline_predictions["test"] = data["y_test"].shift(
+                            1).rolling(window_size, min_periods=1).median()
+                        
+                #first value will be NaN, so set it to the second just to prevent errors. 
+                for key in baseline_predictions.keys(): 
+                    baseline_predictions[key].iloc[0]=baseline_predictions[key].iloc[1]
 
         else: #consider other ways to do baseline comparison
             pass
@@ -83,7 +142,7 @@ class BaseModelChecker(BaseComponent):
     def _get_metric_comparison(self, champion_metric, challenger_metric, perf_metric): 
         old_metric = champion_metric.get("test").get(perf_metric)
         new_metric = challenger_metric.get("test").get(perf_metric)
-        lower_is_better = utils.get_metric_direction(perf_metric)
+        lower_is_better = not utils.get_metric_direction(perf_metric)
 
         if lower_is_better: #True = perf_metric is better if lower
             is_challenger_better = (new_metric < old_metric) 

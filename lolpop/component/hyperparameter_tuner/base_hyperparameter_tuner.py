@@ -11,14 +11,14 @@ class BaseHyperparameterTuner(BaseComponent):
     def run_experiment(self, data, *args, **kwargs): 
         pass 
 
-    def build_model(self, data, model_version, algo, params): 
+    def build_model(self, data, model_version, algo, params, trainer_config={}): 
         #create experiment and log params
         experiment = self.metadata_tracker.create_resource(id=None, type="experiment", parent=model_version)
 
         #load model trainer and build model
         model_cl = utils.load_class(algo)
         dependent_components = {"logger" : self.logger, "notifier" : self.notifier,  "metadata_tracker" :self.metadata_tracker, "metrics_tracker": self.metrics_tracker, "resource_version_control": self.resource_version_control}
-        model = model_cl(conf=self.config, pipeline_conf=self.pipeline_conf, runner_conf=self.runner_conf, 
+        model = model_cl(conf=trainer_config, pipeline_conf=self.pipeline_conf, runner_conf=self.runner_conf, 
                          parent_process = self.name, problem_type = self.problem_type, params=params, components=dependent_components) 
         model_obj = model.fit(data)
 
@@ -34,6 +34,10 @@ class BaseHyperparameterTuner(BaseComponent):
         }
         self.metadata_tracker.register_vc_resource(experiment, vc_info, additional_metadata = experiment_metadata)
 
+        experiment_id = self.metadata_tracker.get_resource_id(experiment, type="experiment")
+        model_artifacts = model.get_artifacts(experiment_id) or {}
+        for k,v in model_artifacts.items(): 
+            self.metadata_tracker.log_artifact(experiment, k, v)
 
     #builds a grid of all possible parameter combinations gives a params item with a list of values for each param
     def _build_training_grid(self, params): 
@@ -45,5 +49,6 @@ class BaseHyperparameterTuner(BaseComponent):
 
     #determines the winning experiment from the experiment list 
     def _get_winning_experiment(self, exp_list, perf_metric, reverse): 
-        new_list = sorted(exp_list.items(), key=lambda x: x[1], reverse=reverse) # sort list by values
+        # sort list by values. reverse=True is descending, False is ascending (Default)
+        new_list = sorted(exp_list.items(), key=lambda x: x[1], reverse=reverse) 
         return new_list[0][0]

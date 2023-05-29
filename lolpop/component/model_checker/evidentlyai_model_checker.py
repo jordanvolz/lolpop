@@ -22,8 +22,8 @@ class EvidentlyAIModelChecker(BaseModelChecker):
 
         #set up data + predictions for train/test drift
         df_train, df_test = self.data_splitter.get_train_test_dfs(data_dict) 
-        df_train["prediction"] = model._predict_df(df_train.drop([model_target], axis=1))
-        df_test["prediction"] = model._predict_df(df_test.drop([model_target], axis=1))
+        df_train["prediction"] = model.predict_df(df_train.drop([model_target], axis=1))
+        df_test["prediction"] = model.predict_df(df_test.drop([model_target], axis=1))
 
         if self.problem_type == "classification": 
             if classification_type == "multiclass": 
@@ -56,8 +56,8 @@ class EvidentlyAIModelChecker(BaseModelChecker):
         column_mapping = ColumnMapping()
         column_mapping.target=self._get_config("model_target")
         column_mapping.target="prediction"
-        df_current["prediction"] = current_model._predict_df(df_current)
-        df_deployed["prediction"] = deployed_model._predict_df(df_deployed)
+        df_current["prediction"] = current_model.predict_df(df_current)
+        df_deployed["prediction"] = deployed_model.predict_df(df_deployed)
 
         #drift_report = TestSuite(tests=[TestColumnDrift(column_name="prediction")])
         drift_report = Report(metrics = [TargetDriftPreset()])

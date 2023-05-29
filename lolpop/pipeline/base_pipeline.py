@@ -99,7 +99,7 @@ class BasePipeline:
     def _get_config(self, key, default_value=None): 
         key = key.lower()
         value = utils.lower_conf(self.config).get(key, None)
-        if not value: 
+        if value is None: 
             value = utils.lower_conf(self.runner_conf).get(key, default_value)
         return value 
 

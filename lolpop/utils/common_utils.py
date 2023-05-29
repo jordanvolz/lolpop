@@ -77,10 +77,33 @@ def load_plugin(plugin_path, obj=None):
     return mod
 
 #load class object
-def load_class(class_name, class_type="component", parent="lolpop"): 
+def load_class_obj(class_name, class_type="component", parent="lolpop"): 
     module = import_module("%s.%s" %(parent, class_type))
     cl = getattr(module, class_name)
     return cl
+
+def load_class(class_name, class_type="component", plugin_mods = [], self_obj=None): 
+    try:
+        cl = load_class_obj(class_name, class_type)
+    except: 
+        try: 
+            if self_obj: 
+                self_obj.log("Unable to find class %s in build-in resources. Searching extensions..." %class_name)
+            cl = load_class_obj(class_name, class_type="extension")
+            if self_obj:
+                self_obj.log("Found class %s in extensions!" %class_name)
+        except: 
+            if self_obj:
+                self_obj.log(
+                    "Unable to find class %s in extensions. Searching plugins modules in %s..." %(class_name, str(plugin_mods)))
+            cl = load_class_from_plugin(class_name, plugin_mods, class_type)
+            if cl is not None: 
+                if self_obj: 
+                    self_obj.log("Found class %s in plugins!" % class_name)
+            else: 
+                if self_obj:
+                    self_obj.log("Unable to find class %s in plugins!" %class_name)
+    return cl 
 
 #load class object from plugins
 def load_class_from_plugin(class_name, plugin_mods, class_type="component"):
@@ -88,7 +111,7 @@ def load_class_from_plugin(class_name, plugin_mods, class_type="component"):
     cl = None 
     for plugin in plugin_mods: 
         try: 
-            cl = load_class(class_name, class_type=class_type, parent=plugin)
+            cl = load_class_obj(class_name, class_type=class_type, parent=plugin)
             break 
         except Exception as e: 
             #if multiple plugins are used, the one we are looking for will not be in most of them, so just ignore any errors
@@ -110,21 +133,7 @@ def register_component_class(self_obj, conf, component_type, default_class_name=
     obj = None
     component_class_name = conf.components.get(component_type, default_class_name)
     if component_class_name is not None:
-        try: 
-            cl = load_class(component_class_name) 
-        except: 
-            try: 
-                self_obj.log("Unable to find component in build-in components. Searching extensions...")
-                cl = load_class(component_class_name, class_type="extension")
-                self_obj.log("Found class %s in extensions!" %component_class_name)
-            except: 
-                self_obj.log(
-                    "Unable to find class %s in extensions. Searching plugins modules in %s..." %(component_class_name, str(plugin_mods)))
-                cl = load_class_from_plugin(component_class_name, plugin_mods)
-                if cl is not None: 
-                    self_obj.log("Found class %s in plugins!" % component_class_name)
-                else: 
-                    self_obj.log("Unable to find class %s in plugins!" %component_class_name)
+        cl = load_class(component_class_name) 
         if cl is not None: 
             obj = cl(conf=conf.get(component_type, {}), pipeline_conf=pipeline_conf, runner_conf=runner_conf,
                      parent_process=parent_process, problem_type=problem_type, components=dependent_components, *args, **kwargs)
@@ -138,22 +147,7 @@ def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=No
     obj = None 
     pipeline_class_name = conf.pipelines.get(pipeline_type, default_class_name)
     if pipeline_class_name is not None: 
-        try: 
-            cl = load_class(pipeline_class_name, class_type="pipeline")
-        except: 
-            try: 
-                self_obj.log(
-                    "Unable to find component in build-in components. Searching extensions...")
-                cl = load_class(pipeline_class_name, class_type="extension")
-                self_obj.log("Found class %s in extensions!" %
-                             pipeline_class_name)
-            except: 
-                self_obj.log(
-                    "Unable to find pipeline %s in built-in pipelines. Searching plugins..." % pipeline_class_name)
-                cl = load_class_from_plugin(
-                    pipeline_class_name, plugin_mods, class_type="pipeline")
-                self_obj.log(
-                    "Found class %s in plugins!" % pipeline_class_name)
+        cl = load_class(pipeline_class_name, class_type="pipeline")
         if cl is not None: 
             obj = cl(conf=conf.get(pipeline_type, {}), runner_conf=runner_conf, parent_process=parent_process,
                      problem_type=problem_type, components=dependent_components, plugin_mods=plugin_mods, *args, **kwargs)
@@ -358,7 +352,7 @@ def compare_data_schemas(obj, data, prev_data):
         except Exception as e: 
             obj.notify("Data Comparison failed. New and old dataframes do not have compatible column types. Error: %s" %str(e), "ERROR")
             raise 
-    return data, prev_data, True
+    return data, prev_data, ok
 
 def convert_col_types(data, prev_data):
     df_a = data.copy()
@@ -369,11 +363,11 @@ def convert_col_types(data, prev_data):
                 df_a[col] = df_a[col].astype(df_b[col].dtype)
     return df_a
 
-#True = lower is better
+#True = higher is better (descending)
 def get_metric_direction(perf_metric): 
-    reverse = False 
-    if perf_metric in ["mse", "rmse", "mae", "mape", "smape"]: 
-        reverse = True 
+    reverse = True 
+    if perf_metric in ["mse", "rmse", "mae", "mdae", "mape", "smape", "rmsle", "msle"]: 
+        reverse = False 
     return reverse
 
 #labels should be something like data["y_train"].unique()

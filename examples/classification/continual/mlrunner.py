@@ -19,7 +19,7 @@ if deploy_model:
     clf_runner.deploy_model(model_version)
 #run prediction
 #model = None 
-eval_data, eval_dataset_version = clf_runner.process_data(source_data="eval")
+eval_data, eval_dataset_version = clf_runner.process_data(source="eval")
 data, prediction_job = clf_runner.predict_data(model_version, model, eval_data, eval_dataset_version)
 #evaluate ground truth
 clf_runner.evaluate_ground_truth(prediction_job)

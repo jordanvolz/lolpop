@@ -13,7 +13,7 @@ if deploy_model:
     runner.deploy_model(model_version, model)
 
 #run prediction
-eval_data, eval_dataset_version = runner.process_data(source_data="eval")
+eval_data, eval_dataset_version = runner.process_data(source="eval")
 data, prediction_job = runner.predict_data(model_version, model, eval_data, eval_dataset_version)
 
 #evaluate ground truth

@@ -53,10 +53,10 @@ class XGBoostModelTrainer(BaseModelTrainer):
     #def save(self, experiment, *args, **kwargs): 
     #    pass
 
-    def _predict_df(self,df): 
+    def predict_df(self,df): 
         return self.model.predict(df)
 
-    def _predict_proba_df(self,df, to_list=False): 
+    def predict_proba_df(self,df, to_list=False): 
         predictions = self.model.predict_proba(df)
         if to_list: 
             predictions = predictions.tolist()

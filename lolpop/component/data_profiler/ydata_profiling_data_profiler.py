@@ -1,6 +1,7 @@
 from lolpop.component.data_profiler.base_data_profiler import BaseDataProfiler
 from lolpop.utils import common_utils as utils
 from ydata_profiling import ProfileReport
+from ydata_profiling.visualisation.plot import timeseries_heatmap
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class YDataProfilingDataProfiler(BaseDataProfiler): 
@@ -19,7 +20,8 @@ class YDataProfilingDataProfiler(BaseDataProfiler):
             data_report (object): Python object of the report 
             file_path (string): file path of the exported report
         """
-        data_report = ProfileReport(data)
+        is_timeseries = self.problem_type == "timeseries"
+        data_report = ProfileReport(data, tsmode=is_timeseries)
         file_path =  "%s/PANDAS_PROFILING_DATA_PROFILE_REPORT.html" %self._get_config("local_dir")
         data_report.to_file(file_path)
         
@@ -41,8 +43,9 @@ class YDataProfilingDataProfiler(BaseDataProfiler):
         file_path = None 
         (data, prev_data, ok) = utils.compare_data_schemas(self, data, prev_data)
         if ok: 
-            profile = ProfileReport(data)
-            old_profile = ProfileReport(prev_data)
+            is_timeseries = self.problem_type == "timeseries"
+            profile = ProfileReport(data, tsmode=is_timeseries)
+            old_profile = ProfileReport(prev_data, tsmode=is_timeseries)
             comparison = profile.compare(old_profile)
             file_path =  "%s/PANDAS_PROFILING_DATA_COMPARISON_REPORT.html" %self._get_config("local_dir")
             comparison.to_file(file_path)

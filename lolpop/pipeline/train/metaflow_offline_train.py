@@ -71,10 +71,6 @@ class MetaflowOfflineTrainSpec(FlowSpec):
         #create model_version
         id = self.lolpop._get_config("model_name")
         model_version = self.lolpop.metadata_tracker.create_resource(id, type="model_version")
-        print(model_version)
-        print(model_version[1])
-        print(model_version[1].info.run_id)
-        print(type(model_version[1]))
 
         #if we are using hyperparameter tuner, use that, otherwise just use the model trainer provided
         if hasattr(self.lolpop, "hyperparameter_tuner"):

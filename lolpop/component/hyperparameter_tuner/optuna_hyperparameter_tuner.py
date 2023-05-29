@@ -7,19 +7,23 @@ import os
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class OptunaHyperparameterTuner(BaseHyperparameterTuner): 
 
-    def run_experiment(self, data, model_version, n_trials=100, timeout=600, *args, **kwargs): 
+    def run_experiment(self, data, model_version, n_trials=100, *args, **kwargs): 
         #set up params
         training_params = self._get_config("training_params")
+        trainer_configs = self._get_config("trainer_configs", {})
         param_type = self._get_config("param_type", "fixed")
         metrics = self._get_config("metrics")
         perf_metric = self._get_config("perf_metric")
+        # default to 1 hr timeout
+        timeout = self._get_config("optuna_timeout", 3600)
+        n_jobs = self._get_config("num_jobs", 1)
 
         #understand if we want to minimize or maximum objective for optuna
         reverse = utils.get_metric_direction(perf_metric)
         direction = "maximize"
-        if reverse: 
+        if not reverse: 
             direction = "minimize"
-            
+ 
         exp_list = {} 
         model_list = {}
         for algo in training_params: 
@@ -29,13 +33,14 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
             study = optuna.create_study(direction=direction, sampler=sampler, study_name=study_name)
             if param_type == "fixed":
                 grid = self._build_training_grid(training_params[algo])
+                #only run n_trials = len(grid) to only run enqued params
+                n_trials = len(grid)
+                self.log("Found %s parameter combinations. Proceeding to enqueue all combinations..." %n_trials)
                 #enqueue all fixed params
                 for params in grid: 
                     study.enqueue_trial(params)   
-                #only run n_trials = len(grid) to only run enqued params
-                n_trials = len(grid)
             #run study
-            study.optimize(lambda trial: self._optuna_objective(trial, param_type, data, model_version, algo, training_params[algo], metrics, perf_metric, exp_list, model_list), n_trials=n_trials, timeout=timeout)
+            study.optimize(lambda trial: self._optuna_objective(trial, param_type, data, model_version, algo, training_params[algo], trainer_configs.get(algo,{}), metrics, perf_metric, exp_list, model_list), n_trials=n_trials, timeout=timeout, n_jobs=n_jobs)
             #log study
             #study.set_user_attr("perf_metric_name", perf_metric)
             #study.set_user_attr("perf_metric_val", study.best_value)
@@ -52,7 +57,7 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
             self.metadata_tracker.register_vc_resource(model_version, vc_info, key=k, file_type="csv")
 
         #now, we determine overall best experiment and save into model_version
-        winning_exp_id = self._get_winning_experiment(exp_list, perf_metric, reverse=utils.get_metric_direction(perf_metric))
+        winning_exp_id = self._get_winning_experiment(exp_list, perf_metric, reverse=reverse)
         winning_exp = self.metadata_tracker.get_resource(winning_exp_id, parent=model_version, type="experiment")
         winning_exp_model_trainer = self.metadata_tracker.get_metadata(winning_exp, id="model_trainer")
         best_model = model_list.get(winning_exp_id)
@@ -64,15 +69,13 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
       
         return best_model
 
-    def _optuna_objective(self, trial, param_type, data, model_version, algo, params, metrics, perf_metric, experiment_list, model_list): 
-        #if we are dynamic we just need to modify the paramst to use suggest_x to dynamically create values 
-
+    def _optuna_objective(self, trial, param_type, data, model_version, algo, params, trainer_config, metrics, perf_metric, experiment_list, model_list): 
         if param_type == "dynamic": 
             model_params = self._get_dynamic_params(trial, params)
         else: #param_type=="fixed"
             model_params = self._get_fixed_params(trial, params)
         #build model
-        model, experiment = self.build_model(data, model_version, algo, model_params)
+        model, experiment = self.build_model(data, model_version, algo, model_params, trainer_config)
         #make predictions
         predictions = model.predict(data)
         #calculate metrics

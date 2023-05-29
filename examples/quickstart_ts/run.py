@@ -1,9 +1,8 @@
-from quickstart_runner import QuickstartRunner
-#from lolpop.runner import ClassificationRunner
+from quickstart_ts_runner import QuickstartTimeSeriesRunner
 
 #create runner from config
-config_file = "/Users/jordanvolz/github/lolpop/examples/quickstart/quickstart.yaml"
-runner = QuickstartRunner(config_file, skip_config_validation=True)
+config_file = "/Users/jordanvolz/github/lolpop/examples/quickstart_ts/quickstart_ts.yaml"
+runner = QuickstartTimeSeriesRunner(config_file, skip_config_validation=True)
 
 #run data processing
 train_data = runner.process_data()

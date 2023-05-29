@@ -9,7 +9,7 @@ class MetaflowPipelineWrapper(BaseWrapper):
     def run(self):
         metaflow_path = self._get_config("metaflow_script") 
         result, _ = utils.execute_cmd(["python3", metaflow_path, "run"], self)
-        print(result)
+        #self.log(result)
 
         flow_id = self._get_config("flow_id")
         if flow_id: 

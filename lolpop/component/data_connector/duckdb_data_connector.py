@@ -64,11 +64,12 @@ class DuckDBDataConnector(BaseDataConnector):
         return result
 
     def _save_data(self, data, table_name, path, table_exists):
-        with duckdb.connect(database = path) as con: 
-            if not table_exists: 
-                con.sql("CREATE TABLE %s as SELECT * from data" %table_name)
-            else: 
-                con.sql("INSERT INTO %s as SELECT * from data" % table_name)
+        if data is not None and len(data)>0: 
+            with duckdb.connect(database = path) as con: 
+                if not table_exists: 
+                    con.sql("CREATE TABLE %s as SELECT * from data" %table_name)
+                else: 
+                    con.sql("INSERT INTO %s as SELECT * from data" % table_name)
 
 
     def _map_pandas_col_type_to_duckdb_type(self, col_type):
