@@ -1,0 +1,108 @@
+#source data: https://www.kaggle.com/competitions/store-sales-time-series-forecasting
+
+#runner config
+pipelines: 
+  process: OfflineProcess 
+  train: OfflineTrain
+  deploy: OfflineDeploy
+  predict: OfflinePredict
+components: 
+  metadata_tracker: MLFlowMetadataTracker
+  metrics_tracker: MLFlowMetricsTracker
+  resource_version_control: dvcVersionControl
+  notifier: StdOutNotifier
+config: 
+  train_data: SELECT * from total_store_forecast_train
+  eval_data: SELECT * from total_store_forecast_test
+  prediction_data: total_store_forecast_predictions
+  model_name: store_sales_forecast
+  model_target: total_sales
+  time_index: date
+  forecast_frequency: $train.config.forecast_frequency
+  local_dir: /tmp/artifacts/
+  drop_columns: []
+
+#pipelines config
+process: 
+  components: 
+    data_transformer: DuckDBDataTransformer
+    data_profiler: tslumenDataProfiler
+    data_checker: StumpyMatrixProfiler
+  data_transformer: 
+    config: 
+      duckdb_path: /Users/jordanvolz/Downloads/duck.db
+  data_checker: 
+    config: 
+      stumpy_window_size: [7, 30, 60, 90, 365]
+      stumpy_num_discords: 5
+
+train: 
+  components: 
+    data_splitter: LocalDataSplitter
+    hyperparameter_tuner: OptunaHyperparameterTuner
+    model_checker: BaseModelChecker
+    model_explainer: BaseModelExplainer
+    model_bias_checker: BaseModelBiasChecker
+    model_visualizer: ProphetVisualizer
+  data_splitter: 
+    config: 
+      test_size: 4
+      validation_size: 4
+  hyperparameter_tuner: 
+    config: 
+      param_type: fixed
+      optuna_timeout: 1800 #30 min 
+      #num_jobs: 2
+      training_params: 
+        ProphetModelTrainer: 
+          seasonality_mode: ["additive", "multiplicative"]
+          changepoint_prior_scale: [0.001, 0.01, 0.1, 0.2, 0.25, 0.5]
+          changepoint_range: [0.99, 0.95, 0.9, 0.85, 0.8]
+          #holidays_prior_scale: [10,1,0.1,0.01]
+          #seasonality_prior_scale: [10,1,0.1,0.01]
+      trainer_configs: 
+        ProphetModelTrainer: 
+          config: 
+            target_min: 0
+            country_holidays: EC
+  model_checker: 
+    config: 
+      baseline_method: value
+      baseline_value: lag_mean_7
+  config: 
+      metrics: ["rmse", "smape", "mape", "r2", "rmsle"]
+      perf_metric: rmsle
+      retrain_all: True 
+      forecast_period: 90
+      forecast_frequency: D
+      cv_initial: '730 days'
+      cv_period:  '45 days'
+      cv_horizon: '90 days'
+
+deploy: 
+  components: 
+    model_repository: MLFlowModelRepository
+    model_deployer: SeldonModelDeployer
+
+predict: 
+  components: 
+    data_profiler: $process.components.data_profiler
+    data_checker: $process.components.data_checker
+    data_connector: DuckDBDataConnector
+    model_explainer: BaseModelExplainer
+  data_connector: 
+    config: 
+      duckdb_path: $process.data_transformer.config.duckdb_path
+
+#component config
+metadata_tracker: 
+  config: 
+    mlflow_tracking_uri: file:///Users/jordanvolz/Downloads/mlruns
+    mlflow_experiment_name: store_sales_forecast
+metrics_tracker: 
+  config: 
+    mlflow_tracking_uri: $metadata_tracker.config.mlflow_tracking_uri
+    mlflow_experiment_name: $metadata_tracker.config.mlflow_experiment_name
+logger:
+  config: 
+    log_level: DEBUG
