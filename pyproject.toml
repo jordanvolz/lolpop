@@ -64,6 +64,7 @@ openai="^0.27.6"
 cookiecutter={version="^2.1.1", optional=true}
 tslumen={version="^0.0.1", optional=true}
 prophet={version="^1.1.3", optional=true}
+stumpy={version="^1.11.1, optional=true}
 
 [tool.poetry.extras]
 duckdb = ["duckdb"]
@@ -72,7 +73,7 @@ cli = ["sdv", "openai", "cookiecutter"]
 aws = ["boto3"]
 google = ["google-cloud-bigquery", "google-cloud-storage", "db-dtypes"]
 redshift = ["psychopg2"]
-timeseries = ["tslumen", "prophet"]
+timeseries = ["tslumen", "stumpy", "prophet"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2"
