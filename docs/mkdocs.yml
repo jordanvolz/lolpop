@@ -4,6 +4,5 @@ site_description: A Software Engineering Framework for Machine Learning
 site_url: https://lolpop.readthedocs.io
 repo_url: https://github.com/jordanvolz/lolpop
 repo_name: GitHub
-
 theme: 
   name: material
