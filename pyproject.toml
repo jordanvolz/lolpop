@@ -78,6 +78,8 @@ timeseries = ["tslumen", "stumpy", "prophet"]
 [tool.poetry.dev-dependencies]
 pytest = "^7.2"
 faker = "^14.0"
+mkdocs = "^1.4.3"
+mkdocs-material = "^9.1.15"
 
 [tool.poetry.scripts]
 lolpop = "lolpop.cli.cli:app"
