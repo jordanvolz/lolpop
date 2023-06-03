@@ -73,6 +73,8 @@ xx14. Data synthesizer + data seeding for better local experience -- DONE
 --> deployments 
 --> metrics tracking 
 --> etc 
+21. saving feature engineering pipeline for re-use
+--> possibly just have a "pre-proc" step in the training workflow and save the pipeline object?
 
 zz. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc
 --> would be good to map the concepts between metadata stores as well
@@ -82,11 +84,12 @@ xx1. 1 Additional Pipeline Extension (MetaFlow? mlflow?) -- DONE
 xx2. 1 Additional Metadata Tracker Extension (MLFlow? w&b) 
     -- MLFlow DONE
 xx3. 2 Additional Data Integrations: (duckdb/bigquery/redshift/s3/gcs/databricks) -- DONE
-4. 2 Additional Use Case Examples: (Regression/TS/Recommender/NLP)
+xx4. 2 Additional Use Case Examples: (Regression/TS/Recommender/NLP)
 5. Testing Framework
 6. Project Templates -- WIP
 7. MVP Documentation
 xx8. Local Experience -- i.e. try it out w/o complicated installs/registrations
     -- DONE
-xx9. MVP packaing -- pip install
+xx9. MVP packaging -- pip install
     -- DONE 
+10. feature encoder

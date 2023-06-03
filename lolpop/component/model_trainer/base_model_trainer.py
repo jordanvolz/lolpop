@@ -165,6 +165,10 @@ class BaseModelTrainer(BaseComponent):
                     metrics_out["test"][metric] = sk_metrics.mean_squared_log_error(data["y_test"], predictions["test"])
             
             elif metric == "rmsle":
+                #predictions can be negative, which will break this calculation.
+                #if you're using rmsle we'll assume you intended non-negative predictions
+                for key in predictions.keys(): 
+                    predictions[key] = [max(x,0) for x in predictions[key]]
                 metrics_out["train"][metric] = sk_metrics.mean_squared_log_error(data["y_train"], predictions["train"], squared=False)
                 if valid_exists:
                     metrics_out["valid"][metric] = sk_metrics.mean_squared_log_error(data["y_valid"], predictions["valid"], squared=False)

@@ -2,6 +2,7 @@ from lolpop.component.data_checker.base_data_checker import BaseDataChecker
 from lolpop.utils import common_utils as utils
 from deepchecks.tabular import Dataset
 from deepchecks.tabular.suites import data_integrity
+import os 
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class DeepchecksDataChecker(BaseDataChecker): 
@@ -36,6 +37,11 @@ class DeepchecksDataChecker(BaseDataChecker):
         data_suite = data_integrity() 
         data_report = data_suite.run(ds)
         file_path = "%s/DEEPCHECKS_DATA_REPORT.HTML" %self._get_config("local_dir")
+        #deepchecks doesn't ovewrite existing files, so we need to remove this path if it already exists
+        try:
+            os.remove(file_path)
+        except: 
+            pass
         data_report.save_as_html(file_path)
 
         num_checks_passed = len(data_report.get_passed_checks())

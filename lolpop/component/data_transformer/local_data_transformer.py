@@ -33,7 +33,7 @@ class LocalDataTransformer(BaseDataTransformer):
             "data_connector_config", {})
         data_connector_cl = utils.load_class(data_connector_cl_name)
         data_connector = data_connector_cl(
-            conf = data_connector_config, pipeline_conf = {}, runner_conf = {}, 
+            conf = {"config": data_connector_config}, pipeline_conf = {}, runner_conf = {}, 
             components={"logger": self.logger})
         self.data_connector = data_connector
 

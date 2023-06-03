@@ -1,6 +1,7 @@
 from lolpop.component.model_visualizer.base_model_visualizer import BaseModelVisualizer
 from lolpop.utils import common_utils as utils
 from yellowbrick.classifier import ClassificationReport, ConfusionMatrix, ROCAUC, PrecisionRecallCurve, DiscriminationThreshold, ClassPredictionError
+from yellowbrick.regressor import ResidualsPlot, PredictionError, AlphaSelection, CooksDistance
 from yellowbrick.target import ClassBalance, FeatureCorrelation
 import os 
 from matplotlib import pyplot as plt
@@ -56,6 +57,29 @@ class YellowbrickModelVisualizer(BaseModelVisualizer):
             viz = FeatureCorrelation(labels=data["X_train"].columns)
             viz.fit(data["X_train"],data["y_train"])
             self._save_pyplot("yb_feature_correlation", "train", model_version)
+
+        elif self.problem_type == "regression": 
+            #residuals plot
+            for split in set([x.split("_")[1] for x in data.keys()]):
+                viz = ResidualsPlot(model)
+                self._save_plot(viz, data, split, model_version,"yb_residuals")
+
+                #real vs actual
+                viz = PredictionError(model)
+                self._save_plot(viz, data, split, model_version, "yb_prediction_error")
+
+                #alpha selection
+                #this fails if the model doesn't have a built in CV method, so we'll wrap it. 
+                try:
+                    viz = AlphaSelection(model)
+                    self._save_plot(viz, data, split, model_version, "yb_alpha_selection")
+                except: 
+                    self.log("Failed to create AlphaSelection plot. It's likely that the ModelTrainer does not contain a built in CV method.", level="WARN") 
+
+                #cooks distance
+                viz = CooksDistance()
+                viz.fit(data["X_%s" % split], data["y_%s" % split])
+                self._save_pyplot("yb_cooks_distance", split, model_version)
 
             #note: could be fun to add some model selection viz here as well: https://www.scikit-yb.org/en/latest/api/model_selection/index.html
             # and yb has some interesting feature analysis viz that we could use in data processing: https://www.scikit-yb.org/en/latest/api/features/index.html

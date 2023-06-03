@@ -3,7 +3,7 @@ from quickstart_runner import QuickstartRunner
 
 #create runner from config
 config_file = "/Users/jordanvolz/github/lolpop/examples/quickstart/quickstart.yaml"
-runner = QuickstartRunner(config_file, skip_config_validation=True)
+runner = QuickstartRunner(conf=config_file, skip_config_validation=True)
 
 #run data processing
 train_data = runner.process_data()

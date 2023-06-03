@@ -73,7 +73,7 @@ class LocalDataSplitter(BaseDataSplitter):
         return data_out 
 
 
-    def _split_data(self, data, target,  split_column=None, split_classes={},  split_ratio=[0.8,0.2], sample_num=100000, use_startified=False, include_test=False): 
+    def _split_data(self, data, target,  split_column=None, split_classes={},  split_ratio=[0.8,0.2], sample_num=100000, use_startified=False, include_test=False, reset_index=True): 
         """ Function to split data. 
             Supports random splitting, manual splitting, and stratified. 
             Can also include test set. 
@@ -136,11 +136,11 @@ class LocalDataSplitter(BaseDataSplitter):
                 if include_test:
                     test = test.merge(strat_df, how="outer")
             
-            data_out = self._build_split_dfs(train, valid, target, test=test)
+            data_out = self._build_split_dfs(train, valid, target, test=test, reset_index=reset_index)
 
         return data_out 
 
-    def _build_split_dfs(self, train, valid, target,  split_column="SPLIT", test=None): 
+    def _build_split_dfs(self, train, valid, target,  split_column="SPLIT", test=None, reset_index=True): 
         """Builds the dictionary of split datasets from the individual dataframes. 
 
         Args:
@@ -171,6 +171,10 @@ class LocalDataSplitter(BaseDataSplitter):
             data_out["X_test"] = test.drop([target, split_column], axis=1, errors="ignore")
             data_out["y_test"] = test[target]
 
+        if reset_index: 
+            for key in data_out.keys(): 
+                data_out[key] = data_out[key].reset_index(drop=True)
+
         return data_out
 
     def get_train_test_dfs(self, data, combine_xy=True, combine_train_valid=True):
@@ -193,9 +197,9 @@ class LocalDataSplitter(BaseDataSplitter):
 
         if combine_xy: 
             train = pd.concat([df_X,df_y],axis=1)
-            test = pd.concat([data["X_test"], data["y_test"]], axis=1)
+            test = pd.concat([data["X_test"], data["y_test"]],axis=1)
         else: 
             train = (df_X, df_y)
-            test = (data["X_test"], data["y_test"])
+            test = (data["X_test"],data["y_test"])
 
         return train, test 

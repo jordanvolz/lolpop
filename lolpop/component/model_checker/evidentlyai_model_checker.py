@@ -3,7 +3,7 @@ from lolpop.utils import common_utils as utils
 from evidently.test_suite import TestSuite
 from evidently.tests import TestColumnDrift
 from evidently.report import Report
-from evidently.test_preset import MulticlassClassificationTestPreset, NoTargetPerformanceTestPreset, BinaryClassificationTestPreset
+from evidently.test_preset import MulticlassClassificationTestPreset, NoTargetPerformanceTestPreset, BinaryClassificationTestPreset, RegressionTestPreset
 from evidently.metric_preset import DataDriftPreset, TargetDriftPreset, DataQualityPreset
 from evidently import ColumnMapping
 
@@ -30,10 +30,11 @@ class EvidentlyAIModelChecker(BaseModelChecker):
                 model_report = TestSuite(tests=[MulticlassClassificationTestPreset(), NoTargetPerformanceTestPreset(), TestColumnDrift(column_name=model_target)])
             else: 
                 model_report = TestSuite(tests=[BinaryClassificationTestPreset(), NoTargetPerformanceTestPreset(), TestColumnDrift(column_name=model_target)])
-            model_report.run(current_data=df_test, reference_data=df_train, column_mapping=column_mapping)
+        elif self.problem_type == "regression":
+            model_report = TestSuite(tests=[RegressionTestPreset(), NoTargetPerformanceTestPreset(), TestColumnDrift(column_name=model_target)])
         else: 
             self.notify("Unsupported problem type: %s" %self.problem_type)
-             
+        model_report.run(current_data=df_test, reference_data=df_train, column_mapping=column_mapping)
         file_path = "%s/EVIDENTLY_MODEL_REPORT.HTML" %self._get_config("local_dir")
         model_report.save_html(file_path)
 
