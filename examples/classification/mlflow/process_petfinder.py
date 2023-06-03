@@ -14,7 +14,7 @@ def transform(data, **kwargs):
     #encode categories
     data[CATEGORY_COLUMNS] = data[CATEGORY_COLUMNS].astype(str)
     for col in CATEGORY_COLUMNS:
-            _, indexer = pd.factorize(data[col])
+            _, indexer = pd.factorize(data[col], sort=True)
             data[col] = indexer.get_indexer(data[col])
 
     #split data

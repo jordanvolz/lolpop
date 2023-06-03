@@ -64,7 +64,7 @@ class BaseRunner:
             runner_components = {"logger" : logger_obj}
             self.log("Loaded class %s into component %s" %(type(self.logger).__name__, "logger"))
         else: 
-            raise Exception("Unable to find logger class.", level="ERROR")
+            raise Exception("Unable to find logger class.")
 
         #we also want to special handle the metadata tracker, so we'll set that up first as well and pass 
         #it to all children so they have access in __init__. 

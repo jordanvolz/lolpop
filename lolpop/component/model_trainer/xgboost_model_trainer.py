@@ -16,7 +16,7 @@ class XGBoostModelTrainer(BaseModelTrainer):
         if self.problem_type == "classification": 
             self.model = XGBClassifier(**params)
         elif self.problem_type == "regression": 
-            self.model == XGBRegressor(**params)
+            self.model = XGBRegressor(**params)
         else: 
             msg = "Unsupported problem type (%s) in trainer %s" %(problem_type, self.name)
             self.notify(msg)

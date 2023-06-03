@@ -2,7 +2,7 @@ from lolpop.runner import ClassificationRunner
 
 #create runner from config
 config_file = "/Users/jordanvolz/github/lolpop/examples/classification/mlflow/local_dev.yaml"
-runner = ClassificationRunner(config_file)
+runner = ClassificationRunner(conf=config_file)
 
 #run data processing
 train_data, train_dataset_version = runner.process_data()

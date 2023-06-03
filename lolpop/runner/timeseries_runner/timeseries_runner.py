@@ -11,8 +11,8 @@ class TimeSeriesRunner(BaseRunner):
         "config": ["train_data", "eval_data", "prediction_data", "model_target", "time_index"]
     }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(problem_type="timeseries", *args, **kwargs)
+    def __init__(self, problem_type="timeseries", *args, **kwargs):
+        super().__init__(problem_type=problem_type, *args, **kwargs)
 
     def process_data(self, source="train"):
         #run data transformations and encodings

@@ -11,8 +11,8 @@ class MetaflowClassificationRunner(BaseRunner):
         "config": ["train_data", "eval_data", "prediction_data", "model_target", "drop_columns"]
     }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(problem_type="classification", *args, **kwargs)
+    def __init__(self, problem_type="classification", *args, **kwargs):
+        super().__init__(problem_type=problem_type, *args, **kwargs)
 
     def process_data(self, source = "train"):
         #run the metaflow process pipeline

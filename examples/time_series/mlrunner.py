@@ -2,7 +2,7 @@ from lolpop.extension import TimeSeriesRunner
 
 #create runner from config
 config_file = "/Users/jordanvolz/Downloads/ts_forecasting/config/duckdb_dev.yaml"
-runner = TimeSeriesRunner(config_file)
+runner = TimeSeriesRunner(conf=config_file)
 
 #run data processing
 train_data, train_dataset_version = runner.process_data()

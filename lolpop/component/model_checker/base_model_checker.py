@@ -78,6 +78,44 @@ class BaseModelChecker(BaseComponent):
                     baseline_predictions["valid"] = [most_frequent_class] * len(data["X_valid"])
                     if has_test: 
                         baseline_predictions["test"] = [most_frequent_class] * len(data["X_test"])
+            
+            elif self.problem_type == "regression":
+                labels = data["y_train"]
+
+                if baseline_value == "avg": 
+                    mean = labels.mean()
+                    baseline_predictions["train"] = [mean] * len(data["X_train"])
+                    baseline_predictions["valid"] = [mean] * len(data["X_valid"])
+                    if has_test: 
+                        baseline_predictions["test"] = [mean] * len(data["X_test"])
+
+                if baseline_value == "mode": 
+                    mode = labels.mode()[0]
+                    baseline_predictions["train"] = [mode] * len(data["X_train"])
+                    baseline_predictions["valid"] = [mode] * len(data["X_valid"])
+                    if has_test: 
+                        baseline_predictions["test"] = [mode] * len(data["X_test"])
+
+                if baseline_value == "max": 
+                    max = labels.max()
+                    baseline_predictions["train"] = [max] * len(data["X_train"])
+                    baseline_predictions["valid"] = [max] * len(data["X_valid"])
+                    if has_test: 
+                        baseline_predictions["test"] = [max] * len(data["X_test"])
+
+                if baseline_value == "min": 
+                    min = labels.min()
+                    baseline_predictions["train"] = [min] * len(data["X_train"])
+                    baseline_predictions["valid"] = [min] * len(data["X_valid"])
+                    if has_test: 
+                        baseline_predictions["test"] = [min] * len(data["X_test"])
+                        
+                if baseline_value == "median": 
+                    median = labels.median()
+                    baseline_predictions["train"] = [median] * len(data["X_train"])
+                    baseline_predictions["valid"] = [median] * len(data["X_valid"])
+                    if has_test: 
+                        baseline_predictions["test"] = [median] * len(data["X_test"])
 
             elif self.problem_type == "timeseries":
                 #time series . should be in the form 'last_value_N'
