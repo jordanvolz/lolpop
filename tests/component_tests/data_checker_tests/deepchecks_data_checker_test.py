@@ -1,5 +1,4 @@
 from lolpop.component import DeepchecksDataChecker
-from lolpop.utils import common_utils as utils 
 from tests.fixtures import * 
 
 class TestDeepchecksDataChecker:

@@ -18,6 +18,16 @@ class BigQueryDataConnector(BaseDataConnector):
   
 
     def get_data(self, table, sql=None, *args, **kwargs):
+        """
+        A function that retrieves data from a table or using a raw SQL command.
+
+        Args:
+            table (str): name of the table to fetch data from
+            sql (str): SQL command to execute
+
+        Returns:
+            pandas.DataFrame: fetched data
+        """
         if sql is None:
             if table is not None:
                 sql = "SELECT * FROM %s" % table
@@ -30,11 +40,13 @@ class BigQueryDataConnector(BaseDataConnector):
         return data
 
     def save_data(self, data, table, *args, **kwargs):
-        """_summary_
+        """
+        Function to save data to a BigQuery table.
 
         Args:
-            data (_type_): _description_
-            table (_type_): _description_
+            data (pandas.DataFrame): data to be saved
+            table (str): name of the table to save the data in
+
         """
         #check if table already exists
         sql = "SELECT * FROM %s.INFORMATION_SCHEMA.TABLES" %self.bigquery_config.get("GOOGLE_DATASET")
@@ -68,13 +80,14 @@ class BigQueryDataConnector(BaseDataConnector):
         self._save_data(data, table, self.bigquery_config)
 
     def _map_pandas_col_type_to_bg_type(self, col_type):
-        """_summary_
+        """
+        A function that maps a pandas column type to a BigQuery column type.
 
         Args:
-            col_type (_type_): _description_
+            col_type (str): pandas column type
 
         Returns:
-            _type_: _description_
+            _type_: BigQuery column type
         """
         if col_type.kind == 'M':
             # datetime and timestamp columns in pandas are converted to datetime64[ns] dtype, which corresponds to 'datetime64'
@@ -99,6 +112,16 @@ class BigQueryDataConnector(BaseDataConnector):
     #load data into df
     @classmethod
     def _load_data(self, sql, config):
+        """
+        Function to load data from BigQuery by executing SQL query.
+
+        Args:
+            sql (str): SQL command to execute
+            config (dict): Bigquery configuration information
+
+        Returns:
+            pandas.DataFrame: Fetched data from BigQuery
+        """
         result = pd.DataFrame()
         client = self._get_client(config.get("GOOGLE_KEYFILE"), project=config.get("GOOGLE_PROJECT"))
 
@@ -111,6 +134,14 @@ class BigQueryDataConnector(BaseDataConnector):
         return result
 
     def _save_data(self, data, table_name, config):
+        """Function to save data in form of pandas dataframe into a BigQuery table.
+
+        Args:
+            data (pandas.DataFrame): The data to save
+            table_name (str): Name of table to save data
+            config (dict): Configuration file for bigqury project
+
+        """
         # Set up the BigQuery client
         client = client = self._get_client(config.get(
             "GOOGLE_KEYFILE"), project=config.get("GOOGLE_PROJECT"))
@@ -136,6 +167,16 @@ class BigQueryDataConnector(BaseDataConnector):
 
 
     def _get_client(self, key_path, project): 
+        """
+        Function to get a BigQuery client object.
+
+        Args:
+            key_path (str): Path to BigQuery credentials file
+            project (str): Google cloud project ID
+
+        Returns:
+            google.cloud.bigquery.client - A client object for BigQuery
+        """
         if key_path is not None: 
             credentials = service_account.Credentials.from_service_account_file(
                 key_path, scopes=[
@@ -151,6 +192,15 @@ class BigQueryDataConnector(BaseDataConnector):
         return client
     
     def _get_format(self, extension): 
+        """
+        Function to get the MIME content type for a given file format extension.
+
+        Args:
+            extension (str): File extension
+
+        Returns:
+            str: MIME type
+        """
         if extension == ".csv": 
             return "text/csv"
         else: 
