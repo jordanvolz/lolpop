@@ -11,6 +11,10 @@ class DeepchecksDataChecker(BaseDataChecker):
         "config" : ["local_dir"]
     }
 
+    __DEFAULT_CONF__ = {
+        "config": {"DEEPCHECKS_REPORT_NAME":"DEEPCHECKS_DATA_REPORT.HTML"}
+    }
+
     def check_data(self, data, *args, **kwargs):
         """Generates a data check report using Deepchecks.
 
@@ -36,7 +40,7 @@ class DeepchecksDataChecker(BaseDataChecker):
             )
         data_suite = data_integrity() 
         data_report = data_suite.run(ds)
-        file_path = "%s/DEEPCHECKS_DATA_REPORT.HTML" %self._get_config("local_dir")
+        file_path = "%s/%s.html" % (self._get_config("local_dir"), self._get_config("DEEPCHECKS_REPORT_NAME"))
         #deepchecks doesn't ovewrite existing files, so we need to remove this path if it already exists
         try:
             os.remove(file_path)

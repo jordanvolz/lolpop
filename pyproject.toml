@@ -80,6 +80,7 @@ pytest = "^7.2"
 faker = "^14.0"
 mkdocs = "^1.4.3"
 mkdocs-material = "^9.1.15"
+markdown = "^3.3.7"
 
 [tool.poetry.scripts]
 lolpop = "lolpop.cli.cli:app"

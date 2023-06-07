@@ -3,6 +3,64 @@ docs_dir: src
 site_description: A Software Engineering Framework for Machine Learning
 site_url: https://lolpop.readthedocs.io
 repo_url: https://github.com/jordanvolz/lolpop
-repo_name: GitHub
+repo_name: lolpop
 theme: 
   name: material
+  features: 
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.path
+    - navigation.prune
+    - navigation.index
+    - navigation.sections
+    - search.suggest
+    - search.highlight
+    - search.share
+    - toc.follow
+plugins: 
+  - search
+markdown_extensions: 
+  - toc: 
+      permalink: true
+      title: On this page 
+  - abbr 
+  - admonition
+  - attr_list 
+  - def_list 
+  - footnotes 
+  - tables
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.snippets 
+nav: 
+  - Introduction to lolpop: introduction.md
+  - Getting Started: 
+    - Installation: installation.md
+    - Concepts: concepts.md 
+    - Your First Experience: first-experience.md
+  - Integrations: 
+    - Introduction: resources.md
+    - Components: 
+      - components.md
+      - Data Checkers: 
+        - Deepchecks: deepchecks_data_checker.md
+        - EvidentlyAI: evidentlyai_data_checker.md
+        - Stumpy: stumpy_matrix_profiler.md
+      - Data Connectors: 
+        - Big Query: bigquery_data_connector.md
+    - Pipelines: pipelines.md
+    - Runners: runners.md
+  - Extensions: extensions.md
+  - CLI: cli.md
+  - Examples: examples.md
+  - Resources: 
+    - About: about.md
+    - Contributing: contributing.md
+    - Community: community.md
+    - Contact: contact.md
+
+
+

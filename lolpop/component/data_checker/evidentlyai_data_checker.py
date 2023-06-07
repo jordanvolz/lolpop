@@ -1,13 +1,17 @@
 from lolpop.component.data_checker.base_data_checker import BaseDataChecker
 from lolpop.utils import common_utils as utils
 from evidently.test_suite import TestSuite
-from evidently.test_preset import *
+from evidently.test_preset import DataQualityTestPreset
 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class EvidentlyAIDataChecker(BaseDataChecker): 
     
     __REQUIRED_CONF__ = {
         "config" : ["local_dir"]
+    }
+
+    __DEFAULT_CONF__ = {
+        "config": {"EVIDENTLYAI_REPORT_NAME": "EVIDENTLYAI_DATA_REPORT.HTML"}
     }
 
     def check_data(self, data, *args, **kwargs): 
@@ -23,7 +27,7 @@ class EvidentlyAIDataChecker(BaseDataChecker):
         """
         data_report = TestSuite(tests=[DataQualityTestPreset()])
         data_report.run(current_data=data, reference_data=None)
-        file_path = "%s/EVIDENTLY_DATA_REPORT.HTML" %self._get_config("local_dir")
+        file_path = "%s/%s" %(self._get_config("local_dir"),self._get_config("EVIDENTLYAI_REPORT_NAME"))
         data_report.save_html(file_path)
 
         summary = data_report.as_dict()["summary"]

@@ -124,8 +124,8 @@ def create_template(template_type, object_type, object_class, template_path, pro
 def create_documentation(
     source_file: Path = typer.Argument(
         ..., help="Path to the source file."),
-    class_name: str = typer.Option(
-        None, "--class-name", "-c", help="Class name in source_file to document."),
+    class_name: str = typer.Argument(
+        ..., help="Class name in source_file to document."),
     method_filter: List[str] = typer.Option([], "--method-filter", "-f", help="Methods to include in the documentation. default=all."),
     generator_class: str = typer.Option(
         "OpenAIChatbot", "--generator-class", "-g", help="Generative AI Chatbot class name."),
@@ -161,8 +161,8 @@ def create_documentation(
 def create_tests(
     source_file: Path = typer.Argument(
         ..., help="Path to the source file."),
-    class_name: str = typer.Option(
-        None, "--class-name", "-c", help="Class name in source_file to document."),
+    class_name: str = typer.Argument(
+        ..., help="Class name in source_file to document."),
     method_filter: List[str] = typer.Option(
         [], "--method-filter", "-f", help="Methods to include in the documentation. default=all."),
     generator_class: str = typer.Option(
@@ -207,8 +207,8 @@ def create_tests(
 def create_docstrings(
     source_file: Path = typer.Argument(
         ..., help="Path to the source file."),
-    class_name: str = typer.Option(
-        None, "--class-name", "-c", help="Class name in source_file to document."),
+    class_name: str = typer.Argument(
+        ..., help="Class name in source_file to document."),
     method_filter: List[str] = typer.Option(
         [], "--method-filter", "-f", help="Methods to include in the documentation. default=all."),
     generator_class: str = typer.Option(
