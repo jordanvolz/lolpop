@@ -7,26 +7,41 @@ from matplotlib.patches import Rectangle
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class StumpyMatrixProfiler(BaseDataChecker):
-
     __REQUIRED_CONF__ = {
-        "config": ["local_dir"]
+        "config": ["local_dir", "model_target"]
     }
 
-    def check_data(self, data, *args, **kwargs):
-        """Generates a data check report using Deepchecks.
 
-        Args:
-            data (pd.DataFrame): A dataframe of the data to check
+    __DEFAULT_CONF__ = {
+        "config": {
+            "stumpy_analysis_image_name": "STUMPY_DISCORD_ANALYSIS.PNG",
+            "stumpy_window_size": [30],
+            "stumpy_num_discords": 3,
+            }
+    }
+    
+
+    def check_data(self, data, *args, **kwargs):
+        """
+        Method for detecting anomalies/novelties in time series data using STUMPY matrix profiling algorithm and plotting the results.
+
+        This method uses STUMPY algorithm for discord discovery in time series data. The algorithm involves sliding a window across
+        the time series data and calculating the matrix profile (a distance profile between subsequences). The subsequence corresponding
+        to each discovered anomaly/novelty in the time series data will have a distance profile value greater than other subsequence's
+        corresponding to a similar or identical anomaly/novelty.
+
+        Parameters:
+        data (pandas.DataFrame): Input time series data.
+        args (*args): Optional positional arguments to the method.
+        kwargs (**kwargs): Optional keyword arguments to the method.
 
         Returns:
-            data_report (object): Python object of the data report.
-            file_path (string):  Path to the exported report. 
-            checks_status (string): Status of the checks ("PASS"/"WARN"/"ERROR", etc.)
+        tuple(None, str, str): Tuple of Nones and the path of the output image, and a string 'ERROR', 'WARN', 'PASS' based on the validity of the input data.
         """
         model_target = self._get_config("MODEL_TARGET")
 
-        windows = self._get_config("stumpy_window_size", [30])
-        num_discords = self._get_config("stumpy_num_discords", 3)
+        windows = self._get_config("stumpy_window_size")
+        num_discords = self._get_config("stumpy_num_discords")
 
         #set up plot
         fig, axs = plt.subplots(len(windows)+1, sharex=True, gridspec_kw={'hspace': 0})
@@ -37,23 +52,42 @@ class StumpyMatrixProfiler(BaseDataChecker):
 
         j=1
         for m in windows: 
+            #calculate matrix profile
             mp = stumpy.stump(data[model_target], m)
             discords = []
+            #find top n discords. These are the most likely anomalies in the data.
             for i in range(1, num_discords+1):
                 discord_idx = np.argsort(mp[:, 0])[-i]
                 nearest_neighbor_distance = mp[discord_idx, 0]
                 discords.append(discord_idx)
                 self.log("Found possible anomaly at index %s, which is %s units from its nearest neighbor" %(discord_idx, nearest_neighbor_distance))    
+            #plot the matrix profile
             self._plot_mp(axs, m, box_height, mp, discords, j)
             j=j+1
 
-
-        file_path = "%s/STUMP_DISCORD_ANALSIS.PNG" % self._get_config("local_dir")
+        #save plot
+        file_path = "%s/%s" %(self._get_config("local_dir"), self._get_config("stumpy_analysis_image_name"))
         plt.savefig(file_path)
 
         return None, file_path, "PASS"
 
     def _plot_mp(self, axs, m, h, mp, discords, i): 
+        """
+        Private method for plotting the STUMPY matrix and marking the discovered anomalies/novelties.
+
+        This method plots the STUMPY matrix for the given subsequence length and marks the discovered anomalies/novelties in the time series data.
+
+        Parameters:
+        axs (list of matplotlib axes): List of matplotlib axes to plot the matrix.
+        m  (int): Subsequence length for STUMPY matrix.
+        h (int): Height of box for marking the anomalies/novelties.
+        mp (numpy array): STUMPY matrix to be plotted.
+        discords (list of int): Indices of the discovered anomalies/novelties in the time series data.
+        i (int): Index in axs list where the plot will be made.
+
+        Returns:
+        None
+        """
         print("i:" + str(i))
         axs[i].set_ylabel('MP (m=%s)' %m, fontsize='10')
         axs[i].set_xlabel('Time', fontsize='10')
