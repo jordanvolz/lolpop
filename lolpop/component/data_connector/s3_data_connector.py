@@ -11,7 +11,10 @@ import os
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class S3DataConnector(BaseDataConnector):
-    __REQUIRED_CONF__ = {"config": ["GOOGLE_PROJECT"]}
+    __REQUIRED_CONF__ = {"config": ["AWS_S3_BUCKET",
+                                    "AWS_ACCESS_KEY_ID",
+                                    "AWS_SECRET_KEY_ID",
+                                    "AWS_SESSION_TOKEN", ]}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -19,23 +22,53 @@ class S3DataConnector(BaseDataConnector):
             [
                 "AWS_S3_BUCKET", 
                 "AWS_ACCESS_KEY_ID", 
-                "AWS_SECRETE_KEY_ID", 
+                "AWS_SECRET_KEY_ID", 
                 "AWS_SESSION_TOKEN",
             ]
         )
 
     def get_data(self, path, *args, **kwargs):
+        """
+        Reads data from the AWS S3 Bucket.
+
+        Args:
+            path: a string representing the location of the file in the bucket
+
+        Returns:
+            DataFrame containing data from the bucket.
+        """
         df = self._load_data(path, self.aws_config)
         return df
 
     def save_data(self, data, path, *args, **kwargs):
+        """
+        Saves data into the S3 Bucket.
+
+        Args:
+            data: Data to be written into the bucket
+            path: a string representing the location of the file in the bucket
+
+        Returns:
+            None
+        """
         self._save_data(data, path, self.aws_config)
 
 
     @classmethod
     def _load_data(self, path, config, **kwargs):
+        """
+        Reads files within the AWS S3 Bucket.
+
+        Args:
+            path: a string representing the location of the file in the bucket
+            config: a dictionary that stores AWS S3 Buckets, AWS Access Key ID, AWS Secret Access Key, and AWS Session Token.
+
+
+        Returns:
+            Data on file.
+        """
         client = self._get_client(config)
-        bucket = config.get("AWs_S3_BUCKET")
+        bucket = config.get("AWS_S3_BUCKET")
         extension = path.split(".")[-1]
 
         response = client.get_object(Bucket=bucket, Key=path)
@@ -61,6 +94,17 @@ class S3DataConnector(BaseDataConnector):
         return data
 
     def _save_data(self, data, path, config, *args, **kwargs):
+        """
+        Saves Data into AWS S3 Bucket
+
+        Args:
+            data: Data to be written into the bucket
+            path: a string representing the location of the file in the bucket
+            config: a dictionary that stores AWS S3 Buckets, AWS Access Key ID, AWS Secret Access Key, and AWS Session Token.
+
+        Returns:
+            None
+        """
         # get client
         client = self._get_client(config)
         bucket = config.get("AWS_S3_BUCKET")
@@ -89,6 +133,15 @@ class S3DataConnector(BaseDataConnector):
 
 
     def _get_client(self, config):
+        """
+        Returns the AWS S3 client.
+
+        Args:
+            config: a dictionary that stores AWS S3 Buckets, AWS Access Key ID, AWS Secret Access Key, and AWS Session Token.
+
+        Returns:
+            An AWS S3 client.
+        """
         client = boto3.client(
             "s3",
             aws_access_key_id=config.get("AWS_ACCESS_KEY_ID"),

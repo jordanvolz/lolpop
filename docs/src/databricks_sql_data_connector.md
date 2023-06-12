@@ -1,12 +1,64 @@
+ # Class `DatabricksSQLDataConnector`
 
-from lolpop.component.data_connector.base_data_connector import BaseDataConnector
-from lolpop.utils import common_utils as utils
+This class provides functionality for interfacing with a Databricks SQL data connector in Python. The class has methods for retrieving data from the specified SQL table or a provided SQL query, and for saving given data to a specific table in Databricks SQL or updating the existing table's structure as necessary.
 
+The class extends the `BaseDataConnector` class and includes the following methods:
+
+## `__init__(self, *args, **kwargs)`
+
+Creates an instance of the `DatabricksSQLDataConnector` class. 
+
+**Parameters:**
+- `args`: Tuple containing variable length argument list.
+- `kwargs`: Dictionary containing configuration key-value pairs.
+
+## `get_data(self, table, sql=None, *args, **kwargs)`
+
+Returns data from the given Databricks SQL table or from a provided SQL query in DataFrame format.
+
+**Parameters:**
+- `table`: Name of the SQL table to retrieve data from.
+- `sql`: SQL Query to retrieve data from Databricks SQL table.
+- `args`: Tuple containing variable length argument list.
+- `kwargs`: Dictionary containing configuration key-value pairs.
+
+**Returns:**
+- `pd.DataFrame`: DataFrame containing the data from either the Databricks SQL table or from the SQL query passed.
+
+
+## `save_data(self, data, table, *args, **kwargs)`
+
+Saves data to a specific table in Databricks or updates the existing table's structure as necessary.
+
+**Parameters:**
+- `data`: DataFrame containing the data to be saved to a Databricks SQL table.
+- `table`: Name of the SQL table to save data to.
+- `args`: Tuple containing variable length argument list.
+- `kwargs`: Dictionary containing configuration key-value pairs.
+
+**Returns:**
+- None
+
+
+In addition, the class contains several private methods:
+- `_load_data(self, sql, config)`: Loads data from SQL query in Databricks DataFrame.
+- `_save_data(self, data, table, config)`: Saves data to Databricks SQL in chunks.
+- `_map_pandas_col_type_to_databrickssql_type(self, col_type)`: Maps the given pandas column data type to a Databricks SQL data type.
+
+---
+
+## Example Usage
+
+Here's an example of how to use this class.
+
+```python
+
+# Import necessary dependencies
 import pandas as pd
-from databricks import sql as databricks_sql
 from sqlalchemy import create_engine
-from tqdm import tqdm
+import utils
 
+# Define the Databricks SQL data connector class
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class DatabricksSQLDataConnector(BaseDataConnector):
     __REQUIRED_CONF__ = {"config": ["DATABRICKS_SERVER_HOSTNAME",
@@ -36,6 +88,10 @@ class DatabricksSQLDataConnector(BaseDataConnector):
                 str: Name of the SQL table to retrieve data from.
             sql:
                 str: SQL Query to retrieve data from Databricks SQL table.
+            args:
+                Tuple: variable length argument list.
+            kwargs:
+                Dict: Configuration key-value pairs.
 
         Returns:
             pd.DataFrame: DataFrame containing the data from either the Databricks SQL table or from the SQL query passed.
@@ -60,6 +116,10 @@ class DatabricksSQLDataConnector(BaseDataConnector):
                 pd.DataFrame: DataFrame containing the data to be saved to a Databricks SQL table.
             table:
                 str: Name of the SQL table to save data to.
+            args:
+                Tuple: variable length argument list.
+            kwargs:
+                Dict: Configuration key-value pairs.
 
         Returns:
             None
@@ -184,3 +244,11 @@ class DatabricksSQLDataConnector(BaseDataConnector):
             column_type = 'STRING'
         return column_type
 
+# Create an instance of `DatabricksSQLDataConnector`
+connector = DatabricksSQLDataConnector()
+
+# Retrieve data from the "employee" table
+data = connector.get_data("employee")
+
+# Print the first 5 rows of the DataFrame
+print(data.head(5))

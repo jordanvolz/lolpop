@@ -1,6 +1,7 @@
 from lolpop.utils import common_utils as utils
 from omegaconf import OmegaConf
 from inspect import currentframe
+import os
 class BasePipeline: 
 
     __REQUIRED_CONF__ = {
@@ -101,6 +102,8 @@ class BasePipeline:
         value = utils.lower_conf(self.config).get(key, None)
         if value is None: 
             value = utils.lower_conf(self.runner_conf).get(key, default_value)
+            if value is None: 
+                value = os.getenv(key)
         return value 
 
     def _set_config(self, key, value): 

@@ -36,9 +36,10 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
         Args:
             data (pd.Dataframe): Data to synthesize. 
             metadata (dict): Metadata of the data. Should be ouput from load_data. 
+            synthesizer_str (str): Name of the synthesizer class to use
 
         Returns:
-            _type_: _description_
+            synthesizer: The Synthesizer Model fit on the data
         """
         synthesizer = None 
 
@@ -95,6 +96,16 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
         return quality_report, diagnostic_report
 
     def _get_synthesizer_class(self, synthesizer): 
+        """
+        Loads a synthesizer class based on the given string.
+
+        Args:
+            synthesizer (str): String representing the synthesizer.
+
+        Returns:
+            synthesizer class: The synthesizer class.
+
+        """
         cl = None
         if synthesizer == "SingleTablePreset":
             cl = utils.load_class(synthesizer, "lite", "sdv")
@@ -112,6 +123,16 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
         return cl 
 
     def _get_evaluator_class(self, synthesizer):
+        """
+        Loads an evaluator class based on the given synthesizer. 
+
+        Args:
+            synthesizer (str): String representing the synthesizer. 
+
+        Returns:
+            evaluator class: The evaluator class.
+
+        """
         cl = None
         if synthesizer in ["SingleTablePreset", "CTGANSynthesizer", "CopulaGANSynthesizer", "GaussianCopulaSynthesizer", "TVAESynthesizer"]:
             cl = utils.load_class("evaluate_quality",
@@ -130,6 +151,16 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
         return cl 
 
     def _get_diagnostic_class(self, synthesizer):
+        """
+        Loads a diagnostic class based on the given synthesizer.
+
+        Args:
+            synthesizer (str): String representing the synthesizer.
+
+        Returns:
+            diagnostic class: The diagnostic class.
+
+        """
         cl = None
         if synthesizer in ["SingleTablePreset", "CTGANSynthesizer", "CopulaGANSynthesizer", "GaussianCopulaSynthesizer", "TVAESynthesizer"]:
             cl = utils.load_class("run_diagnostic", "single_table", "sdv.evaluation")

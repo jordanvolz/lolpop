@@ -9,7 +9,7 @@ import os
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class BigQueryDataConnector(BaseDataConnector):
-    __REQUIRED_CONF__ = {"config": ["GOOGLE_PROJECT"]}
+    __REQUIRED_CONF__ = {"config": ["GOOGLE_PROJECT", "GOOGLE_DATASET"]}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -47,6 +47,8 @@ class BigQueryDataConnector(BaseDataConnector):
             data (pandas.DataFrame): data to be saved
             table (str): name of the table to save the data in
 
+        Returns: 
+            None
         """
         #check if table already exists
         sql = "SELECT * FROM %s.INFORMATION_SCHEMA.TABLES" %self.bigquery_config.get("GOOGLE_DATASET")
@@ -143,7 +145,7 @@ class BigQueryDataConnector(BaseDataConnector):
 
         """
         # Set up the BigQuery client
-        client = client = self._get_client(config.get(
+        client = self._get_client(config.get(
             "GOOGLE_KEYFILE"), project=config.get("GOOGLE_PROJECT"))
 
         # Set up the table reference

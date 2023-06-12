@@ -12,6 +12,11 @@ class EvidentlyAIDataProfiler(BaseDataProfiler):
         "config" : ["local_dir"]
     }
 
+    __DEFAULT_CONF__ = {
+        "config": {"EVIDENTLYAI_PROFILE_REPORT_NAME": "EVIDENTLYAI_DATA_PROFILE_REPORT.HTML",
+                   "EVIDENTLYAI_COMPARISON_REPORT_NAME": "EVIDENTLYAI_DATA_COMPARISON_REPORT.HTML"}
+    }
+
     def profile_data(self, data, *args, **kwargs): 
         """Profiles data using EvidentlyAI
 
@@ -24,13 +29,13 @@ class EvidentlyAIDataProfiler(BaseDataProfiler):
         """
         data_report = Report(metrics=[DataQualityPreset()])
         data_report.run(current_data=data, reference_data=None)
-        file_path = "%s/EVIDENTLY_DATA_PROFILE_REPORT.HTML" %self._get_config("local_dir")
+        file_path = "%s/%s" % (self._get_config("local_dir"), self._get_config("EVIDENTLYAI_PROFILE_REPORT_NAME"))
         data_report.save_html(file_path)
         
         return data_report, file_path
 
     def compare_data(self, data, prev_data, *args, **kwargs): 
-        """Produces a (probably data drift) report between two data sets 
+        """Produces a data drift report between two data sets 
            using EvidentlyAI. 
 
         Args:
@@ -48,7 +53,8 @@ class EvidentlyAIDataProfiler(BaseDataProfiler):
             #data_comparison = TestSuite(tests=[DataStabilityTestPreset(), DataDriftTestPreset()]) #getting errors w/ the testsuite
             data_comparison = Report(metrics=[DataDriftPreset()])
             data_comparison.run(reference_data=prev_data, current_data=data)
-            file_path = "%s/EVIDENTLY_DATA_COMPARISON_REPORT.html" %self._get_config("local_dir")
+            file_path = "%s/%s" % (self._get_config("local_dir"),
+                                   self._get_config("EVIDENTLYAI_COMPARISON_REPORT_NAME"))
             data_comparison.save_html(file_path)
 
         return data_report, file_path

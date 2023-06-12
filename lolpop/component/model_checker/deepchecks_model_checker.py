@@ -7,7 +7,28 @@ from deepchecks.tabular.checks import TrainTestLabelDrift
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class DeepchecksModelChecker(BaseModelChecker): 
 
+    __REQUIRED_CONF__ = {
+        "config": ["local_dir"]
+    }
+
+    __DEFAULT_CONF__ = {
+        "config": {"DEEPCHECKS_MODEL_REPORT_NAME": "DEEPCHECKS_MODEL_REPORT.HTML",
+                   "DEEPCHECKS_MODEL_DRIFT_REPORT_NAME": "DEEPCHECKS_MODEL_DRIFT_REPORT.HTML"}
+    }
+
     def check_model(self, data_dict, model, **kwargs): 
+        """
+        Checks the model against data_dict. Saves the Deepchecks model suite report in HTML format.
+
+        Args:
+        data_dict: dictionary, the dictionary containing data for the model
+        model: object, the object of the model class
+
+        Returns:
+        model_report: object, the model suite report
+        file_path: str, the location of the saved HTML file
+        checks_status: str, the status (PASS, ERROR or WARN) of model checks
+        """
         model_target = self._get_config("MODEL_TARGET")
         model_index = self._get_config("MODEL_INDEX")
         model_time_index = self._get_config("MODEL_TIME_INDEX")
@@ -22,7 +43,7 @@ class DeepchecksModelChecker(BaseModelChecker):
         model_suite = model_evaluation() 
         model_report = model_suite.run(ds_train, ds_test, model._get_model())
 
-        file_path = "%s/DEEPCHECKS_MODEL_REPORT.HTML" %self._get_config("local_dir")
+        file_path = "%s/%s" %(self._get_config("local_dir"), self._get_config("DEEPCHECKS_REPORT_NAME"))
         model_report.save_as_html(file_path)
         
         checks_status = "PASS"
@@ -34,6 +55,18 @@ class DeepchecksModelChecker(BaseModelChecker):
         return model_report, file_path, checks_status
 
     def calculate_model_drift(self, data, current_model, deployed_model, **kwargs): 
+        """
+        Compares the performance of current_model and deployed_model on data. Saves the model drift report in HTML format.
+
+        Args:
+        data: dictionary, the dictionary containing data for the models
+        current_model: object, the current state model object
+        deployed_model: object, the already deployed model object
+
+        Returns:
+        model_report: object, the train/test drift report object
+        file_path: str, the location of the saved HTML file
+        """
         model_target = self._get_config("MODEL_TARGET")
         model_index = self._get_config("MODEL_INDEX")
         model_time_index = self._get_config("MODEL_TIME_INDEX")
@@ -50,7 +83,8 @@ class DeepchecksModelChecker(BaseModelChecker):
         check = TrainTestLabelDrift()
         model_report = check.run(train_dataset=ds_deployed, test_dataset=ds_current)
 
-        file_path = "%s/DEEPCHECKS_MODEL_DRIFT_REPORT.HTML" %self._get_config("local_dir")
+        file_path = "%s/%s" % (self._get_config("local_dir"),
+                               self._get_config("DEEPCHECKS_MODEL_DRIFT_REPORT_NAME"))
         model_report.save_as_html(file_path)
 
         return model_report, file_path

@@ -199,8 +199,11 @@ def validate_conf(config, required_conf, components_objs={}):
                 else: 
                     val_key = val
                     val_value = None
+                #check if key,value exist in config
                 if lconf.get(k,{}).get(val_key.lower(),None) is None: 
-                    missing_k.append(val) 
+                    #if not provided in config, check environment variables 
+                    if os.getenv(val_key.upper(),None) is None: 
+                        missing_k.append(val) 
                 elif val_value is not None: 
                     if lconf.get(k,{}).get(val_key.lower()) not in val_value: 
                         missing_k.append(val)

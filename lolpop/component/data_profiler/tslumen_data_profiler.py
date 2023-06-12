@@ -9,6 +9,10 @@ class tslumenDataProfiler(BaseDataProfiler):
         "config": ["local_dir"]
     }
 
+    __DEFAULT_CONF__ = {
+        "config": {"TSLUMEN_PROFILE_REPORT_NAME": "TSLUMEN_DATA_PROFILE_REPORT.HTML"}
+    }
+
     def profile_data(self, data, *args, **kwargs):
         """Profiles data using tslumen
 
@@ -23,8 +27,7 @@ class tslumenDataProfiler(BaseDataProfiler):
         if ts_data.index.inferred_freq is None: 
             ts_data = ts_data.asfreq(self._get_config("forecast_frequency"))
         data_report = HtmlReport(ts_data)
-        file_path = "%s/TSLUMEN_DATA_PROFILE_REPORT.html" % self._get_config(
-            "local_dir")
+        file_path = "%s/%s" %(self._get_config("local_dir"), self._get_config("TSLUMEN_PROFILE_REPORT_NAME"))
         data_report.save(file_path)
 
         return data_report, file_path

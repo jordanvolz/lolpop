@@ -7,16 +7,36 @@ import os
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class OptunaHyperparameterTuner(BaseHyperparameterTuner): 
 
+    __REQUIRED_CONF__ = {"config": ["training_params", "metrics", "perf_metrics", "local_dir"]}
+
+    __DEFAULT_CONF__  = {"config": {"param_type": "fixed", "optuna_timeout": 3600, "num_jobs": 1}}
+
     def run_experiment(self, data, model_version, n_trials=100, *args, **kwargs): 
+        """ Optimize the model hyperparameters using Optuna.
+
+        Args:
+        -----
+        data: dict
+            The dataset to train the model.
+        model_version: obj
+            model version object from the metadata tracker
+        n_trials: int, optional, default=100
+            Number of trials to run. Default is 100.
+
+        Returns:
+        --------
+        best_model: obj
+            The best generated model.
+        """
         #set up params
         training_params = self._get_config("training_params")
         trainer_configs = self._get_config("trainer_configs", {})
-        param_type = self._get_config("param_type", "fixed")
+        param_type = self._get_config("param_type")
         metrics = self._get_config("metrics")
         perf_metric = self._get_config("perf_metric")
         # default to 1 hr timeout
-        timeout = self._get_config("optuna_timeout", 3600)
-        n_jobs = self._get_config("num_jobs", 1)
+        timeout = int(self._get_config("optuna_timeout"))
+        n_jobs = int(self._get_config("num_jobs"))
 
         #understand if we want to minimize or maximum objective for optuna
         reverse = utils.get_metric_direction(perf_metric)
@@ -70,6 +90,38 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
         return best_model
 
     def _optuna_objective(self, trial, param_type, data, model_version, algo, params, trainer_config, metrics, perf_metric, experiment_list, model_list): 
+        """Objective function for Optuna optimization.
+
+        Args:
+        -----
+        trial: obj
+            An Optuna Trial object.
+        param_type: str
+            Type of parameter tuning (fixed or dynamic).
+        data: dict
+            The dataset to train the model.
+        model_version: obj
+            Model Version object from the metadata tracker
+        algo: str
+            The name of the algorithm to be used for training.
+        params: dict
+            Dictionary containing parameter configurations for the algorithm.
+        trainer_config: dict
+            Dictionary containing the configuration for the model trainer.
+        metrics: dict
+            Dictionary containing the performance metrics for the model.
+        perf_metric: str
+            The performance metric name.
+        experiment_list: dict
+            Dictionary containing the completed experiment objects.
+        model_list: dict
+            Dictionary containing the trained model.
+
+        Returns:
+        --------
+        perf_metric_value: float
+            The value of the specified performance metric.
+        """
         if param_type == "dynamic": 
             model_params = self._get_dynamic_params(trial, params)
         else: #param_type=="fixed"
@@ -102,6 +154,21 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
 
     # parses each value of a dynamic config to the optuna type
     def _parse_dynamic_logic(self, trial, name, p):
+        """Parses each value of a dynamic configuration to the Optuna type.
+
+        Args:
+        -----
+        trial: obj
+            An Optuna Trial object.
+        name: str
+            The name of the configuration parameter.
+        p: dict
+            Dictionary containing the value of the parameter, type of configuration parameter, and the range of values in the case of an integer or a float. 
+
+        Returns:
+        --------
+        p: The parsed value.
+        """
         param_type = p.get("type")
 
         if param_type == "fixed": 
@@ -117,18 +184,66 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
             return trial.suggest_categorical(name, choices)
 
     def _get_dynamic_params(self, trial, params):
+        """Returns the parameters corresponding to the dynamic type of parameter tuning.
+
+        Args:
+        -----
+        trial: obj
+            An Optuna Trial object.
+        params: dict 
+            Json containing the configuration for the parameters.
+
+        Returns:
+        --------
+        params_out: dict
+            Dictionary containing the parameters generated.
+        """
         params_out = {}
         for p in params: 
             params_out[p] = self._parse_dynamic_logic(trial, p, params[p])
         return params_out
 
     def _get_fixed_params(self, trial, params): 
+        """Returns the parameters corresponding to the fixed type of parameter tuning.
+
+        Args:
+        -----
+        trial: obj
+            An Optuna Trial object.
+        params: dict
+            Json containing the configuration for the parameters.
+
+        Returns:
+        --------
+        params_out: dict
+            Dictionary containing the parameters generated.
+        """
         params_out = {}
         for p in params: #since the params passed for a fixed set are static, we can represent them as a categorical
             params_out[p] = trial.suggest_categorical(p, params[p])
         return params_out
 
     def _log_trial(self, trial, model_params, model, experiment, algo):
+        """Log the trial run, generated model, and parameters.
+
+        Args:
+        -----
+        trial: obj
+            An Optuna Trial object.
+        model_params: dict
+            The parameters generated.
+        model: obj
+            The generated model.
+        experiment: obj
+            The experiment used to train the model.
+        algo: str
+            The name of the algorithm used for training.
+
+        Returns:
+        --------
+        experiment: obj
+            The experiment used to train the model.
+        """
         #log params + trainer
         self.metadata_tracker.log_metadata(experiment, id="optuna_trial_number", data=trial.number)
         self.metadata_tracker.update_resource(experiment, {"start_time": trial.datetime_start, "end_time":datetime.utcnow()})
@@ -140,6 +255,17 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
 
     #saves interesting parts of the study
     def _log_study(self, study, model_version, algo): 
+        """Saves interesting parts of the study which can be referred to later.
+
+        Args:
+        -----
+        study: obj
+            The study containing the optimization history.
+        model_version: obj
+            Model Version object from metadata tracker
+        algo: str
+            The name of the algorithm to be used for training.
+        """
         if optuna.visualization.is_available(): 
             plot = optuna.visualization.plot_edf(study)
             self._save_plot("optuna_plot_edf.html",plot, model_version,algo)
@@ -174,6 +300,24 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
     
     #saves plot 
     def _save_plot(self, name, plot, model_version, algo): 
+        """Saves an html plot containing the Optuna optimization history to disk.
+
+        Args:
+        -----
+        name: str
+            Name for the saved html file.
+        plot: object
+            An object containing the plot data.
+        model_version: obj
+            Model version object from the metadata tracker
+        algo: str
+            The name of the algorithm to be used for training.
+
+        Returns:
+        --------
+        artifact: obj
+            An instance of the Artifact class corresponding to the saved plot.
+        """
         name_arr = name.split(".")
         plot_type = name_arr[-1]
         plot_name = "_".join(name_arr)
