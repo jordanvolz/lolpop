@@ -24,16 +24,61 @@ class GCSDataConnector(BaseDataConnector):
 
 
     def get_data(self, path, *args, **kwargs):
-        df = self._load_data(path, self.gcs_service_account_keyfile, self.gcs_project)
-        return df
+
+       """
+        Load data from the given Google Cloud Storage path and return as a Pandas DataFrame.
+
+        Parameters
+        ----------
+        path: str
+            Path of the file to be loaded.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with the loaded data.
+        """
+       df = self._load_data(path, self.gcs_service_account_keyfile, self.gcs_project)
+       return df
 
     def save_data(self, data, path, *args, **kwargs):
+        """
+        Save the provided data to the given Google Cloud Storage path.
+
+        Parameters
+        ----------
+        data: pd.DataFrame
+            DataFrame to be saved.
+        path: str
+            Path where the file will be saved.
+
+        Returns
+        -------
+        None
+        """
         self._save_data(data, path, self.gcs_service_account_keyfile, self.gcs_project)
 
 
      #load data into df
     @classmethod
     def _load_data(self, path, keyfile, project, **kwargs):
+        """
+        Load data from the given Google Cloud Storage path and return as a Pandas DataFrame.
+
+        Parameters
+        ----------
+        path: str
+            Path of the file to be loaded.
+        keyfile: str
+            Path to the Google Cloud Storage service account file.
+        project: str
+            Name of the Google Cloud Storage project.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with the loaded data.
+        """
         client = self._get_client(keyfile, project)
         bucket = path.split("/")[0]
         file_path = "/".join(path.split("/")[1:])
@@ -53,6 +98,24 @@ class GCSDataConnector(BaseDataConnector):
         return data 
 
     def _save_data(self, data, path, keyfile, project, *args, **kwargs):
+        """
+        Save the provided data to the given Google Cloud Storage path.
+
+        Parameters
+        ----------
+        data: pd.DataFrame
+            DataFrame to be saved.
+        path: str
+            Path where the file will be saved.
+        keyfile: str
+            Path to the Google Cloud Storage service account file.
+        project: str
+            Name of the Google Cloud Storage project.
+
+        Returns
+        -------
+        None
+        """
         # get client
         client = self._get_client(keyfile, project)
 
@@ -90,6 +153,21 @@ class GCSDataConnector(BaseDataConnector):
 
 
     def _get_client(self, key_path, project): 
+        """
+        Return a Google Cloud Storage client authenticated using the provided credentials.
+
+        Parameters
+        ----------
+        key_path: str
+            Path to the Google Cloud Storage service account file.
+        project: str
+            Name of the Google Cloud Storage project.
+
+        Returns
+        -------
+        storage.Client
+            Authenticated GSC client object.
+        """
         if key_path is not None: 
             credentials = service_account.Credentials.from_service_account_file(
                 key_path, scopes=[
@@ -105,6 +183,19 @@ class GCSDataConnector(BaseDataConnector):
         return client
     
     def _get_format(self, extension): 
+        """
+        Returns the MIME type for the provided file extension.
+
+        Parameters
+        ----------
+        extension: str
+            File extension.
+
+        Returns
+        -------
+        str
+            MIME type.
+        """
         if extension == ".csv": 
             return "text/csv"
         else: 

@@ -3,6 +3,10 @@ from lolpop.utils import common_utils as utils
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class RedshiftDataConnector(PostgresDataConnector):
 
+    __REQUIRED_CONF__ = {"config": ["REDSHIFT_HOST", "REDSHIFT_PORT",
+                                    "REDSHIFT_USER", "REDSHIFT_PASSWORD", 
+                                    "REDSHIFT_DBNAME", "REDSHIFT_SCHEMA"]}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.redshift_config = utils.load_config(

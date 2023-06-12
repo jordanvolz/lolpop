@@ -7,7 +7,7 @@ class dbtDataTransformer(BaseDataTransformer):
     
     #use load_config to allow setting "DBT_TARGET", "DBT_PROFILE", "DBT_PROJECT_DIR", "DBT_PROFILES_DIR",  via env variables
     __REQUIRED_CONF__ = {
-        "config" : ["data_connector"]
+        "config": ["data_connector", "DBT_TARGET", "DBT_PROFILE", "DBT_PROJECT_DIR", "DBT_PROFILES_DIR"]
     }
 
     def __init__(self, components={}, *args, **kwargs): 
@@ -24,17 +24,6 @@ class dbtDataTransformer(BaseDataTransformer):
             config = get_dw_config_from_profile(self.dbt_config)
             obj = utils.register_component_class(self, config, "data_connector", data_connector, self.pipeline_conf, self.runner_conf,
                                            parent_process=self.parent_process, problem_type=self.problem_type, dependent_components=components)
-
-    def get_data(self, source_table_name, *args, **kwargs): 
-        """Gets Data. Uses the specified data_connector to get the requested table.
-
-        Args:
-            source_table_name (String): Name of table to retrieve
-
-        Returns:
-            pd.DataFrame: The data
-        """
-        return self.data_connector.get_data(source_table_name, *args, **kwargs)
 
     def transform(self, source_table_name, *args, **kwargs):
         """Runs dbt workflow, specifid by dbt configuration provided. 
@@ -80,7 +69,7 @@ def get_dw_config_from_profile(dbt_config):
     elif backend_type == "databricks": 
         config_keys = ["catalog", "schema", "host", "http_path", "token"]
     elif backend_type == "bigquery": 
-        method = config.get("method")
+        method = dbt_config.get("method")
         if method == "service-account":
             config_keys=["project", "dataset", "keyfile"]
         else: #using oauth, so assume default application credentials are already set
@@ -97,6 +86,7 @@ def get_dw_config_from_profile(dbt_config):
               for x,y in conf.items() 
               if x.lower() in config_keys}
     config = OmegaConf.create(
-        {"components": {}, "data_connector": {"config": config}})
+        #{"components": {}, "data_connector": {"config": config}})
+        {"components": {}, "config": config})
     
     return config 
