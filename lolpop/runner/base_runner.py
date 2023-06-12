@@ -127,6 +127,8 @@ class BaseRunner:
     def _get_config(self, key, default_value=None):
         key = key.lower()
         value = utils.lower_conf(self.config).get(key, None)
+        if value is None: 
+            value = os.getenv(key)
         return value
         
     def _set_config(self, key, value): 

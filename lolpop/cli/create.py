@@ -158,7 +158,7 @@ def create_tests(
         if len(method_filter) > 0:
             filter_text = "these methods in the class: %s" % str(
                 method_filter)
-        messages.append(chatbot.prepare_message(role="user", content="The following is a python class. I would like you to write tests for %s. Use the %s testing framework and python to write your tests. Please write at least two tests for each method and respond in the form of a python file. Class Code: %s" % (filter_text, testing_framework, class_code)))
+        messages.append(chatbot.prepare_message(role="user", content="The following is a python class. I would like you to write tests for %s. Use the %s testing framework and python to write your tests. Please write at least two tests for each method and respond in the form of a python file. Only include the python file and no other text in your response. Class Code: %s" % (filter_text, testing_framework, class_code)))
         typer.secho("Prompting chatbot and awaiting a response ...", fg="blue")
         response = chatbot.ask(messages=messages, **
                                json.loads(generator_kwargs))

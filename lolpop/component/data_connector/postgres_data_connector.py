@@ -9,12 +9,25 @@ import tqdm
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class PostgresDataConnector(BaseDataConnector):
-
+    __REQUIRED_CONF__ = {"config": ["POSTGRES_HOST", "POSTGRES_PORT",
+                                    "POSTGRES_USER", "POSTGRES_PASSWORD", 
+                                    "POSTGRES_DBNAME", "POSTGRES_SCHEMA"]}
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.pg_config = utils.load_config(["POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DBNAME", "POSTGRES_SCHEMA"], self.config)
 
     def get_data(self, table, sql=None, *args, **kwargs):
+        """
+        Retrieves data from the database.
+
+        Args:
+            table (str): name of database table to retrieve data from
+            sql (str): SQL query to retrieve data, defaults to None
+
+        Returns:
+            pandas.DataFrame: retrieved data
+        """
         if sql is None:
             if table is not None:
                 sql = "SELECT * FROM %s" % table
@@ -27,6 +40,13 @@ class PostgresDataConnector(BaseDataConnector):
         return data
 
     def save_data(self, data, table, *args, **kwargs):
+        """
+        Saves data to a database table.
+
+        Args:
+            data (pandas.DataFrame): data to save to the database
+            table (str): name of database table to save data to
+        """
         #check if table already exists
         tables = self.get_data(None, sql="select * FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'")
 
@@ -61,6 +81,17 @@ class PostgresDataConnector(BaseDataConnector):
     #load data into df
     @classmethod
     def _load_data(self, sql, config):
+        """
+        Loads data into a pandas DataFrame object.
+
+        Args:
+            sql (str): SQL query to retrieve data
+            config (dict): configuration dictionary
+
+        Returns:
+            pandas.DataFrame: data from database
+
+        """
         data = pd.DataFrame()
 
         with self._get_connector(config) as connection: 
@@ -73,6 +104,15 @@ class PostgresDataConnector(BaseDataConnector):
         return data
 
     def _save_data(self, data, table, config):
+        """
+        Saves data to a database table.
+
+        Args:
+            data (pandas.DataFrame): data to save to the database
+            table (str): name of database table to save data to
+            config (dict): configuration dictionary
+
+        """
         chunksize = 16384 
         database = config.get("POSTGRES_DBNAME", "")
         engine = create_engine("postgresql://%s:%s@%s:%s/%s"
@@ -91,11 +131,13 @@ class PostgresDataConnector(BaseDataConnector):
     def _map_pandas_col_type_to_duckdb_type(self, col_type):
         """_summary_
 
+        Maps column data types from pandas to Postgres.
+
         Args:
-            col_type (_type_): _description_
+            col_type (pd.dtype): pandas data type
 
         Returns:
-            _type_: _description_
+            str: corresponding data type for Postgres
         """
         if col_type.kind == 'M':
             # datetime and timestamp columns in pandas are converted to datetime64[ns] dtype, which corresponds to 'TIMESTAMP'
