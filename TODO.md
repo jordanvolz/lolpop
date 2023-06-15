@@ -75,7 +75,10 @@ xx14. Data synthesizer + data seeding for better local experience -- DONE
 --> etc 
 21. saving feature engineering pipeline for re-use
 --> possibly just have a "pre-proc" step in the training workflow and save the pipeline object?
-
+22. whenever components use "X_train", "X_test", etc. Should instead use data.get_split("train") or something that like. 
+    More generally, we should have a component for the data itself which understands how to do common operations on it. 
+    this would mean components don't need to know if the data is local, distirbuted, what framework its' using, etc. 
+23. Autogpt component? Once we have critical mass in lolpop repo we can have it read the content and then produce new components
 zz. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc
 --> would be good to map the concepts between metadata stores as well
 

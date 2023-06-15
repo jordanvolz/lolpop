@@ -35,6 +35,13 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         self.log("Using MLFlow in experiment %s with run id: %s" %(experiment_name, self.run.info.run_id), level="INFO")
 
     def log_artifact(self, resource, id, path, *args, **kwargs):
+        """Saves artifact path to the artifact directory in the MLflow run specified in the resource.
+        Inputs:
+            resource: a tuple containing resource id and run.
+            id: string representing the artifact ID.
+            path: path to the artifact that needs to be saved.
+        Outputs: None
+        """
         run = resource[1]
         run_id = run.info.run_id
         resource_id = self.get_resource_id(resource)
@@ -45,6 +52,13 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         pass
 
     def log_tag(self, resource, key, value, *args, **kwargs):
+        """Sets the tag with key and value for the MLflow run specified in the resource.
+        Inputs:
+            resource: tuple containing resource id and run.
+            key: string tag key.
+            value: string tag value.
+        Outputs: None
+        """
         run = resource[1]
         run_id = run.info.run_id
         resource_id = self.get_resource_id(resource)
@@ -53,6 +67,12 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         self.client.set_tag(run_id, key, value)
 
     def get_tag(self, resource, key, *args, **kwargs):
+        """Returns the value of the tag with key for the MLflow run specified in the resource.
+        Inputs:
+            resource: tuple containing resource id and run.
+            key: string tag key.
+        Outputs: The value of the tag with key for the MLflow run specified in the resource.
+        """
         run = mlflow_utils.get_run(self.client, resource[1].info.run_id)
         resource_id = self.get_resource_id(resource)
         key = "%s.%s" % (resource_id, key)
@@ -60,6 +80,13 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
 
 
     def log_metadata(self, resource, id, data, *args, **kwargs):
+        """Saves metadata key=value to the MLflow run specified in the resource.
+        Inputs:
+            resource: tuple containing resource id and run.
+            id: string metadata ID.
+            data: metadata to store.
+        Outputs: None
+        """
         run = resource[1]
         run_id = run.info.run_id
         self.log("Saving metadata key=%s, value=%s to run %s" %
@@ -72,11 +99,24 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
 
 
     def get_metadata(self, resource, id, *args, **kwargs):
+        """Returns the metadata value with ID for the MLflow run specified in the resource.
+        Inputs:
+            resource: tuple containing resource id and run.
+            id: string metadata ID.
+        Outputs: The metadata value with ID.
+        """
         value = self.get_tag(resource, id)
         return value
 
     # id + run_id unique identifies resource
     def create_resource(self, id, type=None, parent=None, *args, **kwargs):
+        """Method to create a new MLflow run or nested run.
+        Inputs:
+            id: string ID of the resource.
+            type: string with the value "experiment" or None.
+            parent: tuple containing the parent resource id and run or None.
+        Outputs: tuple containing the new resource ID and run.
+        """
         if type == "experiment": 
             parent_id = self.get_resource_id(parent)
             parent_run = parent[1]
@@ -88,6 +128,13 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         return (id, run)
 
     def get_resource(self, id, type, parent=None, *args, **kwargs):
+        """Given a resource id and a type, returns tuple containing the resource id and run.
+        Inputs:
+            id: string ID of the resource to retrieve.
+            type: string with the value "experiment" or None.
+            parent: tuple containing the parent resource id and run or None.
+        Outputs: tuple containing the resource ID and run.
+        """
         run = self.run 
         if type=="experiment": 
             run_id, _ = id.split(".")
@@ -101,12 +148,26 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
     def update_resource(self, resource, updates, *args, **kwargs):
         pass
 
-    def clean_resource(self, resource, type):
+    def clean_resource(self, resource, type, *args, **kwargs):
+        """Ends MLflow run described in the resource.
+        Inputs:
+            resource: tuple containing resource id and run.
+            type: string "experiment" or None.
+        Outputs: None
+        """
         if type=="experiment": 
-            #end the nested run, this will make the parent run active againi
+            #end the nested run, this will make the parent run active again
             mlflow.end_run()
 
     def get_prev_resource_version(self, resource, extra_filters=[], num=1, *args, **kwargs):
+        """Returns the previous resource version for the specified resource and any additional filters. 
+        Inputs:
+            resource: tuple containing resource ID and run.
+            extra_filters: list of extra filters to be applied as strings.
+                Example: ["tags.tag_key='tag_value'".
+            num: int number of records to return.  
+        Outputs: tuple containing the resource ID and run of the previous resource version.
+        """
         run = resource[1]
         id = self.get_resource_id(resource)
         filter_string = ""
@@ -128,6 +189,11 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
 
     #technically we should probably get model from the model repository, but I don't like metadata_tracker knowing about other components
     def get_currently_deployed_model_version(self, model_version, *args, **kwargs):
+        """Returns the deployed version of the provided model version, if any.
+        Inputs:
+            model_version: tuple containing model version ID and run.  
+        Outputs: tuple containing ID and run object of the deployed model version.
+        """
         id = self.get_resource_id(model_version)
         deployed_mv = self.get_prev_resource_version(model_version, extra_filters=["tags.%s.status = 'DEPLOYED'" %id])
         #if no deployed model, just get the latest promoted model
@@ -140,6 +206,11 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         return deployed_mv
 
     def get_prediction_job_model_version(self, prediction_job, *args, **kwargs):
+        """Given a prediction_job identifier, returns the run and ID for the associated model version.
+        Inputs:
+            prediction_job: tuple containing prediction job ID and run or string that represents a prediction job.
+        Outputs: tuple containing the model version ID and run.
+        """
         run = prediction_job[1]
         id = prediction_job[0]
         if "_predictions" in prediction_job:
@@ -148,6 +219,12 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         return (id, run)
 
     def get_latest_model_resource(self, model, type, *args, **kwargs):
+        """If type is 'prediction_job,' will return the latest model verison.
+        Inputs:
+            model: tuple containing model ID and run.
+            type: string "prediction_job" or other.
+        Outputs: model version
+        """
         if type == "prediction_job": 
             id = self.get_resource_id(model)
             prediction_id = id + "_predictions"
@@ -157,11 +234,22 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
             pass 
 
     def get_winning_experiment(self, model_version, *args, **kwargs):
+        """Returns the ID and run of the experiment that produced the winning model for the provided model version.
+        Inputs:
+            model_version: tuple containing model version ID and run.
+        Outputs: tuple
+        """
         winning_experiment_id = self.get_tag(model_version, "winning_experiment_id")
         experiment = self.get_resource(winning_experiment_id, type="experiment", parent=model_version)
         return experiment
 
     def build_model_lineage(self, model_version, dataset_versions, *args, **kwargs):
+        """Logs dataset versions used to create the provided model_version
+
+        Args:
+            model_version (str, run): model verison object
+            dataset_versions (list(str, run)): list of dataset version objects  
+        """
         if len(dataset_versions) > 0:
                 dataset_arr = [self.get_resource_id(dv) for dv in dataset_versions]
                 self.log_tag(model_version, "dataset_versions", dataset_arr)
@@ -181,6 +269,14 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
 
     #resource is tuple (resource, run)
     def get_resource_id(self, resource, *args, **kwargs):
+        """Returns the id of a given resource
+
+        Args:
+            resource (str, run): Any resource created by this metadata tracker
+
+        Returns:
+            str: resource id
+        """
         resource_out = resource[0]    
 
         if "/" in resource_out:
@@ -193,6 +289,16 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         return resource_out
 
     def get_parent_id(self, resource, type=None, *args, **kwargs):
+        """Returns the parent id of a resource. Note that currently only 
+        experiments have a proper parent, but this could be extended in the future. 
+
+        Args:
+            resource (str, run): Any resource object 
+            type (str, optional): rsource type. Defaults to None.
+
+        Returns:
+            _type_: _description_
+        """
         id = resource[0]
         if type == "experiment": 
             _, model_id = id.split(".")
@@ -201,6 +307,14 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
             return None 
         
     def register_vc_resource(self, resource, vc_info, key=None, additional_metadata={}, *args, **kwargs):
+        """Registers information received from a resource version control component into the metadata tracker
+
+        Args:
+            resource (str, run): Resource to log vc_info into
+            vc_info (dict): dictionary of information returned by the version control component
+            key (str, optional): key to append to values to be logged. Defaults to None.
+            additional_metadata (dict, optional): additionally metadat to log. Defaults to {}.
+        """
         #check if a git commit is present. if so then we know we did an external save
         if vc_info and "hexsha" in vc_info.keys():
             uri = vc_info.get("uri")
@@ -224,10 +338,26 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
                 self.log_metadata(resource, id=k, data=v)
 
     def get_vc_info(self, resource, key="hexsha", *args, **kwargs):
+        """Returns the resource version control information that was previously logged
+
+        Args:
+            resource (str, run): resource to fetch vc_info from
+            key (str, optional): key used when saving vc_info. Defaults to "hexsha".
+
+        Returns:
+            vc_info: Returns the information needed to retrieve object from the version 
+            control system. This will typically be something like a git hexsha
+        """
         vc_info = {"hexsha": self.get_tag(resource, key)}
         return vc_info 
 
     def log_data_profile(self, resource, file_path, *args, **kwargs):
+        """logs a data profile to resource
+
+        Args:
+            resource (str, run): The resource to log the data profile into
+            file_path (str): file path of the data profile
+        """
         id = self.get_resource_id(resource)
         id = id + "_data_profile"
         self.log_artifact(resource, id, file_path)
@@ -236,6 +366,13 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         pass
 
     def log_checks(self, resource, file_path, type="data", *args, **kwargs):
+        """Logs a data check into a resource
+
+        Args:
+            resource (_type_): resource to log into
+            file_path (_type_): file path of the check
+            type (str, optional): type of check. Defaults to "data".
+        """
         id = self.get_resource_id(resource)
         id = id + "_%s_checks_report" %type
         self.log_artifact(resource, id, file_path)
@@ -244,15 +381,34 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         pass
 
     def log_data_comparison(self, resource, file_path, *args, **kwargs):
+        """Logs a data comparison into a resource
+
+        Args:
+            resource (str, run): resource to log into
+            file_path (str): file path of the data comparision
+        """
         id = self.get_resource_id(resource)
         id = id + "_data_comparison"
         self.log_artifact(resource, id, file_path)
 
-    def stop(self):
+    def stop(self, *args, **kwargs):
+        """Stop the metadata tracker run. 
+        """
         mlflow_utils.stop_run(self.run.info.run_id, self.run.info.experiment_id)
 
     #should this live in model_repository?
     def load_model(self, model_obj, model_version, ref_model, pipeline_config={}, *args, **kwargs):
+        """Load a model trainer object from the metadata tracker
+
+        Args:
+            model_obj (object): A fitted model 
+            model_version (str, run): The model version to use to retrieve the model trainer
+            ref_model (object): A model trainer object to use as a reference. I.E. will have similar configs, etc.
+            pipeline_config (dict, optional): pipeline config to pass. Defaults to {}.
+
+        Returns:
+            _type_: _description_
+        """
         model_trainer = self.get_metadata(model_version, "winning_experiment_model_trainer")
         model_cl = utils.load_class(model_trainer)
         dependent_components = {"logger": self.logger, "notifier": self.notifier,  "metadata_tracker": self.metadata_tracker,

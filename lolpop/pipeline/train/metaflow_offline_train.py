@@ -158,9 +158,10 @@ class MetaflowOfflineTrainSpec(FlowSpec):
     @step
     def check_model_bias(self):
         #check model bias
-        self.lolpop.model_bias_checker.check_model_bias(
-            self.data_dict, self.model, self.model_version)
-        
+        bias_metrics = self.lolpop.model_bias_checker.check_model_bias(self.data_dict, self.model)
+        for k, v in bias_metrics.items():
+            self.lolpop.metrics_tracker.log_metric(self.model_version, k, v)
+
         self.next(self.compare_models)
 
     @step

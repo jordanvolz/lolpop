@@ -31,6 +31,9 @@ class BaseMetadataTracker(BaseComponent):
     def update_resource(self, resource, updates, *args, **kwargs):
         pass
 
+    def clean_resource(self, resource, *args, **kwargs): 
+        pass
+
     def get_prev_resource_version(self, resource_version, *args, **kwargs):
         pass 
 
@@ -76,6 +79,6 @@ class BaseMetadataTracker(BaseComponent):
     def log_data_comparison(self, resource, report, *args, **kwargs): 
         pass 
 
-    def stop(self): 
+    def stop(self, *args, **kwargs): 
         pass
     
