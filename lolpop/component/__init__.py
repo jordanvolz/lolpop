@@ -19,10 +19,13 @@ def __map_components__():
             (".py" in x) and (x[0] != ".") and ("__" not in x))]
         #from each file, import all classes and register them in the global namespace. 
         for file in files:
-            module = import_module("lolpop.%s.%s.%s" %(subdir.split("/")[-2],subdir.split("/")[-1],file[:-3]))
-            classes = [x for x in dir(module) if isclass(getattr(module, x))]
-            components = [x for x in classes if issubclass(getattr(module, x), BaseComponent)]
-            globals().update({name: getattr(module,name) for name in components})
+            try: 
+                module = import_module("lolpop.%s.%s.%s" %(subdir.split("/")[-2],subdir.split("/")[-1],file[:-3]))
+                classes = [x for x in dir(module) if isclass(getattr(module, x))]
+                components = [x for x in classes if issubclass(getattr(module, x), BaseComponent)]
+                globals().update({name: getattr(module,name) for name in components})
+            except: #imports will fail for packages that are extras, we'll ignore them
+                pass 
 
     warnings.resetwarnings()
 

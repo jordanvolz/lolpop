@@ -33,17 +33,20 @@ def __map_extensions__():
                         (".py" in x) and ("__" not in x) and (x[0] != "."))]
                     #from each file, import all classes and register them in the global namespace.
                     for file in files:
-                        subdir_arr = subdir.split("/")
-                        module = import_module("lolpop.extension.%s.%s.%s.%s" % (
-                            subdir_arr[-3], subdir_arr[-2], subdir_arr[-1], file[:-3]))
-                        classes = [x for x in dir(module) if isclass(getattr(module, x))]
-                        components = [x for x in classes if (
-                            issubclass(getattr(module, x), BaseComponent)
-                            or issubclass(getattr(module, x), BasePipeline)
-                            or issubclass(getattr(module, x), BaseRunner)
-                            )]
-                        globals().update({name: getattr(module, name)
-                                        for name in components})
+                        try: 
+                            subdir_arr = subdir.split("/")
+                            module = import_module("lolpop.extension.%s.%s.%s.%s" % (
+                                subdir_arr[-3], subdir_arr[-2], subdir_arr[-1], file[:-3]))
+                            classes = [x for x in dir(module) if isclass(getattr(module, x))]
+                            components = [x for x in classes if (
+                                issubclass(getattr(module, x), BaseComponent)
+                                or issubclass(getattr(module, x), BasePipeline)
+                                or issubclass(getattr(module, x), BaseRunner)
+                                )]
+                            globals().update({name: getattr(module, name)
+                                            for name in components})
+                        except: 
+                            pass 
 
     warnings.resetwarnings()
 

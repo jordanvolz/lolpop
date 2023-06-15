@@ -131,7 +131,7 @@ def register_component_class(self_obj, conf, component_type, default_class_name=
                              pipeline_conf = {}, runner_conf = {}, parent_process = "runner", 
                              problem_type = None, dependent_components = {}, plugin_mods=[], *args, **kwargs): 
     obj = None
-    component_class_name = conf.components.get(component_type, default_class_name)
+    component_class_name = conf.get("components",{}).get(component_type, default_class_name)
     if component_class_name is not None:
         cl = load_class(component_class_name) 
         if cl is not None: 
@@ -145,7 +145,7 @@ def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=No
                             parent_process = "runner", problem_type = None, dependent_components = {}, 
                             plugin_mods=[], *args, **kwargs): 
     obj = None 
-    pipeline_class_name = conf.pipelines.get(pipeline_type, default_class_name)
+    pipeline_class_name = conf.get("pipelines",{}).get(pipeline_type, default_class_name)
     if pipeline_class_name is not None: 
         cl = load_class(pipeline_class_name, class_type="pipeline")
         if cl is not None: 
