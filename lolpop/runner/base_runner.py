@@ -1,8 +1,6 @@
-from omegaconf import OmegaConf
 from lolpop.utils import common_utils as utils
-import os 
-from pathlib import Path
 from inspect import currentframe
+
 class BaseRunner: 
 
     __REQUIRED_CONF__ = {
@@ -81,7 +79,7 @@ class BaseRunner:
             self.log("Unable to load metadata_tracker component.")
 
         #build all other components
-        for component in conf.components.keys(): 
+        for component in conf.get("components",{}).keys(): 
             #ignore logger and metadata_tracker since we have already set those up
             if component != "logger" and component !="metadata_tracker": 
                 obj = utils.register_component_class(self, conf, component, runner_conf=self.config, parent_process=self.name,
@@ -99,7 +97,7 @@ class BaseRunner:
             obj._update_components(components = runner_components)
 
         #build all pipelines 
-        for pipeline in conf.pipelines.keys(): 
+        for pipeline in conf.get("pipelines",{}).keys(): 
             utils.register_pipeline_class(self, conf, pipeline, runner_conf=self.config, parent_process=self.name,
                                           problem_type=self.problem_type, dependent_components=runner_components, 
                                           plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
