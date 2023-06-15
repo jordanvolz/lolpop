@@ -81,7 +81,9 @@ class OfflineTrain(BaseTrain):
 
     def check_model_bias(self, data_dict, model, model_version):
         #check model bias
-        self.model_bias_checker.check_model_bias(data_dict, model, model_version)
+        bias_metrics = self.model_bias_checker.check_model_bias(data_dict, model)
+        for k,v in bias_metrics.items(): 
+            self.metrics_tracker.log_metric(model_version, k, v)
 
     def retrain_model_on_all_data(self, data, model_version, ref_model = None):
         if hasattr(self, "model_trainer"):  
