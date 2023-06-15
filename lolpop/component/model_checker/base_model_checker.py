@@ -4,9 +4,14 @@ import numpy as np
 
 class BaseModelChecker(BaseComponent): 
 
+    __REQUIRED_CONF__ = {"components": ["metrics_tracker"],
+                         "config": ["baseline_method", "baseline_value", "perf_metric"]}
+
     def check_model(self, data, model, **kwargs): 
         pass 
 
+    def calculate_model_drift(self, data, model, deployed_model, **kwargs):
+        pass
 
     def get_baseline_comparison(self, data, model, model_version):
 
@@ -203,6 +208,3 @@ class BaseModelChecker(BaseComponent):
         self.metrics_tracker.log_metric(current_model_version, "deployed_model_perf_metric_diff", metric_diff)
 
         return is_new_model_better, metric_diff
-
-    def calculate_model_drift(self, data, model, deployed_model, **kwargs):
-        pass
