@@ -58,7 +58,7 @@ class BasePipeline:
         #note: this will override any component name inherited from the runner, which is what we want
         pipeline_components = {}
         if "components" in conf.keys(): 
-            for component in conf.components.keys(): 
+            for component in conf.get("components",{}).keys(): 
                 obj = utils.register_component_class(self, conf, component, pipeline_conf = pipeline_conf, 
                                                      runner_conf = runner_conf, parent_process=self.name, 
                                                      problem_type = self.problem_type, dependent_components=components, 
