@@ -19,6 +19,8 @@ theme:
     - search.highlight
     - search.share
     - toc.follow
+    - content.code.copy
+    - content.code.select
 plugins: 
   - search
 markdown_extensions: 
