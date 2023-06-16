@@ -27,6 +27,7 @@ xx2.2 Plugin support -- done
 3.3. config based tests. I.E. you can define stuff in yamls. 
 3.4 for testing purposes, might make sense to have test_build=True param in init that initializes components w/ valid configs. otherwise we might run into a complicated testing nightmare w/ cascading dependencies, etc 
 3.5 dbt-style data tests
+    --> maybe implement these as pre/post hooks into methods?
 4. Default Values
 5. Flush out Logging/Notifications, revisit/refactor utils/abstract classes
 6. Additional Use Case Examples: regression, time series analsis, NLP
