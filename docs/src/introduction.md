@@ -115,7 +115,7 @@ lolpop run workflow MyRunner --config-file /path/to/dev.yaml
 
 If you're interested in building our your own workflows, it's a good idea to look into some of the provided [examples](examples.md) and also looking into the [extensiblity framework](extensions.md)
 
-## Why lolpop
+## Why lolpop?
 
 We've long felt that the ML ecosystem lacked a tool to act as the glue between all the various things that one needs to do in order to successfully execute a production use cases. lolpop is an attempt to bridge that gap -- to be that glue. For more information regarding the inspriation behind lolpop, please read our launch [blog](https://medium.com/@jordan_volz/introducing-lolpop). 
 
@@ -132,7 +132,7 @@ lolpop *doesn't really do anything*, it mainly helps you write better ML workflo
 
 ## Next Steps
 
-- [Getting Started](getting_started.md): Go here for a quickstart guide. Learn how to install lolpop and get it up and running. Run your first workflow, dance, and celebrate!
+- [Getting Started](installation.md): Go here for a quickstart guide. Learn how to install lolpop and get it up and running. Run your first workflow, dance, and celebrate!
 
 - [Integrations](integrations.md): Go here to learn about pre-built runner, pipelines, and components that you can use to build out your own workflows.  
 
