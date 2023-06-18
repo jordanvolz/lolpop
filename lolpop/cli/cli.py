@@ -1,6 +1,7 @@
 import typer 
 import click 
 import os 
+import re 
 
 from lolpop.cli import create, run, package, test, datagen, seed 
 from importlib.metadata import version
@@ -9,6 +10,9 @@ from pathlib import Path
 from cookiecutter.main import cookiecutter
 from lolpop import __template_path__ as lolpop_template_path
 from typer.core import TyperGroup 
+from importlib.metadata import metadata
+from collections import defaultdict
+from pprint import pprint
 
 try:
     __version__ = version("lolpop")
@@ -74,6 +78,33 @@ def help(ctx: typer.Context):
     """Show CLI usage help."""
     ctx.info_name = None
     typer.echo(ctx.parent.command.get_help(ctx))
+
+
+@app.command("list-extras", help="list available extra packages")
+def list_extras(
+    package_name: str = typer.Option("lolpop",
+                                       help="Name of package to list available extras for."),
+    print_reqs: bool = typer.Option(False, "--print-reqs", help="Print depencencies included in the extra packages.")
+):
+    extras = metadata(package_name).get_all("Provides-Extra")
+    required_dists = metadata(package_name).get_all("Requires-Dist")
+
+    result = defaultdict(list)
+    for extra in extras:
+        for required_dist in required_dists:
+            suffix = f'extra == "{extra}"'
+            if suffix in required_dist:
+                result[extra].append(re.sub(r";.+", "", required_dist))
+
+    for k, v in result.items():
+        typer.secho(k, fg="blue")
+        if print_reqs: 
+            for req in v: 
+                typer.secho(req, fg="yellow")
+
+    typer.secho("\nTo install all extras, you can issue the following command:", fg="green") 
+    typer.secho("pip3 install 'lolpop[%s]'" %",".join(result.keys()))
+
 
 if __name__ == "__main__":
     app()
