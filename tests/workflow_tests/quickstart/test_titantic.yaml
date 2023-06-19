@@ -1,0 +1,25 @@
+#runner-specific tests
+tests: 
+  train:
+    pre-hooks: []
+    post-hooks: [] 
+
+#pipeline-specific tests
+process: #pipeline 
+  tests: # pipeline tests
+      train_model: 
+        pre-hooks: []
+        post-hooks: [] 
+  data_transformer: #component
+    tests: #local component tests 
+        process_data:
+          pre-hooks: [/Users/jordanvolz/github/lolpop/tests/workflow_tests/quickstart/test_data_non_null.py, /Users/jordanvolz/github/lolpop/tests/workflow_tests/quickstart/test_data_size.py]
+          post-hooks: [/Users/jordanvolz/github/lolpop/tests/workflow_tests/quickstart/test_check_category_counts.py]
+
+#global component tests 
+metadata_tracker:
+  tests: 
+    log_artifact:
+      pre-hooks: []
+      post-hooks: [] 
+  

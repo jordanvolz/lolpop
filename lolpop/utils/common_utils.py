@@ -394,3 +394,94 @@ def create_df_from_file(source_file, engine="pyarrow", **kwargs):
 
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+
+
+#generates a test plan from a configuration file
+def generate_test_plan(config, test_plan={}, parent=None): 
+    config = get_conf(config)
+
+    test_list = config.pop("tests",{})
+    for method in test_list:
+        key = method
+        if parent is not None: 
+            key = "%s.%s" %(parent, key)
+        test_plan[key] = test_list[method]
+
+    for resource in config.keys(): 
+        key = resource
+        if parent is not None:
+            key = "%s.%s" % (parent, key)
+        test_plan = generate_test_plan(config[resource], test_plan=test_plan, parent=key)
+
+    return test_plan
+
+#apply test plan to the given object
+#this replaces the specified function with a wrapper that now includes 
+# the pre- and post-hooks defined in the testing config
+def apply_test_plan(obj, test_plan): 
+
+    for method,tests in test_plan.items(): 
+        fn = get_method(obj, method)
+        prehooks = load_hooks(tests.get("pre-hooks"))
+        posthooks = load_hooks(tests.get("post-hooks"))
+
+        obj = set_method(obj, method, test_plan_decorator(fn, prehooks, posthooks))
+
+    return obj
+
+#load hooks from file. 
+# Note: the "test" function in the hook file is the entry point
+def load_hooks(hook_list): 
+    hook_paths = [Path(x) for x in hook_list]
+    hook_fn_list = [(x.__name__, getattr(load_plugin(x), "test")) for x in hook_paths]
+    return hook_fn_list
+
+#retrieves the method on a runner path. Here 'method' is dot notation i.e. "runner.pipeline.component.method"
+def get_method(obj, method):
+    method_arr = method.split(".")
+    out = obj
+    try: 
+        for i in method_arr:
+            obj = getattr(obj, i)
+    except: 
+        out = None 
+    return out 
+
+#sets the method for the object to the specified function
+def set_method(obj, method, fn):
+    method_arr = method.split(".")
+
+    if len(method_arr) == 1: 
+        setattr(obj, method_arr[0], fn)
+    else: 
+        setattr(obj, method_arr[0], 
+                set_method(getattr(obj, method_arr[0]),".".join(method_arr[1:]),fn))
+        
+    return obj 
+
+#decorator used with a test plan to apply pre- and post-hooks to a function 
+def test_plan_decorator(func, prehooks, posthooks, level="DEBUG"):
+    @wraps(func)
+    def wrapper(obj, *args, **kwargs):
+        for prehook in prehooks:
+            obj.log("Running prehook %s" %prehook[0], level)
+            if prehook[1](obj, *args, **kwargs): 
+                obj.log("Prehook %s passed." % prehook[0], level)
+            else: 
+                raise Exception("Prehook %s failed" % prehook[0])
+            
+        result = func(*args, **kwargs)
+        
+        for posthook in posthooks:
+            obj.log("Running posthoook %s" % posthook[0], level)
+            if posthook[1](obj, *args, **kwargs):
+                obj.log("Posthook %s passed." % posthook[0], level)
+            else:
+                raise Exception("Posthook %s failed" % posthook[0])
+        return result
+    return wrapper
+
+
+def my_function():
+    print("This is my function")
+    return [1, 2, 3]
