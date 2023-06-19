@@ -38,11 +38,14 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.snippets 
 nav: 
-  - Introduction: introduction.md
   - Getting Started: 
+    - Introduction: introduction.md
     - Installation: installation.md
     - Concepts: concepts.md 
     - Your First Experience: first-experience.md
+  - User Guide:
+    - Configuration: configuration.md #default, required, general layout
+    - Base Integrations: base_integrations.md #accessing children, global/local, 
   - Integrations: 
     - Introduction: resources.md
     - Components: 
