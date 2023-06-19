@@ -79,7 +79,8 @@ xx14. Data synthesizer + data seeding for better local experience -- DONE
 22. whenever components use "X_train", "X_test", etc. Should instead use data.get_split("train") or something that like. 
     More generally, we should have a component for the data itself which understands how to do common operations on it. 
     this would mean components don't need to know if the data is local, distirbuted, what framework its' using, etc. 
-23. Autogpt component? Once we have critical mass in lolpop repo we can have it read the content and then produce new components
+23. cross valiadtion
+24. Autogpt component? Once we have critical mass in lolpop repo we can have it read the content and then produce new components
 zz. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc
 --> would be good to map the concepts between metadata stores as well
 
@@ -96,4 +97,4 @@ xx8. Local Experience -- i.e. try it out w/o complicated installs/registrations
     -- DONE
 xx9. MVP packaging -- pip install
     -- DONE 
-10. feature encoder
+10. feature encoder. Flow should be data transforms (combine data into training set) --> split --> encoder
