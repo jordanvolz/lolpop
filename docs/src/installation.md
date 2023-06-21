@@ -7,13 +7,13 @@ lolpop can be installed directly from PyPI via:
 pip install lolpop 
 ```
 
-lolpop maintains many extra packages that can be installed based on what you are using it for. We would typically also recommend installing the `cli` extra: 
+lolpop maintains many extra packages that can be installed based on what you are using it for. We would also recommend installing the `cli` extra: 
 
 ```bash
 pip install 'lolpop[cli]'
 ```
 
-To see a list of all available extras, you can use the following cli command: 
+To see a list of all available extras, you can use the following cli command (after installing the lolpop cli above): 
 
 ```bash 
 > lolpop list-extras
