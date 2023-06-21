@@ -19,7 +19,7 @@ Furthermore, the following goals were kept in mind when building lolpop:
 
 1. **Modularity is a first class design concept**. Design a system where parts can easily be interchanged as needed. 
 2. **The system is endlessly extensible**. If you want to code, you can code. Provide a simple process to extend functionality in the system. 
-3. **Layers of absraction provide accessibility**. Layers of abstraction allow users to build workflows without getting lots in implementation details. Users can likewise turn gnarly code into something that others can simply  
+3. **Layers of abstraction provide accessibility**. Layers of abstraction allow users to build workflows without getting lots in implementation details. Users can likewise turn gnarly code into something that others can simply  
 3. **Provide a declarative experience**. Moving from development workflows to production/automated workflows can often be clumsy in ML. Having a well-trodden path for a declarative experience smooths out the difficulty here. 
 4. **Make writing and executing tests on workflows easy**. Things often go off the rails. Design a system that expects failures and makes it easy to test and catch problem before they get into production.
 5. **Provide a logical implementation on CI/CD or ML Delivery platform**. Make it easy to be "environment aware" and straightforward integrations into production tooling.  
@@ -30,9 +30,10 @@ Furthermore, the following goals were kept in mind when building lolpop:
 
 ## How does it work?
 
-lolpop has a straightforard development workflow. We hope all find it delightful to use! 
+lolpop has a straightforward development workflow. We hope all find it delightful to use! 
 
-First: write your own components or use pre-built ones: 
+First: write your own components or use [pre-built](extensions.md) ones: 
+
 ```python title="catboost_model_trainer.py"
 from lolpop.comonent import BaseComponent 
 from catboost import CatBoostRegressor, CatBoostClassifier
@@ -55,7 +56,7 @@ class PytorchModelTrainer(BaseComponent):
     ... 
 ```
 
-Components can then be leveraged in pipleine and runner workflows. Instead of referring to specific components themselves, these workflows are designed to use generic component types, as shown below. 
+Components can then be leveraged in pipeline and runner workflows. Instead of referring to specific component classes, these workflows are designed to use generic component types, as shown below. 
 
 ```python title="my_training_pipeline.py"
 from lolop.pipeline import BasePipeline
@@ -68,6 +69,8 @@ class MyTrainingPipeline(BasePipeline):
         model = self.model_trainer.train_model(data)
 
         return model    
+    
+    ...
 
 ```
 
@@ -88,12 +91,13 @@ train:
             iterations: 2 
             depth: 2 
             learning_rate: 1 
-            loss_function: 'RMSE'
+            loss_function: RMSE
 ...
 
 ```
 
 Finally, workflows can either be invoked via python code: 
+
 ```python 
 from lolpop.extensions import MyRunner
 
@@ -114,18 +118,18 @@ or via the lolpop cli:
 lolpop run workflow MyRunner --config-file /path/to/dev.yaml
 ```
 
-If you're interested in building our your own workflows, it's a good idea to look into some of the provided [examples](examples.md) and also looking into the [extensiblity framework](extensions.md)
+If you're interested in building out your own workflows, it's a good idea to look into some of the provided [examples](examples.md) and also look into the [extensiblity framework](extensions.md)
 
 ## Why lolpop?
 
-We've long felt that the ML ecosystem lacked a tool to act as the glue between all the various things that one needs to do in order to successfully execute a production use cases. lolpop is an attempt to bridge that gap -- to be that glue. For more information regarding the inspriation behind lolpop, please read our launch [blog](https://medium.com/@jordan_volz/introducing-lolpop). 
+We've long felt that the ML ecosystem lacked a tool to act as the glue between all the various things that one needs to do in order to successfully execute a production use cases. lolpop is an attempt to bridge that gap -- to be that glue. For more information regarding the inspiration behind lolpop, please read our launch [blog](https://medium.com/@jordan_volz/introducing-lolpop). 
 
 ## What is lolpop *not*? 
-Sometimes it's helpful to understand what a tool is not, in order to fully understand what it is. A *'software engineering framework for machine learning workflows'* can be a little obtuse, so it might be helpful to understand the following: 
+Sometimes it's helpful to understand what a tool is not in order to fully understand what it is. The description *'software engineering framework for machine learning workflows'* can be a little obtuse, so it might be helpful to understand the following: 
 
-1. **lolpop is not an orchestraton tool**. In fact, you should probably use an orchestrator to run code you create with lolpop. You should easily be able to integrate your orchestration tool of choice with lolpop. 
+1. **lolpop is not an orchestration tool**. In fact, you should probably use an orchestrator to run code you create with lolpop. You should easily be able to integrate your orchestration tool of choice with lolpop. 
 
-2. **lolpop is not a pipelining tool**. There's several good pipeling tools out there and you even might want to use them with lolpop. For example, we have an example of using [metaflow](integrations/metaflow_offline_train.py) with lolpop, for those who are so inclined.
+2. **lolpop is not a pipelining tool**. There's several good pipelining tools out there and you even might want to use them with lolpop. For example, we have an example of using [metaflow](integrations/metaflow_offline_train.py) with lolpop, for those who are so inclined.
 
 3. **lolpop is not a metadata tracker, training platform, experiment tacker, etc.** We think you should have and use those if you want to. lolpop will be happy to have those as components and let you build them into your workflows. 
 
