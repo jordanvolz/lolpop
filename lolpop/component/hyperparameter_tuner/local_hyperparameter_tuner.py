@@ -4,7 +4,10 @@ from lolpop.utils import common_utils as utils
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class LocalHyperparameterTuner(BaseHyperparameterTuner): 
 
-    __REQUIRED_CONF__ = {"config": ["training_params", "metrics", "perf_metric"]}
+    __REQUIRED_CONF__ = {
+        "config": ["training_params", "metrics", "perf_metric"], 
+        "components": ["metadata_tracker", "metrics_tracker", "resource_version_control"]
+        }
 
     def run_experiment(self, data, model_version, *args, **kwargs): 
         """
