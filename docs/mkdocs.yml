@@ -3,6 +3,7 @@ docs_dir: src
 site_description: A Software Engineering Framework for Machine Learning
 site_url: https://lolpop.readthedocs.io
 repo_url: https://github.com/jordanvolz/lolpop
+edit_url: docs/src/
 repo_name: lolpop
 theme: 
   name: material
@@ -21,6 +22,7 @@ theme:
     - toc.follow
     - content.code.copy
     - content.code.select
+    - content.tab.
 plugins: 
   - search
 markdown_extensions: 
@@ -37,17 +39,39 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.superfences
   - pymdownx.snippets 
+  - pymdownx.tabbed: 
+      alternate_style: true
 nav: 
-  - Getting Started: 
-    - Introduction: introduction.md
-    - Installation: installation.md
-    - Concepts: concepts.md 
-    - Your First Experience: first-experience.md
-  - User Guide:
-    - Configuration: configuration.md #default, required, general layout
-    - Base Integrations: base_integrations.md #accessing children, global/local, 
+  - lolpop User Guide: 
+    - Getting Started: 
+      - Introduction: index.md
+      - Installation: installation.md
+      - Concepts: concepts.md 
+      - Quickstart: quickstart.md
+    - User Guide:
+      - Overview: lolpop_overview.md
+      - Configuration: configuration.md #default, required, general layout
+      - Building Workflows: building_workflows.md
+      - Running Workflows: running_workflows.md
+      - Testing Workflows: testing_workflows.md
+    - Extensions: 
+        - Overview: extensions.md
+        - Extending Integrations: extending_integrations.md 
+        - Building from Templates: extension_templates.md
+        - Packaging An Extension: packagin_extensions.md
+        - Writing Tests: writing_tests.md
+        - Generating Documentation: documentation.md
+    - CLI: 
+      - Overview: cli.md
+      - Reference: cli_reference.md
+      - Extending the CLI: cli_extending.md
+    - Resources: 
+      - About: about.md
+      - Contributing: contributing.md
+      - Community: community.md
+      - Contact: contact.md
   - Integrations: 
-    - Introduction: resources.md
+    - Overview: integrations.md
     - Components: 
       - Overview: components.md
       - BaseComponent: base_component.md
@@ -121,7 +145,7 @@ nav:
       - Notifiers: 
         - BaseNotifier: base_notifier.md
       - Resource Version Control: 
-        - BaseResourcceVersionControl: base_resource_version_control.md
+        - BaseResourceVersionControl: base_resource_version_control.md
     - Pipelines: 
       - Overview: pipelines.md
       - BasePipeline: basepipeline.md 
@@ -156,15 +180,11 @@ nav:
       - Time-Series: 
         - Time-Series Runner: timeseries_runner.md
         - Metaflow Time-Series Runner.md
-  - Extensions: 
-    - Overview: extensions.md
-  - CLI: cli.md
-  - Examples: examples.md
-  - Resources: 
-    - About: about.md
-    - Contributing: contributing.md
-    - Community: community.md
-    - Contact: contact.md
+  - Examples: 
+    - Overview: examples.md
+    - Classification: classification.md
+    - Regression: regression.md 
+    - Time Series Forecasting: timeseries_forecasting.md
 
 
 

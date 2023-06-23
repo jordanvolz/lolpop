@@ -7,7 +7,9 @@ import os
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class OptunaHyperparameterTuner(BaseHyperparameterTuner): 
 
-    __REQUIRED_CONF__ = {"config": ["training_params", "metrics", "perf_metrics", "local_dir"]}
+    __REQUIRED_CONF__ = {
+        "config": ["training_params", "metrics", "perf_metrics", "local_dir"],
+        "components": ["metadata_tracker", "metrics_tracker", "resource_version_control"]}
 
     __DEFAULT_CONF__  = {"config": {"param_type": "fixed", "optuna_timeout": 3600, "num_jobs": 1}}
 
