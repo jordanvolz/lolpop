@@ -137,9 +137,9 @@ lolpop *doesn't really do anything*, it mainly helps you write better ML workflo
 
 ## Next Steps
 
-- [Quickstart](installation.md): Go here for a quickstart guide. Learn how to install lolpop and get it up and running. Run your first workflow, dance, and celebrate!
+- [Quickstart](quickstart.md): Go here for a quickstart guide. Learn how to install lolpop and get it up and running. Run your first workflow, dance, and celebrate!
 
--[User Guide](lolpop_overview.md): Go here to learn how to work with lolpop. 
+- [User Guide](lolpop_overview.md): Go here to learn how to work with lolpop. 
 
 - [Integrations](integrations.md): Go here to learn about pre-built runner, pipelines, and components that you can use to build out your own workflows.  
 

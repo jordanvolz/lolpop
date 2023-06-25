@@ -83,6 +83,8 @@ xx14. Data synthesizer + data seeding for better local experience -- DONE
 24. Autogpt component? Once we have critical mass in lolpop repo we can have it read the content and then produce new components
 zz. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc
 --> would be good to map the concepts between metadata stores as well
+25. Extensible CLI 
+    --> can probably dynamically generate cli from lolpop.extensions.cli or something
 
 To build, MVP: 
 xx1. 1 Additional Pipeline Extension (MetaFlow? mlflow?) -- DONE
