@@ -53,10 +53,11 @@ nav:
       - Quickstart: quickstart.md
     - User Guide:
       - Overview: lolpop_overview.md
-      - Configuration: configuration.md #default, required, general layout
+      - Configuration: configuration.md 
       - Building Workflows: building_workflows.md
       - Running Workflows: running_workflows.md
       - Testing Workflows: testing_workflows.md
+      - lolpop Projects: lolpop_projects.md
     - Extensions: 
         - Overview: extensions.md
         - Extending Integrations: extending_integrations.md 
