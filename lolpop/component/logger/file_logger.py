@@ -7,10 +7,23 @@ class FileLogger(BaseLogger):
         super().__init__(*args, **kwargs)
         filename = self._get_config("log_filename","lolpop.log")
         level = self._get_config("log_level", "INFO")
-        logging.basicConfig(filename=filename, level=level) 
+        if isinstance(level, str):
+            level = self._get_level_value(level)
+        format = self._get_config("log_format", "%(message)s")
 
-    def log(self, msg, level, time = None, process_name=None, line_num=None, *args, **kwargs): 
-        if self._get_level_value(level) <= self._get_level_value(self._get_config("log_level", "DEBUG")):
+        logger = logging.getLogger("lolpop")
+        logger.setLevel(level)
+        file_handler = logging.FileHandler(filename)
+        file_handler.setLevel(level)
+        file_handler.setFormatter(logging.Formatter(format))
+        logger.addHandler(file_handler)
+
+        self.logger = logger
+        logger.log(30, "\n\n")
+        self.log("Initialized logger for lolpop workflow.", level="INFO")
+
+    def log(self, msg, level="INFO", time = None, process_name=None, line_num=None, *args, **kwargs): 
+        if self._get_level_value(level) >= self._get_level_value(self._get_config("log_level", "DEBUG")):
             msg_out = ""
             if not time:
                 time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S.%f")
@@ -24,22 +37,22 @@ class FileLogger(BaseLogger):
                             line_num, msg)
                 else:
                     msg_out = msg_out + "> ::: %s" % msg
-            logging.log(level, msg, **kwargs)
+            else: 
+                msg_out = msg_out + "::: %s" % msg
+            self.logger.log(self._get_level_value(level), msg_out, **kwargs)
 
     def _get_level_value(self, level):
-        if level == "NONE":
-            return 0
-        elif level == "FATAL":
-            return 1
+        if level == "FATAL" or level == "CRITICAL":
+            return 50
         elif level == "ERROR":
-            return 2
+            return 40
         elif level == "WARN" or level == "WARNING":
-            return 3
+            return 30
         elif level == "INFO":
-            return 4
-        elif level == "DEBUG":
-            return 5
-        elif level == "TRACE":
-            return 6
+            return 20
+        elif level == "DEBUG" or level == "TRACE":
+            return 10
         elif level == "ALL":
-            return 100
+            return 1
+        else: #level == "NONE" or level == "NOTSET":
+            return 0

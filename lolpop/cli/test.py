@@ -24,8 +24,8 @@ def default(ctx: typer.Context):
 @app.command("workflow", help="Test a workflow.")
 def workflow(
     runner_class: str = typer.Argument(..., help="Runner class."),
-    runner_config: Path = typer.Argument(..., help="Location of runner configuration file."),
     test_config: Path = typer.Argument(..., help="Location of the testing configuration file."),
+    runner_config: Path = typer.Option(None, help="Location of runner configuration file. Optional. If not provided, lolpop will attempt to use the testing configurationa as the runner configuration as well."),
     build_method: str = typer.Option("main",
                                      help="The method in the runner class to execute."),
     build_args: List[str] = typer.Option([], help="List of args to pass into build_method."),
@@ -39,17 +39,19 @@ def workflow(
 
     #build testing plan 
     typer.secho("Constructing test plan from configuration: %s" %test_config, fg="blue")
-    test_plan = utils.generate_test_plan(test_config)
-    typer.secho("test plan built! Found %s instructions" %len(test_plan), fg="green")
+    test_plan, test_logger = utils.generate_test_plan(test_config)
+    typer.secho("Test plan built! Found %s instructions" %len(test_plan), fg="green")
 
     #intantiate class 
+    if runner_config is None: 
+        runner_config = test_config
     typer.secho("Initializing class %s with config file %s" %(runner_class, runner_config), fg="blue")
     runner = runner_cl(conf=runner_config)
     typer.secho("Initialized!", fg="green")
 
     #apply test plan to class
     typer.secho("Applying test plan to class %s" %(runner_class), fg="blue")
-    runner = utils.apply_test_plan(runner, test_plan)
+    runner = utils.apply_test_plan(runner, test_plan, test_logger)
     typer.secho("Test plan applied!", fg="green")
 
     if hasattr(runner, build_method): 
