@@ -2,7 +2,7 @@ import typer
 import click 
 import os 
 
-from lolpop.cli import create, run, package, test, datagen, seed 
+from lolpop.cli import create, run, package, test, datagen, seed, extension
 from importlib.metadata import version
 from typing import Optional
 from pathlib import Path 
@@ -29,6 +29,7 @@ app.add_typer(datagen.app, name="datagen")
 app.add_typer(seed.app, name="seed")
 app.add_typer(test.app, name="test")
 app.add_typer(package.app, name="package")
+app.add_typer(extension.app, name="extension")
 
 
 

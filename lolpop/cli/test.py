@@ -58,6 +58,9 @@ def workflow(
         typer.secho("Executing %s.%s with args %s and kwargs %s" %(runner_class, build_method, build_args, build_kwargs), fg="blue")
         func = getattr(runner, build_method)
         func(*build_args, **json.loads(build_kwargs))
-        typer.secho("Workflow completed!", fg="green")        
+        typer.secho("Workflow completed!", fg="green")
+
+        if test_logger.url is not None: 
+            typer.secho("You can review the test results at: %s" %test_logger.url, fg="green")        
     else: 
         typer.secho("ERROR: Method %s not found in class %s!" %(build_method, runner_class), fg="red")

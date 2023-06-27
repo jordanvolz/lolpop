@@ -6,6 +6,7 @@ class FileLogger(BaseLogger):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         filename = self._get_config("log_filename","lolpop.log")
+        self.url = filename 
         level = self._get_config("log_level", "INFO")
         if isinstance(level, str):
             level = self._get_level_value(level)
