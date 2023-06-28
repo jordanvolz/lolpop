@@ -1,5 +1,4 @@
 import typer 
-import click 
 import os 
 
 from lolpop.cli import create, run, package, test, datagen, seed, extension

@@ -1,0 +1,4 @@
+{
+    "cli_command": "my_new_command",
+    "command_description": "Insert a description of your command here."
+}
