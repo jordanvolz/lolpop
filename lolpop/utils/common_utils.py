@@ -397,37 +397,54 @@ def chunker(seq, size):
 
 
 #generates a test plan from a configuration file
-def generate_test_plan(config, test_plan={}, parent=None, logger=None): 
+def generate_test_plan(config, test_plan={}, parent=None, logger=None, test_recorder=None): 
     config = get_conf(config)
-
+    components = config.pop("components", {})
     #set up logger
     if logger is None: 
-        logger_cl = load_class(config.pop("components", {}).get("test_logger",None))
+        logger_cl = load_class(components.get("test_logger",None))
         if logger_cl is not None: 
             logger_conf = config.pop("test_logger",{})
             logger = logger_cl(conf=logger_conf)
 
+    #set up test_recorder
+    if test_recorder is None:
+        test_recorder_cl = load_class(components.get("test_recorder", "LocalTestRecorder"))
+        if test_recorder_cl is not None:
+            test_recorder_conf = config.pop("test_recorder", {})
+            test_recorder = test_recorder_cl(conf=test_recorder_conf)
+
     #extract tests
-    test_list = config.pop("tests",{})
+    test_plan = extract_tests(config, test_plan, parent)
+    
+    return test_plan, logger, test_recorder
+
+
+def extract_tests(config, test_plan={}, parent=None):
+    config = get_conf(config)
+
+    #extract tests
+    test_list = config.pop("tests", {})
     for method in test_list:
         key = method
-        if parent is not None: 
-            key = "%s.%s" %(parent, key)
+        if parent is not None:
+            key = "%s.%s" % (parent, key)
         test_plan[key] = test_list[method]
 
     #anything else should be dependents + tests
-    for resource in config.keys(): 
+    for resource in config.keys():
         key = resource
         if parent is not None:
             key = "%s.%s" % (parent, key)
-        test_plan, _ = generate_test_plan(config[resource], test_plan=test_plan, parent=key, logger=logger)
-
-    return test_plan, logger
+        test_plan = extract_tests(config[resource], test_plan=test_plan,
+                                          parent=key)
+        
+    return test_plan
 
 #apply test plan to the given object
 #this replaces the specified function with a wrapper that now includes 
 # the pre- and post-hooks defined in the testing config
-def apply_test_plan(runner, test_plan, test_logger=None): 
+def apply_test_plan(runner, test_plan, test_recorder, test_logger=None): 
 
     # if no specific test logger is provided, just use the runner's log method
     if test_logger is None: 
@@ -440,7 +457,7 @@ def apply_test_plan(runner, test_plan, test_logger=None):
 
         if len(prehooks) > 0 or len(posthooks) > 0: 
             runner = set_method(runner, method, test_plan_decorator(
-                obj, test_logger, prehooks, posthooks)(fn))
+                obj, test_logger, test_recorder, prehooks, posthooks)(fn))
             
     return runner
 
@@ -483,7 +500,7 @@ def set_method(obj, method, fn):
     return obj 
 
 #decorator used with a test plan to apply pre- and post-hooks to a function 
-def test_plan_decorator(obj, logger, prehooks, posthooks, level="DEBUG"):
+def test_plan_decorator(obj, logger, recorder, prehooks, posthooks, level="DEBUG"):
     def test_decorator(func): 
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -495,6 +512,7 @@ def test_plan_decorator(obj, logger, prehooks, posthooks, level="DEBUG"):
                     if isinstance(passed, tuple):
                         msg_out = passed[1]
                         passed = passed[0]
+                    recorder.record_test(obj, func, prehook[0], prehook[1], passed, msg_out)
                     if passed: 
                         logger.log("Pre-hook %s.%s passed." %
                                    (prehook[0], prehook[1].__name__), "INFO")
@@ -519,6 +537,7 @@ def test_plan_decorator(obj, logger, prehooks, posthooks, level="DEBUG"):
                     if isinstance(passed, tuple): 
                         msg_out = passed[1] 
                         passed = passed[0]
+                    recorder.record_test(obj, func, posthook[0], posthook[1], passed, msg_out)
                     if passed:
                         logger.log("Post-hook %s.%s passed." %
                                    (posthook[0], posthook[1].__name__), "INFO")
@@ -535,3 +554,62 @@ def test_plan_decorator(obj, logger, prehooks, posthooks, level="DEBUG"):
             return result
         return wrapper
     return test_decorator
+
+
+def set_up_default_components(obj, conf, runner_conf,
+                              plugin_mods=[],
+                              skip_config_validation=False,
+                              components={}):
+    
+    #these are the defaults, so if you're explicitly building one, skip this to avoid
+    #recursion error 
+    if obj.type != "logger" and obj.type != "notifier" and obj.type !="metadata_tracker":
+        #set up logger first because we want to pass that to all children
+        #we set this up separately from the other components in case you want access to the logger in the
+        #__init__ function
+        if "logger" not in components.keys(): #you were passed a logger from somewhere else, skip
+            logger_obj = register_component_class(obj, conf, "logger", default_class_name="StdOutLogger",
+                                                runner_conf=runner_conf, parent_process = obj.name, 
+                                                plugin_mods=plugin_mods, skip_config_validation=skip_config_validation,
+                                                )
+            if logger_obj is not None:
+                components["logger"] = logger_obj
+                obj.log("Loaded class %s into component %s" %(obj.logger.name, "logger"))
+            else:
+                raise Exception("Unable to find logger class.")
+        else: 
+            setattr(obj, "logger", components["logger"])
+
+        if "notifier" not in components.keys():#you were passed a notifier from somewhere else, skip
+            notifier_obj = register_component_class(obj, conf, "notifier", default_class_name = "StdOutNotifier", 
+                                                runner_conf=runner_conf, parent_process=obj.name,
+                                                problem_type=obj.problem_type, dependent_components=components,
+                                                plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
+            if notifier_obj is not None:
+                components["notifier"] = notifier_obj
+                obj.log("Loaded class %s into component %s" %
+                            (obj.notifier.name, "notifier"))
+            else:
+                obj.log("Unable to load notifier component.")
+        else:
+            setattr(obj, "notifier", components["notifier"])
+
+        #we also want to special handle the metadata tracker, so we'll set that up first as well and pass
+        #it to all children so they have access in __init__.
+        #it's unclear why you might not want to use a metadata tracker,
+        #but we sould consider this use case in the future
+        if "metadata_tracker" not in components.keys() and obj.type !="metadata_tracker": #you were passed a metadata_tracker from somewhere else, skip
+            meta_obj = register_component_class(obj, conf, "metadata_tracker", runner_conf=runner_conf, parent_process=obj.name,
+                                                        problem_type=obj.problem_type, dependent_components=components,
+                                                        plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
+            if meta_obj is not None:
+                components["metadata_tracker"] = meta_obj
+                obj.log("Loaded class %s into component %s" %
+                            (obj.metadata_tracker.name, "metadata_tracker"))
+            else:
+                #for local dev you may turn off metadata_tracker, so let's not strictly enforce that it exists for now
+                obj.log("Unable to load metadata_tracker component.")
+        else:
+            setattr(obj, "metadata_tracker", components["metadata_tracker"])
+
+    return components

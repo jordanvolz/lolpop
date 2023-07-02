@@ -1,0 +1,10 @@
+tests: 
+  fit: 
+    pre-hooks: 
+      - hook_file: /Users/jordanvolz/github/lolpop/tests/cli_tests/test_workflow_files/prehook_success.py
+        hook_method: test
+        hook_on_failure: continue
+    post-hooks: 
+      - hook_file: /Users/jordanvolz/github/lolpop/tests/cli_tests/test_workflow_files/posthook_failure.py
+        hook_method: test
+        hook_on_failure: continue

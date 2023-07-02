@@ -2,7 +2,6 @@ from pkgutil import extend_path
 
 #allows extensions to work when doing local dev
 __path__ = extend_path(__path__, __name__)
-print(__path__)
 
 def __map_extensions__():
     from pathlib import Path

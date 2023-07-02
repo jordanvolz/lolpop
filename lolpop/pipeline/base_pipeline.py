@@ -19,6 +19,8 @@ class BasePipeline:
                  skip_config_validation=False, *args, **kwargs):
         #set basic properties like configs
         self.name = type(self).__name__
+        self.type = self.__module__.split(".")[-2]
+        self.integration_type = self.__module__.split(".")[-1]
         conf = utils.get_conf(conf)
         self.parent_process = parent_process
         self.pipeline_type = pipeline_type
@@ -28,14 +30,20 @@ class BasePipeline:
         #resolve any variables
         conf = utils.resolve_conf_variables(conf)
         #merge into default conf
-        omega_conf = utils.copy_config_into(OmegaConf.create(conf), self.__DEFAULT_CONF__)
+        conf = utils.copy_config_into(OmegaConf.create(conf), self.__DEFAULT_CONF__)
         #merge pipeline conf into runner conf
-        valid_conf = omega_conf.copy()
+        valid_conf = conf.copy()
         OmegaConf.update(valid_conf, "config", utils.copy_config_into(valid_conf.get("config", {}), runner_conf))
         #validate configuration
         if not skip_config_validation:
-            self._validate_conf(valid_conf, components)
-        self.config = omega_conf.get("config", {})
+            valid_conf = self._validate_conf(valid_conf, components)
+        self.config = conf.get("config", {})
+
+        #handle default components: logger, notifier, metadata_tracker
+        components = utils.set_up_default_components(self, valid_conf, self.runner_conf,
+                                                            plugin_mods=plugin_mods,
+                                                            skip_config_validation=skip_config_validation,
+                                                            components=components)
 
         #set up reference to each component that is passed in from runner. 
         for component in components.keys(): 
@@ -84,6 +92,7 @@ class BasePipeline:
                         total_missing = total_missing - 1
             if total_missing > 0:   
                 raise Exception ("Missing the following from pipeline configuration: %s" %missing)
+        return conf
 
     def log(self, msg, level="INFO", **kwargs): 
         if not self.suppress_logger: 

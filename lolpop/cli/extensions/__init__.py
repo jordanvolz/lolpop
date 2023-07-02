@@ -26,7 +26,6 @@ def __map_extensions__():
                         "lolpop.cli.extensions.%s.%s" % (subdir_arr[-1],file_name))
                     globals().update({file_name: module})
                 except Exception as e:
-                    print("failure: " + str(e))
                     pass
 
     warnings.resetwarnings()
