@@ -18,6 +18,7 @@ def default(ctx: typer.Context):
 
 #get all extensions
 extensions = [x for x in dir(cli_extensions) if not x.startswith("_") and x != "typer"]
+print(extensions)
 for ext in extensions:
     ext_cl = getattr(cli_extensions, ext)
     #look for the typer entrypoint and add that here
