@@ -1,0 +1,39 @@
+components:
+  test_logger: FileLogger
+test_logger: 
+  config: 
+    log_filename: lolpop_tests.log
+
+#runner-specific tests
+tests: 
+  process_data:
+    pre-hooks: []
+    post-hooks: [] 
+
+#pipeline-specific tests
+process: #pipeline 
+  tests: # pipeline tests
+      track_data: 
+        pre-hooks: 
+          - hook_file: /Users/jordanvolz/github/lolpop/tests/workflow_tests/quickstart/test_data_non_null.py
+            hook_method: test
+            hook_on_failure: continue
+          - hook_file: /Users/jordanvolz/github/lolpop/tests/workflow_tests/quickstart/test_data_size.py
+            hook_method: test
+            hook_on_failure: continue 
+  data_transformer: #component
+    tests: #local component tests 
+        transform:
+          post-hooks: 
+            - hook_file: /Users/jordanvolz/github/lolpop/tests/workflow_tests/quickstart/test_check_label_counts.py
+              hook_method: check_counts
+              hoook_on_failure: raise
+              
+
+#global component tests 
+metadata_tracker:
+  tests: 
+    log_artifact:
+      pre-hooks: []
+      post-hooks: [] 
+  

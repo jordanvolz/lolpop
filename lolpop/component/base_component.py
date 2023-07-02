@@ -1,6 +1,7 @@
 from lolpop.utils import common_utils as utils
 from omegaconf import OmegaConf
 from inspect import currentframe
+
 class BaseComponent: 
     __REQUIRED_CONF__ = {
         "config" : []
@@ -16,6 +17,8 @@ class BaseComponent:
                  components = {}, skip_config_validation=False, *args, **kwargs):
         #set basic properties, like name and configs
         self.name = type(self).__name__
+        self.type = self.__module__.split(".")[-2]
+        self.integration_type = self.__module__.split(".")[-1]
         config = utils.get_conf(conf)
         self.pipeline_conf = pipeline_conf
         self.runner_conf = runner_conf
@@ -40,6 +43,11 @@ class BaseComponent:
         if not skip_config_validation: 
             self._validate_conf(valid_conf, components)
         self.config = omega_conf.get("config", {})
+
+        #handle default components: logger, notifier, metadata_tracker
+        components = utils.set_up_default_components(self, valid_conf, self.runner_conf,
+                                                     skip_config_validation=skip_config_validation,
+                                                     components=components)
 
         #if the config looks good, then we can set all our components 
         for component in components.keys(): 

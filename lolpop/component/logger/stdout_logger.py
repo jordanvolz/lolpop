@@ -21,6 +21,8 @@ class StdOutLogger(BaseLogger):
                         "|%s%s%s> ::: %s" % (Fore.GREEN, line_num, Style.RESET_ALL,  msg)
                 else: 
                     msg_out = msg_out + "> ::: %s" %msg
+            else: 
+                msg_out = msg_out + "::: msg"
             print(msg_out)
 
     def _get_level_value(self, level): 

@@ -1,6 +1,5 @@
 from lolpop.utils import common_utils as utils
 from inspect import currentframe
-
 class BaseRunner: 
 
     __REQUIRED_CONF__ = {
@@ -19,6 +18,8 @@ class BaseRunner:
                  skip_config_validation=False, *args, **kwargs):
         #handle configuration 
         self.name = type(self).__name__
+        self.type = self.__module__.split(".")[-2]
+        self.integration_type = self.__module__.split(".")[-1]
         conf = utils.get_conf(conf)
         conf = utils.resolve_conf_variables(conf)
         conf = utils.copy_config_into(conf, self.__DEFAULT_CONF__) 
@@ -52,36 +53,17 @@ class BaseRunner:
         # in that pipeline and components defined at that pipeline. 
         # componenets in the right scope should know about each other but pipelines act independently (for now, at least)
 
-        #set up logger first because we want to pass that to all children
-        #we set this up separately from the other components in case you want access to the logger in the 
-        #__init__ function
-        logger_obj = utils.register_component_class(self, conf, "logger", default_class_name="StdOutLogger", 
-                                                    runner_conf = self.config, plugin_mods=plugin_mods, 
-                                                    skip_config_validation=skip_config_validation)
-        if logger_obj is not None: 
-            runner_components = {"logger" : logger_obj}
-            self.log("Loaded class %s into component %s" %(type(self.logger).__name__, "logger"))
-        else: 
-            raise Exception("Unable to find logger class.")
-
-        #we also want to special handle the metadata tracker, so we'll set that up first as well and pass 
-        #it to all children so they have access in __init__. 
-        #it's unclear why you might not want to use a metadata tracker, 
-        #but we sould consider this use case in the future 
-        meta_obj = utils.register_component_class(self, conf, "metadata_tracker", runner_conf=self.config, parent_process=self.name,
-                                                  problem_type=self.problem_type, dependent_components=runner_components, 
-                                                  plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
-        if meta_obj is not None:
-            runner_components["metadata_tracker"] = meta_obj
-            self.log("Loaded class %s into component %s" %(type(self.metadata_tracker).__name__, "metadata_tracker"))
-        else: 
-            #for local dev you may turn off metadata_tracker, so let's not strictly enforce that it exists for now
-            self.log("Unable to load metadata_tracker component.")
+        #handle default components: logger, notifier, metadata_tracker
+        runner_components = {}
+        runner_components = utils.set_up_default_components(self, conf, self.config,
+                                                            plugin_mods=plugin_mods, 
+                                                            skip_config_validation=skip_config_validation,
+                                                            components = runner_components)
 
         #build all other components
         for component in conf.get("components",{}).keys(): 
             #ignore logger and metadata_tracker since we have already set those up
-            if component != "logger" and component !="metadata_tracker": 
+            if component != "logger" and component !="metadata_tracker" and component !="notifier": 
                 obj = utils.register_component_class(self, conf, component, runner_conf=self.config, parent_process=self.name,
                                                      problem_type=self.problem_type, dependent_components=runner_components, 
                                                      plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)

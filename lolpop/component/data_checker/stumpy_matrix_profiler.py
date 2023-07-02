@@ -54,7 +54,6 @@ class StumpyMatrixProfiler(BaseDataChecker):
         return None, file_path, "PASS"
 
     def _plot_mp(self, axs, m, h, mp, discords, i): 
-        print("i:" + str(i))
         axs[i].set_ylabel('MP (m=%s)' %m, fontsize='10')
         axs[i].set_xlabel('Time', fontsize='10')
         axs[i].plot(mp[:, 0])

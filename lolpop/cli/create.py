@@ -34,8 +34,8 @@ def default(ctx: typer.Context):
 def component(
     component_type: str = typer.Argument(..., help="Component type (Should be snake_case)."),
     component_class: str = typer.Argument(..., help="Component class name (Should be snake_case)."),
-    extension_name: str = typer.Argument(None, help = "Name of the parent extension for this resource."),
-    template_path: str = typer.Argument(
+    extension_name: str = typer.Argument(..., help = "Name of the parent extension for this resource."),
+    template_path: str = typer.Option(
         lolpop_template_path + "/component_template", help="Path to the template file. Or a git url of a template file."),
     project_dir: Path = typer.Option(os.getcwd(), help="Project directory for the new component."),
 ): 
@@ -49,8 +49,8 @@ def pipeline(
     pipeline_class: str = typer.Argument(
         ..., help="Pipeline class name (Should be snake_case)."),
     extension_name: str = typer.Argument(
-            None, help="Name of the parent extension for this resource."),
-    template_path: str = typer.Argument(
+            ..., help="Name of the parent extension for this resource."),
+    template_path: str = typer.Option(
         lolpop_template_path + "/pipeline_template", help="Path to the template file. Or a git url of a template file."),
     project_dir: Path = typer.Option(os.getcwd(), help="Parent directory for the new pipeline."),
 ): 
@@ -62,13 +62,40 @@ def pipeline(
 def runner(
     runner_type: str = typer.Argument(..., help="Component type (Should be snake_case)"),
     runner_class: str = typer.Argument(..., help="Component class name (Should be snake_case)."),
-    extension_name: str = typer.Argument(None, help="Name of the parent extension for this resource."),
-    template_path: str = typer.Argument(
+    extension_name: str = typer.Argument(..., help="Name of the parent extension for this resource."),
+    template_path: str = typer.Option(
         lolpop_template_path + "/runner_template", help="Path to the template file. Or a git url of a template file."),
     project_dir: Path = typer.Option(os.getcwd(), help="Parent directory for the new component."),
 ): 
     create_template("runner", runner_type,
                     runner_class, template_path, project_dir, extension_name)
+    
+
+@app.command("cli-command", help="Initialize a custom component.")
+def cli_command(
+    command_name: str = typer.Argument(
+        ..., help="Name of the cli command to create."),
+    template_path: str = typer.Option(
+        lolpop_template_path + "/cli_template", help="Path to the template file. Or a git url of a template file."),
+    command_description: str = typer.Option(None, help="description for the command_name"),
+    project_dir: Path = typer.Option(
+        os.getcwd(), help="Parent directory for the new component."),
+):
+    typer.secho("Creating template for %s" %command_name, fg="blue")
+    try:
+        output_dir = "%s/lolpop/cli/extensions/" % (project_dir)
+        cookiecutter(template=template_path,
+                     extra_context={
+                         "cli_command": command_name,
+                         "command_description": command_description,
+                     },
+                     output_dir=output_dir, no_input=True)
+        typer.secho("Successfully created template at location %s" %
+                    output_dir, fg="green")
+    except Exception as e:
+        typer.secho("Failed to create template for %s: %s" %
+                    (command_name, str(e)), fg="red")
+
     
 #template type = component, pipeline, runner, 
 def create_template(template_type, object_type, object_class, template_path, project_dir, extension_name): 
