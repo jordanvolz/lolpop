@@ -52,6 +52,7 @@ class FileLogger(BaseLogger):
                 msg_out = msg_out + \
                     "<%s" % (process_name)
                 if line_num and self._get_config("use_line_numbers"):
+                if line_num and self._get_config("use_line_numbers"):
                     msg_out = msg_out + \
                         "|%s> ::: %s" % (
                             line_num, msg)
