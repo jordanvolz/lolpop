@@ -88,7 +88,6 @@ class StumpyMatrixProfiler(BaseDataChecker):
         Returns:
         None
         """
-        print("i:" + str(i))
         axs[i].set_ylabel('MP (m=%s)' %m, fontsize='10')
         axs[i].set_xlabel('Time', fontsize='10')
         axs[i].plot(mp[:, 0])

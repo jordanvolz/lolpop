@@ -1,4 +1,4 @@
-Configuration is a large part of the lolpop experience. Components, pipelines, and runners should all be designed in a generic manner and expose specific decisions via configuration. I.E. when designing an integration, try to avoid using any hard-coded values and instead opt to allow users to specify via configuration. You should also anticipate what pieces of your integration will need to be flexible and defined at runtime by the user. 
+Configuration is a large part of the lolpop experience. Components, pipelines, and runners should all be designed in a generic manner and expose specific decisions via configuration. I.E. when designing an integration, try to avoid using any hard-coded values and instead opt to allow users to customize behavior via configuration. You should also anticipate what pieces of your integration will need to be flexible and defined at runtime by the user. 
 
 We would expect that almost every integration would allow some sort of configuration. For example, a model trainer should allow users to specify parameters to pass into the model training library, a data connector should allow users to specify the location of the data, a model training pipeline should specify which metric to optimize for, etc. 
 
@@ -6,7 +6,7 @@ Designing your workflows in this way makes it easy to reuse components as you ca
 
 ## Configuration Overview
 
-Configuration can be provided to lolpop in one of two ways: either via a `yaml` file or via a python dictionary. The former is recommended for production workflows. `yaml` files should be created for production work and can easily be tracked in version in your version control system of choice. `yaml` files can sometimes be clumsy to work with during development, so lolpop also supports using python dictionaries of configuration, which allows users to more easily change configuration on the fly. 
+Configuration can be provided to lolpop in one of two ways: either via a `yaml` file or via a python dictionary. The former is recommended for production workflows. `yaml` files should be created for production work and can easily be tracked and versioned in your version control system of choice. `yaml` files can sometimes be clumsy to work with during development, so lolpop also supports using python dictionaries of configuration, which allows users to more easily change configuration on the fly. 
 
 While initializing a component, pipeline, or runner, users can provide configuration via the `conf` parameter. This can either be a string containing a path to a `yaml` file or a python dictionary of configuration values. So, both of the following are valid: 
 
@@ -47,7 +47,7 @@ runner = MyRunner(conf=config)
 
 Configurations can stack with dependent integrations. I.E. your runner configuration can (and probably *should*) also contain the configuration for all pipelines and components that are going to be used in the worklow. lolpop knows how to parse the configuration accordingly and will instantiate every dependent integration with the corresponding configuration. In this way, it's simple to define your entire workflow configuration in one file or dictionary and allow lolpop to do the busy work of initializing all classes for you. 
 
-Generally speaking, users will most often pass configuration directly into runners. Doing so allows the runners to build all dependent pipelines and components, and users need only maintain one configuration file/dictionary. However, for testing purposes you may find it useful to directly instantiate a pipeline or runner. This process is exactly the same, you need only provide just the configuration for the pipeline or component in question. 
+Generally speaking, users will most often pass configuration directly into runners. Doing so allows the runners to build all dependent pipelines and components, and users need only maintain one configuration file/dictionary. However, for development/testing/debugging purposes you may find it useful to directly instantiate a pipeline or runner. This process is exactly the same, you need only provide just the configuration for the pipeline or component in question. 
 
 Also note that configuration values from parents are available in all children. So, components know the configurations of the pipeline and runner that they are a part of, and pipelines know the configuration of runners. With this information, users should be able to easily specify configuration in one location and have it cascade down to whatever else needs it. 
 
@@ -106,7 +106,7 @@ __REQUIRED_CONF__ = {
 }
 ```
 
-As seen above, required configuration is a dictionary where each item is a list of required integrations, except for configuration, which is just a list of required configuration values. For integrations, you should list the generic name of the integration and not the class name. I.E. use `metadata_tracker` and **not** `MLFlowMetadataTracker`. When building your own integrations, you may wish to specify that whatever you are building not only relies on a certain type of integration, but you only anticipate it working with a specific class. In these instances you can further specify your requirements limited to a specific class via `RequiredComponent|AcceptableClass1,AcceptableClass2,...`. This instructs lolpop to further consider only classes contained left of the `|` as valid when validating the integration's configuration.   
+As seen above, required configuration is a dictionary where each item is a list of required integrations, except for `config`, which is just a list of required configuration values. For integrations, you should list the generic name of the integration and not the class name. I.E. use `metadata_tracker` and **not** `MLFlowMetadataTracker`. When building your own integrations, you may wish to specify that whatever you are building not only relies on a certain type of integration, but you only anticipate it working with a specific class. In these instances you can further specify your requirements limited to a specific class via `RequiredComponent|AcceptableClass1,AcceptableClass2,...`. This instructs lolpop to further consider only classes contained left of the `|` as valid when validating the integration's configuration.   
 
 If you're designing your own integration, it's best practice to include in your require configuration any other integration that is used in that code, as well as any configuration values that are accessed. 
 

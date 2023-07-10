@@ -4,31 +4,32 @@ xx--> change src --> lolpop -- DONE
 --> pre-commit hook for python formatting
 xx--> change all __init__ calls to use keyword args only. This allows for easier inheritance and multiple inheritence as other classes can super().__init__ and just pass all **kwargs -- DONE
 xx00. mlflow integration -- DONE
-xx000. pipeline extensibility
+xx000. pipeline extensibility -- DONE
 xx00.1 i.e. using metaflow as pipeline instead of default pipelines -- DONE
-1. CLI
+xx1. CLI -- DONE
 xx1.1. runner/pipeline/component templates -- DONE
 xx1.2 Project templates -- DONE
-xx1.3 Need to think more about custom runner/pipeline/component packaging/installation. Might be good to have lolpop/adapters/<component/pipeline/runner> and then in lolpop/<component/pipeline/runner> we add that to the dir/path. This would then give a bath for people to build then our and install from binary into site-packages/lolpop. --DONE 
+xx1.3 Need to think more about custom runner/pipeline/component packaging/installation. Might be good to have lolpop/adapters/<component/pipeline/runner> and then in lolpop/<component/pipeline/runner> we add that to the dir/path. This would then give a bath for people to build then our and install from binary into site-packages/lolpop. -- DONE 
+xx1.4 CLI extensibility -- DONE 
 2. packaging strategy/setup.py/requirements.txts
 xx--> poetry setup -- DONE 
---> try to use extras_require to pull in individual requirements.txt from components?
+xx--> try to use extras_require to pull in individual requirements.txt from components? -- reqs via poetry
 xx--> cli in pypi package -- DONE
 --> idea is that users can package up their own stuff, i.e. add component and create binary, or docker image, or even docker image of embedded model, etc. 
---> but also need to work through distributing lolpop's defaults
---> Note; issue w/ evidently requiring pyyaml <6 and dbt-core >=6, currently can install via `pip3 install -e . --no-deps` to get by it. 
+xx--> but also need to work through distributing lolpop's defaults -- DONE
+xx--> Note; issue w/ evidently requiring pyyaml <6 and dbt-core >=6, currently can install via `pip3 install -e . --no-deps` to get by it. -- FIXED
 2.1 project structure? 
 --> best practice is probably to be opinionated about this and then have an easy packaging mechanism in the CLI. 
 --> this would make non-unit workflow testing less confusing too, very likely.
 xx2.2 Plugin support -- done 
 3. testing frameworking/strategy
-3.1. tests for runners/components/pipelines
+xx3.1. tests for runners/components/pipelines -- DONE
 3.2. generic tests (like swapping components) that apply broadly
-3.3. config based tests. I.E. you can define stuff in yamls. 
-3.4 for testing purposes, might make sense to have test_build=True param in init that initializes components w/ valid configs. otherwise we might run into a complicated testing nightmare w/ cascading dependencies, etc 
-3.5 dbt-style data tests
-    --> maybe implement these as pre/post hooks into methods?
-4. Default Values
+xx3.3. config based tests. I.E. you can define stuff in yamls. -- DONE 
+xx3.4 for testing purposes, might make sense to have test_build=True param in init that initializes components w/ valid configs. otherwise we might run into a complicated testing nightmare w/ cascading dependencies, etc --skip validation enabled
+xx3.5 dbt-style data tests
+    --> maybe implement these as pre/post hooks into methods? -- done 
+xx4. Default Values -- DONE 
 5. Flush out Logging/Notifications, revisit/refactor utils/abstract classes
 6. Additional Use Case Examples: regression, time series analsis, NLP
 7. Additional Components/integrations
@@ -51,7 +52,7 @@ xx--> also suppress import messaging when loading lolpop
 xx14. Data synthesizer + data seeding for better local experience -- DONE 
 15. Notebook to lolpop component conversions
     --> some interesting tools in this space. see for example: https://github.com/kubeflow-kale/kale
-16. ChatGPT to write documentation of your workflow. And maybe docstrings/unit tests/etc?
+xx16. ChatGPT to write documentation of your workflow. And maybe docstrings/unit tests/etc? -- DOEN 
 17. visual dag of workflows/dependencies (networkx?) --> gets more into governance stuff
 18. Python Execution -- modal, ray, dask, spark, etc... 
 19. Broaden Model Trainer Support: 
@@ -79,22 +80,25 @@ xx14. Data synthesizer + data seeding for better local experience -- DONE
 22. whenever components use "X_train", "X_test", etc. Should instead use data.get_split("train") or something that like. 
     More generally, we should have a component for the data itself which understands how to do common operations on it. 
     this would mean components don't need to know if the data is local, distirbuted, what framework its' using, etc. 
-23. cross valiadtion
+23. cross validation
 24. Autogpt component? Once we have critical mass in lolpop repo we can have it read the content and then produce new components
 zz. Comparison w/ ZenML/kebro/ploomer/mlflow pipelines/metaflow/beam?/aqueduct, etc
 --> would be good to map the concepts between metadata stores as well
-25. Extensible CLI 
-    --> can probably dynamically generate cli from lolpop.extensions.cli or something
+xx25. Extensible CLI 
+xx    --> can probably dynamically generate cli from lolpop.extensions.cli or something -- DONE
 
 To build, MVP: 
-xx1. 1 Additional Pipeline Extension (MetaFlow? mlflow?) -- DONE
+xx1. 1 Additional Pipeline Extension (MetaFlow? mlflow?) 
+    -- Metaflow DONE
 xx2. 1 Additional Metadata Tracker Extension (MLFlow? w&b) 
     -- MLFlow DONE
 xx3. 2 Additional Data Integrations: (duckdb/bigquery/redshift/s3/gcs/databricks) -- DONE
 xx4. 2 Additional Use Case Examples: (Regression/TS/Recommender/NLP)
-5. Testing Framework
+    -- Regression + TS DONE 
+xx5. Testing Framework
+    -- DONE
 6. Project Templates -- WIP
-7. MVP Documentation
+7. MVP Documentation -- WIP
 xx8. Local Experience -- i.e. try it out w/o complicated installs/registrations
     -- DONE
 xx9. MVP packaging -- pip install

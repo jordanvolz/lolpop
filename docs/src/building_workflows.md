@@ -54,7 +54,7 @@ my_metadata_tracker = self.metadata_tracker
 my_metrics_tracker = self.metrics_tracker
 ```
 !!! Note 
-    There's no white list for component type names. You can name them whatever you want. 
+    There's no whitelist for component type names. You can name them whatever you want. 
 
 This allows you to easily access other components without knowing how to instantiate them, and you are able to switch which classes are being used in your configuration without needed any coding change to your workflows. This can be useful during development as you test out different scenarios, and also help ease the pain of migrating production workflows when new technology is adopted.  
 
@@ -123,7 +123,7 @@ Runners can be built directly in python, or via the lolpop CLI.
 
 === "Python"
     ```python 
-    from lolpop.extensions import MyRunner
+    from lolpop.extension import MyRunner
 
     config_file = "/path/to/dev.yaml"
 
@@ -140,3 +140,44 @@ Runners can be built directly in python, or via the lolpop CLI.
     ```bash
     lolpop run workflow MyRunner --config-file /path/to/dev.yaml
     ```
+
+
+## Accessing Integrations in Code 
+
+Although components and pipelines do not need to directly be accessed in code, you may find it useful to know how to access all built-in integrations directly via Python. At the very least, this can be useful when troubleshooting or designing unit tests, etc. 
+
+=== "Component" 
+    ```python
+    from lolpop.component import SomeComponent
+
+    some_config = {...}
+
+    some_component = SomeComponent(conf=some_config)
+    ```
+=== "Pipeline" 
+    ```python
+    from lolpop.pipline import SomePipeline
+
+    some_config = {...}
+
+    some_pipeline = SomePipeline(conf=some_config)
+    ```
+=== "Runner" 
+    ```python
+    from lolpop.pipeline import SomeRunner
+
+    some_config = {...}
+
+    some_runner = SomeRunner(conf=some_config)
+    ```
+=== "Extension" 
+    ```python
+    from lolpop.extension import SomeExtension
+
+    some_config = {...}
+
+    some_extension = SomeExtension(conf=some_config)
+    ```
+
+They key observation is that you can access any integration class via the appropriate `lolpop.<integration_type>` syntax. This is true both of built-in integrations, as well as extensions that you may create yourself. 
+

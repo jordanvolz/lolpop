@@ -5,7 +5,7 @@ lolpop contains two main ways to execute a workflow. You can either execute a wo
 
 === "Python"
     ```python 
-    from lolpop.extensions import MyRunner
+    from lolpop.extension import MyRunner
 
     config_file = "/path/to/dev.yaml"
 

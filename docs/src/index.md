@@ -38,7 +38,7 @@ First: write your own components or use [pre-built](extensions.md) ones:
 from lolpop.comonent import BaseComponent 
 from catboost import CatBoostRegressor, CatBoostClassifier
 
-class PytorchModelTrainer(BaseComponent): 
+class CatboostModelTrainer(BaseComponent): 
 
     def __init__(problem_type=None, params={}, *args, **kwargs): 
         super().__init__(*args, **kwargs)
@@ -99,7 +99,7 @@ train:
 Finally, workflows can either be invoked via python code: 
 
 ```python 
-from lolpop.extensions import MyRunner
+from lolpop.extension import MyRunner
 
 config_file = "/path/to/dev.yaml"
 

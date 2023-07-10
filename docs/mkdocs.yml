@@ -16,6 +16,8 @@ theme:
     - navigation.prune
     - navigation.index
     - navigation.sections
+    - navigation.footer
+    - navigation.top
     - search.suggest
     - search.highlight
     - search.share
@@ -44,6 +46,12 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
+extra: 
+  social: 
+  - icon: fontawesome/brands/github
+    link: https://github.com/jordanvolz/lolpop
+  - icon: fontawesome/brands/discord
+    link: https://discord.gg/WeUfBBqW
 nav: 
   - lolpop User Guide: 
     - Getting Started: 
@@ -60,15 +68,16 @@ nav:
       - lolpop Projects: lolpop_projects.md
     - Extensions: 
         - Overview: extensions.md
-        - Extending Integrations: extending_integrations.md 
-        - Building from Templates: extension_templates.md
-        - Packaging An Extension: packagin_extensions.md
-        - Writing Tests: writing_tests.md
-        - Generating Documentation: documentation.md
+        - Creating an Extension: building_extensions.md
+        - Using Extensions: using_extensions.md 
+        - Packaging And Installing Extensions: packaging_extensions.md
+        - Writing Tests: writing_extension_tests.md
+        - Generating Documentation: writing_extension_documentation.md
+        - Extending the CLI: extending_cli.md
     - CLI: 
       - Overview: cli.md
       - Reference: cli_reference.md
-      - Extending the CLI: cli_extending.md
+      - Extensions: cli_extensions.md
     - Resources: 
       - About: about.md
       - Contributing: contributing.md

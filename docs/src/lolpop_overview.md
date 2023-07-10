@@ -23,4 +23,6 @@ Lastly, lolpop exposes many of its operational capabilities via a [command-line 
 
 - [Running Workflows](running_workflows.md): Learn how to run workflows built in lolpop. 
 
-- [Testing Workflows](testing_workflows.md): learn how to write tests and test workflows built in lolpop. 
+- [Testing Workflows](testing_workflows.md): Learn how to write tests and test workflows built in lolpop. 
+
+- [lolpop Projects](lolpop_projects.md): Get started with lolpop projects. 
