@@ -30,7 +30,7 @@ To create a new integration from the lolpop template, simply execute the followi
     ```
 === "Runner" 
     ```bash
-    lolpop create pipeline <runner_type> <runner_class> <extension_name> --project_dir /path/to/project/project_name
+    lolpop create runner <runner_type> <runner_class> <extension_name> --project_dir /path/to/project/project_name
     ```
 
 In the above example, `extension_name` is the name of the extension you are creating, `<integration_type>` is the generic type of integration, such as `metadata_tracker`, and `<integration_class>` is the specific class you wish to create, such as `mlflow_metadata_tracker`.

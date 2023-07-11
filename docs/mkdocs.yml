@@ -51,7 +51,7 @@ extra:
   - icon: fontawesome/brands/github
     link: https://github.com/jordanvolz/lolpop
   - icon: fontawesome/brands/discord
-    link: https://discord.gg/WeUfBBqW
+    link: https://discord.gg/4FmK7jERsh
 nav: 
   - lolpop User Guide: 
     - Getting Started: 
@@ -76,13 +76,13 @@ nav:
         - Extending the CLI: extending_cli.md
     - CLI: 
       - Overview: cli.md
+      - User Guide: cli_guide.md
       - Reference: cli_reference.md
-      - Extensions: cli_extensions.md
     - Resources: 
       - About: about.md
       - Contributing: contributing.md
       - Community: community.md
-      - Contact: contact.md
+      - Contact & Requesting Features: contact.md
   - Integrations: 
     - Overview: integrations.md
     - Components: 

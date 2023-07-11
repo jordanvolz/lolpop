@@ -18,7 +18,7 @@ And that's it! You'll now have a nice artifact which you can use to share your e
 Assuming you're properly built an extension and now have a tarball of that extension, you can easily install this extension where you'd like via: 
 
 ```python
-pip3 install /path/to/my_extesnion.tar.gz
+pip3 install /path/to/my_extension.tar.gz
 ```
 
 
