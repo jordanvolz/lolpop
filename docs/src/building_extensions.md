@@ -50,4 +50,4 @@ As you gain familiarity with lolpop you may wish to develop more customized temp
 
 lolpop uses `cookiecutter` to build templates, so your custom templates also need to be compliant with cookiecutter syntax. 
 
-If you wish to forge your own path completely with templates, it's recommended to look into [extending lolpop's cli](cli_extensions.md).
+If you wish to forge your own path completely with templates, it's recommended to look into [extending lolpop's cli](extending_cli.md).

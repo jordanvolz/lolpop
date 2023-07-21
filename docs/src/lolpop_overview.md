@@ -9,7 +9,7 @@ lolpop follows a simple [conceptual](concepts.md) model where workflows are cons
 
 The relationship between components, pipelines, and runners is defined in [configuration](configuration.md) files which users can use to build runners and execute workflows. Users can use configuration files to change workflow behavior without writing any code, which should provide quick development iteration and also streamline production processes and inevitable debugging. All users need to do in order to begin [running workflows](running_workflows.md) is a runner and a configuration file. 
 
-lolpop additionally provides a basic [testing framework](testing_workflow.md) which allows users to easily define and run tests on components, workflows, and runners. Proper testing is tantamount to every production process and lolpop to simplifies testing of complex workflows by making them modular, configurable, and 
+lolpop additionally provides a basic [testing framework](testing_workflows.md) which allows users to easily define and run tests on components, workflows, and runners. Proper testing is tantamount to every production process and lolpop to simplifies testing of complex workflows by making them modular, configurable, and 
 
 lolpop also allows [extensibility](extensions.md) of the framework. Advanced users should be able to easily build components, pipelines, and runners that suit their use cases and package them up for reuse. 
 
