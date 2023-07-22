@@ -18,7 +18,7 @@ class GCSDataConnector(BaseDataConnector):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.gcs_service_account_keyfile = self._get_config("GOOGLE_SERVICEACCOUNT_KEYFILE", None)
+        self.gcs_service_account_keyfile = self._get_config("GOOGLE_KEYFILE", None)
         self.gcs_project = self._get_config("GOOGLE_PROJECT")
 
 
@@ -61,7 +61,7 @@ class GCSDataConnector(BaseDataConnector):
 
      #load data into df
     @classmethod
-    def _load_data(self, path, keyfile, project, **kwargs):
+    def _load_data(self, path, keyfile, project, *args, **kwargs):
         """
         Load data from the given Google Cloud Storage path and return as a Pandas DataFrame.
 

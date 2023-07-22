@@ -1,84 +1,81 @@
-# **DuckDBDataConnector Class Documentation**
+# DuckDBDataConnector
 
-This document explains the features of the DuckDBDataConnector class, which retrieves data from DuckDBDataConnector instance or custom SQL provided and saves data to the specified table in the specified instance. This class extends from the BaseDataConnector class.
+This document explains the features of the DuckDBDataConnector class, which retrieves data from a DuckDB table or custom SQL provided and saves data to the specified table in the specified instance. This class extends from the BaseDataConnector class.
 
-## **Methods**
-The class has four methods which have been documented in their respective sections below:
+## Configuration
 
-### **1. \_\_init\_\_() Method**
+### Required Configuration
 
-This is the constructor method for the DuckDBDataConnector class. It initializes the path attribute as self._get_config("duckdb_path").
+- `duckdb_path`: The filepath to the duckdb instance.  
 
+### Optional Configuration 
+There is no optional configuration.
 
-#### Method Signature 
-```python 
-def __init__(self, *args, **kwargs):
-```
-
-#### Parameters:
-*args and **kwargs (optional): represents the flexible arguments for the method.
+### Default Configuration 
+There is no default configuration. 
 
 
-### **2. get_data() Method**
+## Methods
+
+### get_data
 
 The get_data() method retrieves data from the DuckDBDataConnector table or custom SQL provided and returns a Pandas dataframe. 
 
-#### Method Signature 
 ```python 
 def get_data(self, table, sql=None, *args, **kwargs):
 ```
 
-#### Parameters:
-*table (str): Name of the table to retrieve data from.
-*sql (str): The optional SQL query to execute. Default value is None.
-*args and **kwargs (optional): represents the flexible arguments for the method.
+**Arguments**:
 
-#### Returns
-data (dataframe): A Pandas dataframe object containing the data.
+* `table` (str): Name of the table to retrieve data from.
+* `sql` (str): The optional SQL query to execute. Default value is None.
 
-#### Raises
-Exception: If both table and sql statement are not provided.
+**Returns**
 
+* `data` (dataframe): A Pandas dataframe object containing the data.
 
-#### Example Usage
+**Example Usage**
 
 ```python
-import DuckDBDataConnector
+from lolpop.component import DuckDBDataConnector
+
+config = {
+    #insert component config here
+}
 
 # create an instance of DuckDBDataConnector with default arguments
-duck_conn = DuckDBDataConnector()
+duck_conn = DuckDBDataConnector(conf=config)
 
 # retrieve data from the database using an SQL select statement
-resulting_df = duck_conn.get_data('your_table_name')
+df = duck_conn.get_data('your_table_name')
 ```
 
 This example creates an instance of the DuckDBDataConnector class and uses the get_data() method to retrieve data from the database. 
 
-### **3. save_data() Method**
+### save_data
 
-The save_data() method saves data to the specified table in the specified DuckDBDataConnector instance. If the table does not exist, it gets created with the data structure from the dataframe provided. If a column is missing, it adds the column as nulls. This preserves the structure of the destination table.
+The `save_data` method saves data to the specified table in the specified DuckDBDataConnector instance. If the table does not exist, it gets created with the data structure from the dataframe provided. If a column is missing, it adds the column as nulls. This preserves the structure of the destination table.
 
-#### Method Signature 
 ```python 
 def save_data(self, data, table, *args, **kwargs):
 ```
 
-#### Parameters:
-*data (pandas.DataFrame): Pandas dataframe containing the data to be saved.
-*table (str): Name of the table to save the data to.
-*args and **kwargs (optional): represents the flexible arguments for the method.
+ **Arguments**
 
-#### Returns
-None
+* `data` (pandas.DataFrame): Pandas dataframe containing the data to be saved.
+* `table` (str): Name of the table to save the data to.
 
-#### Raises
-No exception is raised.
-
-#### Example Usage
+**Example Usage**
 
 ```python
+from lolpop.component import DuckDBDataConnector 
+
+config = {
+    #insert component config here
+}
+
 # create an instance of DuckDBDataConnector with default arguments
-duck_conn = DuckDBDataConnector()
+duck_conn = DuckDBDataConnector(conf = config)
 
 # create a Pandas dataframe object containing data
 confluence_table = pd.DataFrame({
@@ -93,35 +90,48 @@ duck_conn.save_data(confluence_table, 'your_table_name')
 
 This example creates an instance of the DuckDBDataConnector class, creates a Pandas dataframe and saves the content of the dataframe as a table in the database using the save_data() method.
 
-### **4. \_map_pandas_col_type_to_duckdb_type() Method**
+### _load_data 
+
+This method executes the given SQL command in DuckDB  and returns the retrieved data. 
+
+```python 
+_load_data(self, sql, path, *args, **kwargs)
+```
+**Arguments**:
+
+- `sql`: (str) SQL command to execute.
+- `path`: (str) Path to DuckDB instance.
+
+**Returns**
+
+- `pandas.DataFrame`: Fetched data from DuckDB.
+
+### _save_data
+
+```python 
+_save_data(self, data, table_name, path, *args, **kwargs)
+```
+
+This method saves the given data to a table in DuckDB . 
+
+ **Arguments**:
+
+- `data`: (pandas.DataFrame) The data to save
+- `table_name`: (str) Name of table to save data
+- `path`: (str) Path to duckdb instance .
+
+### __map_pandas_col_type_to_duckdb_type
 
 This is a private method which maps pandas data types to duckdb data types.
 
-#### Method Signature 
 ```python 
-def _map_pandas_col_type_to_duckdb_type(self, col_type):
+def __map_pandas_col_type_to_duckdb_type(self, col_type):
 ```
 
-#### Parameters:
-*col_type (_type_): Pandas data type.
+**Arguments**:
 
-#### Returns
-column_type (_type_): DuckDB data type corresponding to pandas data type.
+* col_type (_type_): Pandas data type.
 
-#### Raises
-No exception is raised.
+**Returns**
 
-
-#### Example Usage
-
-This method is a private method and used inside the class, hence cannot be used on its own separately.
-
-## **Dependencies**
-
-The following packages need to be installed before using this class.
-
-pandas, duckdb
-
-```python 
-!pip install pandas duckdb
-```
+* column_type (_type_): DuckDB data type corresponding to pandas data type.

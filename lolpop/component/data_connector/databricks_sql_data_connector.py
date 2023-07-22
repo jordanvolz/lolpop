@@ -81,7 +81,7 @@ class DatabricksSQLDataConnector(BaseDataConnector):
                sql = "ALTER TABLE %s " % (table)
                for col_name in new_features:
                    col_type = data.dtypes[col_name]
-                   dbricks_type = self._map_pandas_col_type_to_databrickssql_type(
+                   dbricks_type = self.__map_pandas_col_type_to_databrickssql_type(
                        col_type)
                    sql = sql + ("ADD COLUMN %s %s" %
                                 (col_name.upper(), dbricks_type))
@@ -97,7 +97,7 @@ class DatabricksSQLDataConnector(BaseDataConnector):
 
      #load data into df
     @classmethod
-    def _load_data(self, sql, config):
+    def _load_data(self, sql, config, *args, **kwargs):
         """
         Loads data from SQL query in Databricks DataFrame
         ----------
@@ -123,7 +123,7 @@ class DatabricksSQLDataConnector(BaseDataConnector):
 
         return df
 
-    def _save_data(self, data, table, config):
+    def _save_data(self, data, table, config, *args, **kwargs):
         """
         Saves the data to Databricks SQL in chunks
         ----------
@@ -154,7 +154,7 @@ class DatabricksSQLDataConnector(BaseDataConnector):
         connection.close()
         engine.dispose()
 
-    def _map_pandas_col_type_to_databrickssql_type(self, col_type):
+    def __map_pandas_col_type_to_databrickssql_type(self, col_type):
         """
         Maps the given pandas column data type to a Databricks SQL data type.
         ----------

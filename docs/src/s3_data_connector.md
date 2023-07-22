@@ -1,109 +1,109 @@
-# S3DataConnector class documentation
+# S3DataConnector 
 
 This class defines a data connector that reads from and writes to an AWS S3 bucket using the boto3 package. This class is a child of the BaseDataConnector class and inherits methods from this class.
 
-The S3DataConnector class includes the following methods:
+## Configuration
 
-### Constructor Method
+### Required Configuration
 
-```python
-def __init__(self, *args, **kwargs)
-```
+- `AWS_S3_BUCKET`: S3 bucket name to read/write data to.
+- `AWS_ACCESS_KEY_ID`: AWS access key id. 
+- `AWS_SECRET_KEY_ID`: AWS secret key id. 
+- `AWS_SESSION_TOKEN`: AWS session token. 
 
-This method is the constructor of the class. It loads the required configuration values for the S3 bucket from the specified `config` file.
+### Optional Configuration 
 
-### Get Data Method
+There is no optional configuration. 
+
+### Default Configuration 
+There is no default configuration. 
+
+## Methods 
+### get_data
+
+This method reads data from an AWS S3 bucket and returns a Pandas DataFrame.
 
 ```python
 def get_data(self, path, *args, **kwargs)
 ```
 
-This method reads data from an AWS S3 bucket and returns a Pandas DataFrame.
+**Arguments**
 
-#### Parameters
 - `path`: The location of the file in the bucket.
 
-#### Returns
+**Returns**
 - A Pandas DataFrame containing the data from the bucket.
 
-### Save Data Method
+### save_data 
+
+This method saves data into an AWS S3 bucket.
 
 ```python
 def save_data(self, data, path, *args, **kwargs)
 ```
 
-This method saves data into an AWS S3 bucket.
+**Arguments**
 
-#### Parameters
 - `data`: The data to be written into the bucket.
 - `path`: The location of the file in the bucket.
 
-#### Returns
-- None
 
-### Load Data Method
+### _load_data 
+This method reads data from files within the AWS S3 bucket and returns a Pandas DataFrame.
 
 ```python
 def _load_data(self, path, config, **kwargs)
 ```
 
-This method reads data from files within the AWS S3 bucket and returns a Pandas DataFrame.
+**Arguments**
 
-#### Parameters
 - `path`: The location of the file in the bucket.
 - `config`: A dictionary that stores AWS S3 Buckets, AWS Access Key ID, AWS Secret Access Key, and AWS Session Token.
 
-#### Returns
+**Returns**
 - A Pandas DataFrame containing the data from the file.
 
-### Save Data Private Method
+### _save_data
+This method saves data into an AWS S3 bucket.
 
 ```python
 def _save_data(self, data, path, config, *args, **kwargs)
 ```
 
-This method saves data into an AWS S3 bucket.
-
-#### Parameters
+**Arguments**
 - `data`: The data to be written into the bucket.
 - `path`: The location of the file in the bucket.
 - `config`: A dictionary that stores AWS S3 Buckets, AWS Access Key ID, AWS Secret Access Key, and AWS Session Token.
 
-#### Returns
-- None
 
-### Get Client Private Method
+### _get_client
+This method returns the AWS S3 client.
 
 ```python
 def _get_client(self, config)
 ```
 
-This method returns the AWS S3 client.
-
-#### Parameters
+**Arguments**
 - `config`: A dictionary that stores AWS S3 Buckets, AWS Access Key ID, AWS Secret Access Key, and AWS Session Token.
 
-#### Returns
+**Returns**
 - An AWS S3 client.
 
-### Examples
+## Usage
 
-You can create an instance of the S3DataConnector class with the following code:
-
-```python
-import S3DataConnector
-
-s3 = S3DataConnector()
-```
-
-You can fetch data from an S3 bucket with the following code:
 
 ```python
-data = s3.get_data('data.csv')
-```
+from lolpop.component import S3DataConnector
 
-You can save data to an S3 bucket with the following code:
+config = {
+    #insert component config here
+}
 
-```python
-s3.save_data(data, 'data.csv')
+s3 = S3DataConnector(conf=config)
+
+data = s3.get_data('/path/to/data.csv')
+
+new_data = pd.DataFrame({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
+
+s3.save_data(new_data, '/path/to/new_data.csv')
 ```

@@ -1,3 +1,5 @@
+# EvidentlyAIDataChecker
+
 This class generates a data check report using EvidentlyAI and provides a summary of the data quality tests run. In particular, this runs the [Data Quality Test Suite](https://docs.evidentlyai.com/presets/data-quality#data-quality-test-suite). 
 
 ## Configuration

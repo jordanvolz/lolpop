@@ -62,7 +62,7 @@ class StumpyMatrixProfiler(BaseDataChecker):
                 discords.append(discord_idx)
                 self.log("Found possible anomaly at index %s, which is %s units from its nearest neighbor" %(discord_idx, nearest_neighbor_distance))    
             #plot the matrix profile
-            self._plot_mp(axs, m, box_height, mp, discords, j)
+            self.__plot_mp(axs, m, box_height, mp, discords, j)
             j=j+1
 
         #save plot
@@ -71,7 +71,7 @@ class StumpyMatrixProfiler(BaseDataChecker):
 
         return None, file_path, "PASS"
 
-    def _plot_mp(self, axs, m, h, mp, discords, i): 
+    def __plot_mp(self, axs, m, h, mp, discords, i): 
         """
         Private method for plotting the STUMPY matrix and marking the discovered anomalies/novelties.
 

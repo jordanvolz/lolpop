@@ -74,7 +74,7 @@ class SnowflakeDataConnector(BaseDataConnector):
                 sql = "ALTER TABLE %s " % (table)
                 for col_name in new_features:
                     col_type = data.dtypes[col_name]
-                    sf_type = self._map_pandas_col_type_to_sf_type(col_type)
+                    sf_type = self.__map_pandas_col_type_to_sf_type(col_type)
                     sql = sql + ("ADD COLUMN %s %s" %
                                  (col_name.upper(), sf_type))
                 self.get_data(None, sql=sql)
@@ -87,7 +87,7 @@ class SnowflakeDataConnector(BaseDataConnector):
         #now we can save our data
         self._save_data(data, table, self.snowflake_config)
 
-    def _map_pandas_col_type_to_sf_type(self, col_type):
+    def __map_pandas_col_type_to_sf_type(self, col_type):
         """
         Maps a pandas DataFrame column type to the corresponding Snowflake data type.
 
@@ -119,7 +119,7 @@ class SnowflakeDataConnector(BaseDataConnector):
 
     #load data into df
     @classmethod
-    def _load_data(self, sql, config):
+    def _load_data(self, sql, config, *args, **kwargs):
         """
         Loads data from the Snowflake data warehouse and returns it as a pandas DataFrame.
 
@@ -142,7 +142,7 @@ class SnowflakeDataConnector(BaseDataConnector):
         )
         return result
 
-    def _save_data(self, data, table_name, config):
+    def _save_data(self, data, table_name, config, *args, **kwargs):
         """
         Saves a pandas DataFrame to the Snowflake data warehouse.
 

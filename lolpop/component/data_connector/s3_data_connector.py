@@ -55,7 +55,7 @@ class S3DataConnector(BaseDataConnector):
 
 
     @classmethod
-    def _load_data(self, path, config, **kwargs):
+    def _load_data(self, path, config, *args, **kwargs):
         """
         Reads files within the AWS S3 Bucket.
 

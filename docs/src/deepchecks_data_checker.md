@@ -1,4 +1,4 @@
-
+# DeepchecksDataChecker
 
 The `DeepchecksDataChecker` class is a child class of the `BaseDataChecker` class. This class is responsible for generating a data check report using Deepchecks. In particular, it runs the [data integrity](https://docs.deepchecks.com/en/stable/tabular/auto_checks/data_integrity/index.html#) suite on the provided dataset. 
 

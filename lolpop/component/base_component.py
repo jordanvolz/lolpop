@@ -68,14 +68,15 @@ class BaseComponent:
             if total_missing > 0:   
                 raise Exception ("Missing the following from %s component configuration: %s" %(type(self).__name__, missing))
 
-    def log(self, msg, level="INFO", **kwargs): 
+    def log(self, msg, level="INFO", *args, **kwargs): 
         if not self.suppress_logger:
-            self.logger.log(msg, level, process_name=self.name, line_num=currentframe().f_back.f_lineno, **kwargs)
+            self.logger.log(msg, level, process_name=self.name, 
+                            line_num=currentframe().f_back.f_lineno, *args, **kwargs)
 
 
-    def notify(self, msg, level="ERROR"): 
+    def notify(self, msg, level="ERROR", *args, **kwargs): 
         if not self.suppress_notifier: 
-            self.notifier.notify(msg, level)
+            self.notifier.notify(msg, level, *args, **kwargs)
             self.log("Notification Sent: %s" %msg, level)
 
     #helper function to lookup config key in component, pipeline or runner conf

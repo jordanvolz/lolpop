@@ -1,3 +1,5 @@
+# StumpyMatrixProfiler 
+
 This class is used to detect anomalies/novelties in time series data using [STUMPY matrix profiling](https://stumpy.readthedocs.io/en/latest/Tutorial_The_Matrix_Profile.html) algorithm and plotting the results. The matrix profile is a distance profile between subsequences of the input time series data. The algorithm involves sliding a window across the time series data and calculating the matrix profile. The subsequence corresponding to each discovered anomaly/novelty in the time series data will have a distance profile value greater than other subsequences corresponding to a similar or identical anomaly/novelty.
 
 ##Configuration
@@ -19,7 +21,7 @@ The Stumpy matrix profiler uses the following optional configuration:
 
 - `stumpy_window_size`: A list of window sizes. Each entry will generate a new plot. Defaults to `[30]`. 
 
-- `stumpy_num_discords`: The total number of discords to include in the analysis. these will be the mosts most likely to be identified as anomalies. 
+- `stumpy_num_discords`: The total number of discords to include in the analysis. These will be the mosts most likely to be identified as anomalies. Defaults to 3. 
 
 
 
@@ -77,9 +79,9 @@ _, file_path, check_status = data_checker.check_data(data=my_data)
 print(f"Data check report saved at {file_path}. Checks status: {checks_status}")
 ```
 
-### _plot_mp
+### __plot_mp
 ```python
-def _plot_mp(self, axs, m, h, mp, discords, i): 
+def __plot_mp(self, axs, m, h, mp, discords, i): 
 ```
 Private method for plotting the STUMPY matrix and marking the discovered anomalies/novelties.
 

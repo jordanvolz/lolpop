@@ -65,7 +65,7 @@ class DuckDBDataConnector(BaseDataConnector):
                sql = "ALTER TABLE %s " % (table)
                for col_name in new_features:
                     col_type = data.dtypes[col_name]
-                    duckdb_type = self._map_pandas_col_type_to_duckdb_type(col_type)
+                    duckdb_type = self.__map_pandas_col_type_to_duckdb_type(col_type)
                     sql = sql + ("ADD COLUMN %s %s" %
                                  (col_name.upper(), duckdb_type))
                self.get_data(None, sql=sql)
@@ -80,7 +80,7 @@ class DuckDBDataConnector(BaseDataConnector):
 
      #load data into df
     @classmethod
-    def _load_data(self, sql, path):
+    def _load_data(self, sql, path, *args, **kwargs):
         """
         Loads data into a pandas dataframe.
         
@@ -97,7 +97,7 @@ class DuckDBDataConnector(BaseDataConnector):
             result = res.df() 
         return result
 
-    def _save_data(self, data, table_name, path, table_exists):
+    def _save_data(self, data, table_name, path, table_exists, *args, **kwargs):
         """
         Saves data into the DuckDBDataConnector table.
         
@@ -119,7 +119,7 @@ class DuckDBDataConnector(BaseDataConnector):
                     con.sql("INSERT INTO %s as SELECT * from data" % table_name)
 
 
-    def _map_pandas_col_type_to_duckdb_type(self, col_type):
+    def __map_pandas_col_type_to_duckdb_type(self, col_type):
         """
         This is a private method. It maps pandas data types to duckdb data types.
         

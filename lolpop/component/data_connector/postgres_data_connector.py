@@ -64,7 +64,7 @@ class PostgresDataConnector(BaseDataConnector):
                sql = "ALTER TABLE %s " % (table)
                for col_name in new_features:
                    col_type = data.dtypes[col_name]
-                   pg_type = self._map_pandas_col_type_to_pg_type(
+                   pg_type = self.__map_pandas_col_type_to_pg_type(
                        col_type)
                    sql = sql + ("ADD COLUMN %s %s" %
                                 (col_name.upper(), pg_type))
@@ -80,7 +80,7 @@ class PostgresDataConnector(BaseDataConnector):
 
     #load data into df
     @classmethod
-    def _load_data(self, sql, config):
+    def _load_data(self, sql, config, *args, **kwargs):
         """
         Loads data into a pandas DataFrame object.
 
@@ -103,7 +103,7 @@ class PostgresDataConnector(BaseDataConnector):
 
         return data
 
-    def _save_data(self, data, table, config):
+    def _save_data(self, data, table, config, *args, **kwargs):
         """
         Saves data to a database table.
 
@@ -128,7 +128,7 @@ class PostgresDataConnector(BaseDataConnector):
         connection.close()
         engine.dispose()
 
-    def _map_pandas_col_type_to_duckdb_type(self, col_type):
+    def __map_pandas_col_type_to_pg_type(self, col_type):
         """_summary_
 
         Maps column data types from pandas to Postgres.

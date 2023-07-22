@@ -68,7 +68,7 @@ class BigQueryDataConnector(BaseDataConnector):
                sql = "ALTER TABLE %s " % (table)
                for col_name in new_features:
                     col_type = data.dtypes[col_name]
-                    bq_type = self._map_pandas_col_type_to_bq_type(col_type)
+                    bq_type = self.__map_pandas_col_type_to_bq_type(col_type)
                     sql = sql + ("ADD COLUMN %s %s" %
                                  (col_name.upper(), bq_type))
                self.get_data(None, sql=sql)
@@ -81,7 +81,7 @@ class BigQueryDataConnector(BaseDataConnector):
         #now we can save our data
         self._save_data(data, table, self.bigquery_config)
 
-    def _map_pandas_col_type_to_bg_type(self, col_type):
+    def __map_pandas_col_type_to_bq_type(self, col_type):
         """
         A function that maps a pandas column type to a BigQuery column type.
 
@@ -113,7 +113,7 @@ class BigQueryDataConnector(BaseDataConnector):
 
     #load data into df
     @classmethod
-    def _load_data(self, sql, config):
+    def _load_data(self, sql, config, *args, **kwargs):
         """
         Function to load data from BigQuery by executing SQL query.
 
@@ -135,7 +135,7 @@ class BigQueryDataConnector(BaseDataConnector):
 
         return result
 
-    def _save_data(self, data, table_name, config):
+    def _save_data(self, data, table_name, config, *args, **kwargs):
         """Function to save data in form of pandas dataframe into a BigQuery table.
 
         Args:

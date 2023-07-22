@@ -1,31 +1,48 @@
-# Class: LocalDataConnector
+# LocalDataConnector
 
 This is a Python class that inherits from `BaseDataConnector` class and provides methods to read and write CSV, parquet, or ORC file to local storage. The class has two main methods `get_data()` and `save_data()`.
 
-## Methods:
-### 1. get_data(self, source_path, *args, **kwargs)
+## Configuration
 
+### Required Configuration
+
+There is no required configuration.
+
+### Optional Configuration 
+
+There is not optional configuration. 
+
+### Default Configuration 
+There is no default configuration. 
+
+## Methods:
+### get_data 
 This method reads data from the specified file path (CSV, Parquet, or ORC) into memory as a pandas DataFrame. The method returns the loaded data as a pandas DataFrame. The loaded file is read using the Pyarrow engine which supports the reading of these file formats. 
 
-#### Input parameters:
+```python 
+def get_data(self, source_path, *args, **kwargs)
+```
 
-    - source_path (str): The path to the data source file.
+**Arguments**:
 
-    - *args: Optional position arguments that can be passed to the pandas methods.
+- `source_path` (str): The path to the data source file.
 
-    - **kwargs: Optional keyword arguments that can be passed to the pandas methods.
+**Returns**:
 
-#### Output:
-    - pandas.DataFrame: Returns data as a pandas DataFrame.
+- `pandas.DataFrame`: Returns data as a pandas DataFrame.
 
-#### Example:
+**Example**:
 
 ```python
 import pandas as pd
-from LocalDataConnector import LocalDataConnector
+from lolpop.component import LocalDataConnector
+
+config = {
+    #insert component config here
+}
 
 # Create an instance of LocalDataConnector
-connector = LocalDataConnector()
+connector = LocalDataConnector(conf=config)
 
 # Data file path
 data_path = "/datafolder/sales/sales_data.csv"
@@ -37,31 +54,37 @@ data = connector.get_data(data_path)
 print(data.head(5))
 ```
 
-### 2. save_data(self, data, target_path, *args, **kwargs)
-
+### save_data 
 This method writes data from a pandas DataFrame into a specified file path as CSV or Parquet format and returns the saved data. 
 
-#### Input parameters:
+```python 
+def save_data(self, data, target_path, *args, **kwargs)
 
-    - data (pandas.DataFrame): Data to be saved.
+```
 
-    - target_path (str): The path to the target file.
+**Arguments**:
 
-    - *args: Optional position arguments that can be passed to the to_csv or to_parquet methods.
+- `data` (pandas.DataFrame): Data to be saved.
 
-    - **kwargs: Optional keyword arguments that can be passed to the to_csv or to_parquet methods.
+- `target_path` (str): The path to the target file.
 
-#### Output:
-    - pandas.DataFrame: Returns saved data.
 
-#### Example:
+**Returns**:
+
+- `pandas.DataFrame`: Returns saved data.
+
+**Example**:
 
 ```python
 import pandas as pd
-from LocalDataConnector import LocalDataConnector
+from lolpop.component import LocalDataConnector
+
+config = {
+    #insert component config here
+}
 
 # Create an instance of LocalDataConnector
-connector = LocalDataConnector()
+connector = LocalDataConnector(conf=config)
 
 # Load sample data into pandas DataFrame
 data = pd.DataFrame({
@@ -71,7 +94,7 @@ data = pd.DataFrame({
 })
 
 # Define file path to save the data
-save_path = "/datafolder/sales/sales_data.csv"
+save_path = "/data/sales/sales_data.csv"
 
 # Save the data to the specified file path
 connector.save_data(data, save_path)

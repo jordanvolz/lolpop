@@ -28,7 +28,7 @@ class TestStumpyMatrixProfiler:
         i = 1
         config = self.get_config(fake_component_config, simple_ts_data)
         smp = StumpyMatrixProfiler(**config)
-        smp._plot_mp(axs, m, h, mp, discords, i)
+        smp.__plot_mp(axs, m, h, mp, discords, i)
         assert isinstance(axs[i], plt.Axes)
         assert len(axs[i].get_lines()) == 4
         assert len(axs[i].collections) == 0
@@ -44,10 +44,10 @@ class TestStumpyMatrixProfiler:
         i = 1
         config = self.get_config(fake_component_config, simple_ts_data)
         smp = StumpyMatrixProfiler(**config)
-        smp._plot_mp(axs, m, h, mp, discords, i)
+        smp.__plot_mp(axs, m, h, mp, discords, i)
         m=4
         i=2
-        smp._plot_mp(axs, m, h, mp, discords, i)
+        smp.__plot_mp(axs, m, h, mp, discords, i)
         assert isinstance(axs[i], plt.Axes)
         assert len(axs[i].get_lines()) == 4
         assert len(axs[i].collections) == 0
