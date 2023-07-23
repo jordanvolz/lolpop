@@ -1,6 +1,6 @@
 ## Overview
 
-A `data_checker` is a component that takes a dataset and runs some analysis on that data. This is intended to provide the ability to profile data or provide [EDA](https://en.wikipedia.org/wiki/Exploratory_data_analysis) capabilities in a workflow.
+A `data_checker` is a component that takes a dataset and runs some data checks on that data. These data checks are typically concerned with things like data quality and data integrity. 
 
 ## Attributes
 
