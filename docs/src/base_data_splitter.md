@@ -21,7 +21,7 @@ The following methods are part of `BaseDataSplitter` and should be implemented i
 Performs a data split on the given data. 
 
 ```python
-def split_data(self, data, *args, **kwargs) -> dict[Any]
+def split_data(self, data, *args, **kwargs) -> dict[str, Any]
 ```
 
 **Arguments**: 
@@ -37,7 +37,7 @@ def split_data(self, data, *args, **kwargs) -> dict[Any]
 Performs a data comparison between two data profiles.
 
 ```python
-def get_train_test_dfs(self, data,*args, **kwargs) -> tuple[Any]
+def get_train_test_dfs(self, data,*args, **kwargs) -> tuple[Any, Any]
 ```
 
 **Arguments**: 

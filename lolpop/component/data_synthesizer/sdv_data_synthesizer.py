@@ -8,7 +8,10 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
 
     __DEFAULT_CONF__ = {
         "config": {
-            "synthesizer" : "SingleTablePreset"
+            "synthesizer" : "SingleTablePreset", 
+            "sdv_quality_report_name": "sdv_quality_report.pkl", 
+            "sdv_diagnostic_report_name": "sdv_diagnostic_report.pkl"
+
         }
     }
 
@@ -69,7 +72,7 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
 
         return data
 
-    def evaluate_data(self, real_data, synthetic_data, metadata, synthesizer_str, *args, **kwargs):
+    def evaluate_data(self, real_data, synthetic_data, metadata, synthesizer_str, output_dir=None, *args, **kwargs):
         """Evaluates the synthetic data
 
         Args:
@@ -84,16 +87,21 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
         if synthesizer_str is None: 
             synthesizer_str = self._get_config("synthesizer")
 
+        if output_dir is None: 
+            output_dir = self._get_config("local_dir")
+
         evaluator_cl = self._get_evaluator_class(synthesizer_str)
         quality_report = evaluator_cl(real_data = real_data, synthetic_data=synthetic_data, metadata=metadata)
+        quality_report.save(filepath="%s/%s" %(output_path, self._get_config("SDV_QUALITY_REPORT_NAME")))
         
         diagnostic_cl = self._get_diagnostic_class(synthesizer_str)
         diagnostic_report = diagnostic_cl(
             real_data=real_data, synthetic_data=synthetic_data, metadata=metadata)
+            diagnostic_report.save(filepath="%s/%s" % (output_path, self._get_config("SDV_DIAGNOSTIC_REPORT_NAME")))
         
         #can also print some charts via sdv.evaluation.single_table.get_column_lot/get_column_pair_plot
 
-        return quality_report, diagnostic_report
+        return [quality_report, diagnostic_report]
 
     def _get_synthesizer_class(self, synthesizer): 
         """
