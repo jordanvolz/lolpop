@@ -11,7 +11,7 @@ class OpenAIChatbot(BaseGenAIChatbot):
         super().__init__(*args, **kwargs)
         self.api_key = utils.load_config(["OPENAI_API_KEY"], self.config).get("OPENAI_API_KEY")
 
-    def ask(self, messages=[], model="gpt-3.5-turbo", **kwargs):
+    def ask(self, messages=[], model="gpt-3.5-turbo", *args, **kwargs):
         """
         Sends a chat message(s) to OpenAI's Chat API and returns the response.
 

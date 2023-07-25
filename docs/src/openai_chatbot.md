@@ -1,59 +1,71 @@
-# Technical Documentation: OpenAIChatbot Class
+# OpenAIChatbot
 
 The `OpenAIChatbot` class is a Python class that provides methods for interacting with OpenAI's Chat API to generate chatbot responses for given messages. This class is a subclass of the `BaseGenAIChatbot` base class. In this documentation, we will describe the methods of this class in detail.
 
-## Class Variables
 
-The `OpenAIChatbot` class has a class variable `__REQUIRED_CONF__` which is a dictionary containing one key, `config`. The value of the `config` key is a list of string(s), representing the name(s) of the required configuration key(s) which must be present in the configuration file. In this class, the required configuration key is `OPENAI_API_KEY`.
+## Configuration
 
-## Class Methods
+### Required Configuration
+The OpenAI chatbot requires the following configuration: 
 
-The `OpenAIChatbot` class has two methods: `ask` and `prepare_message`. These methods are described below.
+- `openai_api_key`: API key for OpenAI. 
 
-### `__init__(self, *args, **kwargs)`
+### Optional Configuration
+The OpenAI chatbot  has no optional configuration.
 
-This is the constructor method of the `OpenAIChatbot` class. It initializes the instance variables of the class and loads the required configuration value(s) from the configuration file. 
+### Default Configuration
+The OpenAI chatbot has not default configuration.
 
-This method takes an arbitrary number of arguments `*args` and `**kwargs`. It calls the constructor of the parent class, `BaseGenAIChatbot`, with the `*args` and `**kwargs` arguments.
+## Methods
 
-### `ask(self, messages=[], model="gpt-3.5-turbo", **kwargs)`
+### ask 
+This method generates a chatbot response for the given messages using OpenAI's Chat API. It takes a list of `messages` as input which represent the messages to be sent to the chatbot and returns a string representing the generated chatbot response. This method raises an exception if no messages are provided to the chatbot.
 
-This method generates a chatbot response for the given messages using OpenAI's Chat API. It takes a list of `messages` as input which represent the messages to be sent to the chatbot and returns a string representing the generated chatbot response. 
+```python 
+def ask(self, messages=[], model="gpt-3.5-turbo", *args, **kwargs)
+```
 
-The following arguments can be passed to this method:
+**Arguments**: 
 
 * `messages` (list): A list of strings representing the messages to send to the chatbot. Default is an empty list.
 * `model` (str): A string representing the name of the model to use for generating chat responses. Default is "gpt-3.5-turbo".
-* `**kwargs`: Arbitrary keyword arguments representing the additional options to pass to the Chat API.
 
-This method raises an exception if no messages are provided to the chatbot.
+**Returns**: 
 
-#### Example Usage
+* A string representing the generated chatbot response
 
-```python
-openai_chatbot = OpenAIChatbot()
-response = openai_chatbot.ask(["Hi, how are you?"])
-print(response)
-```
 
-### `prepare_message(self, role="user", content=None, *args, **kwargs)`
+### prepare_message 
 
 This method prepares a chat message with the specified role and content and returns it as a dictionary.
 
-The following arguments can be passed to this method:
+
+```python 
+def prepare_message(self, role="user", content=None, *args, **kwargs)
+```
+
+**Arguments**: 
 
 * `role` (str): A string representing the role of the person sending the message. Default is "user".
 * `content` (str): A string representing the content of the message to be sent. Default is None.
-* `*args`: Arbitrary positional arguments.
-* `**kwargs`: Arbitrary keyword arguments.
 
-#### Example Usage
+**Returns##: 
+
+* A dictionary representing the conversation including `role` and `content`
+
+## Usage
 
 ```python
-message = openai_chatbot.prepare_message(content="Hello, how can I help you today?")
-print(message)
+from lolpop.component import OpenAIChatbot
+
+config = {
+    #insert component config here 
+}
+
+openai_chatbot = OpenAIChatbot(conf=config)
+
+prompts = [openai_chatbot.prepare_message(content="Hi, how are you?")]
+
+response = openai_chatbot.ask(messages=prompts)
+print(response)
 ```
-
-## Conclusion
-
-In conclusion, the OpenAIChatbot class is a useful class for generating chatbot responses for given messages using OpenAI's Chat API. This class provides two methods: `ask`, which sends a chat message to the Chat API and returns the response, and `prepare_message`, which prepares a chat message with the specified role and content.

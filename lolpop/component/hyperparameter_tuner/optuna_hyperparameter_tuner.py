@@ -11,9 +11,9 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
         "config": ["training_params", "metrics", "perf_metrics", "local_dir"],
         "components": ["metadata_tracker", "metrics_tracker", "resource_version_control"]}
 
-    __DEFAULT_CONF__  = {"config": {"param_type": "fixed", "optuna_timeout": 3600, "num_jobs": 1}}
+    __DEFAULT_CONF__  = {"config": {"param_type": "fixed", "optuna_timeout": 3600, "num_jobs": 1, "num_trials": 100}}
 
-    def run_experiment(self, data, model_version, n_trials=100, *args, **kwargs): 
+    def run_experiment(self, data, model_version, *args, **kwargs): 
         """ Optimize the model hyperparameters using Optuna.
 
         Args:
@@ -39,6 +39,7 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
         # default to 1 hr timeout
         timeout = int(self._get_config("optuna_timeout"))
         n_jobs = int(self._get_config("num_jobs"))
+        n_trials = int(self._get_config("num_trials"))
 
         #understand if we want to minimize or maximum objective for optuna
         reverse = utils.get_metric_direction(perf_metric)
@@ -79,7 +80,7 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
             self.metadata_tracker.register_vc_resource(model_version, vc_info, key=k, file_type="csv")
 
         #now, we determine overall best experiment and save into model_version
-        winning_exp_id = self._get_winning_experiment(exp_list, perf_metric, reverse=reverse)
+        winning_exp_id = self._get_winning_experiment(exp_list, reverse=reverse)
         winning_exp = self.metadata_tracker.get_resource(winning_exp_id, parent=model_version, type="experiment")
         winning_exp_model_trainer = self.metadata_tracker.get_metadata(winning_exp, id="model_trainer")
         best_model = model_list.get(winning_exp_id)

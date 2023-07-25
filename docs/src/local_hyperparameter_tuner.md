@@ -1,39 +1,57 @@
-# LocalHyperparameterTuner Class
+# LocalHyperparameterTuner
 
-This class allows performing hyperparameter tuning with different training parameter configurations to find the best performing model. You can take an advantage of the class by inheriting from the `BaseHyperparameterTuner` class.
+This class allows performing hyperparameter tuning with different training parameter configurations to find the best performing model. This class inheriting from the `BaseHyperparameterTuner` class, which implements many standard methods for hyperparameter tuning. 
 
-## `__REQUIRED_CONF__`
+## Configuration 
 
-- This attribute is a dictionary that specifies the required configuration for the class. If the required configuration is not provided, an exception is raised.
+This component has no required configuration beyond what is specified in the [BaseHyperparameterTuner](base_hyperparameter_tuner.md) class 
 
-## `run_experiment(data, model_version, *args, **kwargs)`
+## Methods
 
-- This method generate a list of experiments by performing hyperparameter tuning with different training parameter configurations. For each configuration, it trains a model, saves it, makes predictions, calculates metrics, and logs the metrics. It then determines the best experiment based on the performance metric, saves the data splits, retrieves the winning experiment and model trainer data, and logs important information to the model version.
+### run_experiment 
+This method generates a list of experiments by performing hyperparameter tuning with different training parameter configurations. For each configuration, it trains a model, saves it, makes predictions, calculates metrics, and logs the metrics. It then determines the best experiment based on the performance metric, saves the data splits, retrieves the winning experiment and model trainer data, and logs important information to the model version.
 
-### Arguments
+```python3
+def run_experiment(data, model_version, *args, **kwargs)
+```
+
+**Arguments**:
 
 - `data`: A dictionary containing input data for training and testing the model.
 - `model_version`: A model_version object from the metadata tracker.
-- `*args`: An arbitrary number of positional arguments.
-- `**kwargs`: An arbitrary number of keyword arguments.
 
-### Returns
+**Returns**:
 
 - `best_model`: The best performing model based on hyperparameter tuning.
 
-### Example
+**Example**:
 
-``` python
-from LocalHyperparameterTuner import LocalHyperparameterTuner
+```python
+from lolpop.component import LocalHyperparameterTuner, LocalDataSplitter, MLFlowMetadataTracker
+import pandas as pd 
 
-data = {"x_train": x_train, "y_train": y_train , "x_val": x_val, "y_val": y_val}
-model_version = ModelVersion("1.0")
+#get data
+data_splitter_config = {
+    #insert component config
+} 
+data_splitter = LocalDataSplitter(conf=data_splitter_config)
+df = pd.read_csv("/path/to/data.csv")
+data = data_spliter.split_data(df)
 
+#get model_version
+metadata_tracker_config = {
+    #insert component config here
+}
+metadata_tracker = MLFlowMetadataTracker(conf=config)
+model_version = metadata_tracker.create_resource(id, type="model_version")
+
+config = {
+    #insert component config here 
+
+}
 # create an instance of LocalHyperparameterTuner
-lht = LocalHyperparameterTuner()
+lht = LocalHyperparameterTuner(conf=config)
 
 # run the experiment
 best_model = lht.run_experiment(data, model_version)
 ``` 
-
-Note: You might need to provide additional arguments to the method depending on the information you need to pass to the `build_model()` method that it calls.
