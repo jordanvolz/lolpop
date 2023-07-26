@@ -71,6 +71,16 @@ class AIFairnessModelBiasChecker(BaseModelBiasChecker):
         return metrics_out
 
     def _eval_classes(self, class_list): 
+        """Evalutes `lambda` functions defined in configuration into proper python functions. 
+           AIF360 allows dynamically specifying classes via lambda notation, but this isn't 
+           parsed correctly when defined in yaml files. This function fixes that. 
+
+        Args:
+            class_list (list): List of classes
+
+        Returns:
+            list_out: list of classes
+        """
         list_out = []
         for cl in class_list:
             if isinstance(cl, str) and  cl.startswith("lambda x"): 

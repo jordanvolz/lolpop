@@ -3,7 +3,10 @@ import logging
 from datetime import datetime 
 class FileLogger(BaseLogger): 
 
-    __DEFAULT_CONF__ = {"config": {"log_level": "DEBUG", "use_line_numbers": False}}
+    __DEFAULT_CONF__ = {"config": {"log_level": "DEBUG",
+                                   "use_line_numbers": False, 
+                                   "log_format": "%(message)s", 
+                                   "log_filename": "lolpop.log"}}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -51,7 +54,6 @@ class FileLogger(BaseLogger):
             if process_name:
                 msg_out = msg_out + \
                     "<%s" % (process_name)
-                if line_num and self._get_config("use_line_numbers"):
                 if line_num and self._get_config("use_line_numbers"):
                     msg_out = msg_out + \
                         "|%s> ::: %s" % (

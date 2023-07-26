@@ -143,6 +143,7 @@ nav:
         - BaseMetricsTracker: base_metrics_tracker.md
       - Model Bias Checker: 
         - BaseModelBiasChecker: base_model_bias_checker.md
+        - AI Fairness 360: aifairness360_model_bias_checker.md
       - Model Checkers: 
         - BaseModelChecker: base_model_checker.md
       - Model Deployers: 
