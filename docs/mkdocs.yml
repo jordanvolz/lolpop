@@ -151,7 +151,8 @@ nav:
       #- Model Deployers: 
       # - BaseModelDeployer: base_modeL_deployer.md
       - Model Explainers: 
-        - BaseModelExplaieners: base_model_explainer.md
+        - BaseModelExplainer: base_model_explainer.md
+        - Alibi: alibi_model_explainer.md
       - Model Repositories: 
         - BaseModelRespository: base_model_respository.md
       - Model Trainers: 

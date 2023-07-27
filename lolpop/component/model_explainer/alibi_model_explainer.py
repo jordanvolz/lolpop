@@ -13,6 +13,20 @@ class AlibiModelExplainer(BaseModelExplainer):
     }
 
     def get_explanations(self, data, model, model_version, label, classification_type=None, to_list=False, skip_explainer_plots=True, *args, **kwargs): 
+        """This method generates SHAP-based feature importance scores for a given model and input data. If skip_explainer_plots is True, only the feature importance scores will be returned in Alibi format. If it is False, the method will save the SHAP summary and dependence plots as artifacts.
+
+        Args:
+        data (pandas.DataFrame): The input data to explain the model.
+        model (object): The machine learning model we wish to explain.
+        model_version (string): The model version object obtain from the metadata_tracker.
+        label (string): The model targeta.
+        classification_type (string): The type of classification. This parameter is only used if the problem type is classification. 
+        to_list (boolean): If True the returned explanations will be in a list format.
+        skip_explainer_plots (boolean): If True, the skip the SHAP plots.=
+
+        Returns:
+        A dictionary containing SHAP explainer and SHAP values.
+        """
         #load explainer class and instatiate
         explainer_class = self._get_config("explainer_class")
         explainer_cl = getattr(alibi, explainer_class)
@@ -35,6 +49,18 @@ class AlibiModelExplainer(BaseModelExplainer):
         return explanations
 
     def get_feature_importance(self, data_dict, model, model_version, *args, **kwargs): 
+        """ This method generates SHAP-based feature importance scores for train and test sets. It saves SHAP summary and dependence plots as artifacts. 
+
+        Args:
+        data_dict (dict): A dictionary of the input data to explain.
+        model (object): The machine learning model we wish to explain.
+        model_version (string): The model version object obtain from the metadata_tracker.
+
+        Returns:
+        Tuple of two Alibi data objects:
+        - the SHAP-based feature importance for the training set.
+        - the SHAP-based feature importance for the test set.
+        """
         #generate train/test datasets
         (train_X, train_y), (test_X, test_y) = self.data_splitter.get_train_test_dfs(data_dict, combine_xy=False) 
         if self.problem_type == "classification": 
@@ -57,7 +83,20 @@ class AlibiModelExplainer(BaseModelExplainer):
 
     #generate all the shap plot
     def _get_shap_plots(self, shap_values, expected_value, data, model, label, model_version, classification_type=None): 
+        """This method generates various SHAP plots for the given SHAP values and saves them as artifacts.
 
+        Args:
+        shap_values (numpy.ndarray): The SHAP values to generate the plots.
+        expected_value (float): The expected value of the model.
+        data (pandas.DataFrame): The input data to the model.
+        model (object): The machine learning model to explain.
+        label (string): A label for the data.
+        model_version (string): The model version.
+        classification_type (string): The type of classification.
+
+        Returns:
+        None.
+        """
         #note: classificaiton_type == None currently when making a prediction
         if classification_type == "multiclass":
             #bar plot w/ all classes
@@ -127,6 +166,16 @@ class AlibiModelExplainer(BaseModelExplainer):
             
    #save shapley plut using matplotlib.pyplot
     def _save_pyplot(self, name, label, model_version): 
+        """This method saves the generated SHAP plot as an artifact.
+
+        Args:
+        name (string): A name for the plot.
+        label (string): The label of the data.
+        model_version (string): The model version object obtained from the metadata_tracker.
+
+        Returns:
+        The saved artifact.
+        """
         local_path = "%s/%s/%s" %(self._get_config("local_dir"), self.metadata_tracker.get_resource_id(model_version), label)
         os.makedirs(local_path, exist_ok=True)
         key = "%s_%s"%(name, label)
@@ -139,6 +188,18 @@ class AlibiModelExplainer(BaseModelExplainer):
         return artifact
 
     def _save_file(self, name, label, content, model_version, extension="html"): 
+        """This method saves the generated SHAP plot to a file as an artifact.
+
+        Args:
+        name (string): A name for the file.
+        label (string): The label of the data.
+        content (string): The content of the file.
+        model_version (string): The version of the model to explain.
+        extension (string): The extension of the file.
+
+        Returns:
+        The saved artifact.
+        """
         local_path = "%s/%s/%s" % (self._get_config("local_dir"),self.metadata_tracker.get_resource_id(model_version), label)
         os.makedirs(local_path, exist_ok=True)
         key = "%s_%s" % (name, label)
@@ -150,6 +211,18 @@ class AlibiModelExplainer(BaseModelExplainer):
         return artifact
 
     def _compare_train_test_feat_importance(self, explanations_train, explanations_test, classification_type, threshold=0.25): 
+        """This method compares the SHAP-based feature importance scores between the train and test sets. 
+
+        Args:
+        explanations_train (pandas.DataFrame): The SHAP-based feature importance for the training set.
+        explanations_test (pandas.DataFrame): The SHAP-based feature importance for the test set.
+        classification_type (string): The type of classification.
+        threshold (float): A threshold value for checking the differences between train and test sets.
+
+        Returns:
+        Tuple containing the expected differences and the feature importance differences.
+        """
+
         #shap_train = explanations_train.shap_values
         #shap_test = explanations_test.shap_values
 
