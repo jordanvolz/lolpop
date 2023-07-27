@@ -10,7 +10,40 @@ from evidently import ColumnMapping
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class EvidentlyAIModelChecker(BaseModelChecker): 
 
-    def check_model(self, data_dict, model, **kwargs):
+    __REQUIRED_CONF__ = {
+        "config": ["local_dir", "model_target"]
+    }
+
+    __DEFAULT_CONF__ = {
+        "config": {"EVIDENTLYAI_MODEL_REPORT_NAME": "EVIDENTLYAI_MODEL_REPORT.HTML",
+                   "EVIDENTLYAI_MODEL_DRIFT_REPORT_NAME": "EVIDENTLYAI_MODEL_DRIFT_REPORT.HTML"}
+    }
+
+    def check_model(self, data_dict, model, *args, **kwargs):
+        """This class is used to check and calculate drift for a trained machine learning model using the EvidentlyAI testing framework. This class inherits BaseModelChecker. 
+    
+    Methods:
+    -----------
+    check_model(data_dict, model, **kwargs)
+        Runs varies model test presents using EvidentlyAI testing framework.
+
+        Parameters:
+        -----------
+        data_dict : dict
+            A dictionary containing training and testing data in the form of pandas dataframes.
+        model : object
+            A trained machine learning model.
+        **kwargs : Arbitrary keyword arguments
+
+        Returns:
+        --------
+        model_report : object
+            A TestSuite Object containing results of model drift tests.
+        file_path : str
+            The path where the EVIDENTLY_MODEL_REPORT.HTML is stored.
+        checks_status : str
+            The status of model drift test. It can be "ERROR", "WARN" or "PASS".
+        """
         if self.problem_type == "classification": 
             classification_type = utils.get_multiclass(data_dict["y_train"].unique())
 
@@ -35,7 +68,7 @@ class EvidentlyAIModelChecker(BaseModelChecker):
         else: 
             self.notify("Unsupported problem type: %s" %self.problem_type)
         model_report.run(current_data=df_test, reference_data=df_train, column_mapping=column_mapping)
-        file_path = "%s/EVIDENTLY_MODEL_REPORT.HTML" %self._get_config("local_dir")
+        file_path = "%s/%s" %(self._get_config("local_dir"), self._get_config("evidentlyai_model_report_name"))
         model_report.save_html(file_path)
 
         summary = model_report.as_dict()["summary"]
@@ -48,7 +81,25 @@ class EvidentlyAIModelChecker(BaseModelChecker):
 
         return  model_report, file_path, checks_status
 
-    def calculate_model_drift(self, data, current_model, deployed_model):
+    def calculate_model_drift(self, data, current_model, deployed_model, *args, **kwargs):
+        """Calculate the drift between two trained machine learning models using EvidentlyAI testing framework.
+
+        Parameters:
+        -----------
+        data : dict
+            A dictionary containing training and testing data in the form of pandas dataframes.
+        current_model : object
+            A trained machine learning model.
+        deployed_model : object
+            A trained machine learning model.
+
+        Returns:
+        --------
+        drift_report : object
+            A TestSuite Object containing results of model drift tests.
+        file_path : str
+            The path where the EVIDENTLY_MODEL_DRIFT_REPORT.HTML is stored.
+        """
         #set up dfs
         df_current = data["X_test"].copy() 
         df_deployed = df_current.copy()
@@ -64,7 +115,8 @@ class EvidentlyAIModelChecker(BaseModelChecker):
         drift_report = Report(metrics = [TargetDriftPreset()])
 
         drift_report.run(current_data=df_current, reference_data=df_deployed, column_mapping=column_mapping)
-        file_path = "%s/EVIDENTLY_MODEL_DRIFT_REPORT.HTML" %self._get_config("local_dir")
+        file_path = "%s/%s" % (self._get_config(
+            "local_dir"), self._get_config("evidentlyai_model_drift_report_name"))
         drift_report.save_html(file_path)
 
         return drift_report, file_path
