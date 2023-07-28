@@ -10,9 +10,6 @@ import pandas as pd
 # the id given in DVC_REMOTE 
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class dvcVersionControl(BaseResourceVersionControl): 
-    __REQUIRED_CONF__ = {
-        "config" : ["DVC_DIR", "DVC_REMOTE"]
-    }
 
     __DEFAULT_CONF__ = {
         "config": {"dvc_dir": "dvc/", "dvc_remote": "local"}
@@ -39,7 +36,20 @@ class dvcVersionControl(BaseResourceVersionControl):
 
         self.git_url = utils.execute_cmd(["git", "config", "--get", "remote.origin.url"], self)[0].strip()
 
-    def version_data(self, dataset_version, data, key = None, **kwargs): 
+    def version_data(self, dataset_version, data, key = None, *args, **kwargs): 
+        """
+        Version the input dataset using dvc (Data Version Control) and output information about the versioned dataset 
+        including versioning id and URI.
+        
+        Args: 
+        dataset_version: str, ID of the dataset being versioned.
+        data: DataFrame, the dataset to version.
+        key: str, optional, default: None, a unique identifier for the dataset version. 
+        
+        Returns:
+        dictionary containing dataset versioning information including the URI and hexsha.
+                
+        """
         id = self.metadata_tracker.get_resource_id(dataset_version)
 
         #set up paths
@@ -65,9 +75,22 @@ class dvcVersionControl(BaseResourceVersionControl):
         
         return {"uri" : URI, "hexsha": hexsha}
 
-    def get_data(self, dataset_version, vc_info, key = None, **kwargs):
-        if vc_info is not None: 
-            hexsha = vc_info.get("hexsha")
+    def get_data(self, dataset_version, vc_info=None, key = None, *args, **kwargs):
+        """
+        Get the versioned dataset from dvc (Data Version Control) using information about the dataset version.
+
+        Args:
+        dataset_version: str, ID of the dataset version to retrieve.
+        vc_info: dictionary, containing versioning information for the dataset.
+        key: str, optional, default: None, a unique identifier for the dataset version.
+
+        Returns:
+        DataFrame containing the versioned dataset.
+
+        """
+        if vc_info is None: 
+            vc_info = self.metadata_tracker.get_vc_info(dataset_version)
+        hexsha = vc_info.get("hexsha")
         id = self.metadata_tracker.get_resource_id(dataset_version)
         if key:
             dvc_file = "%s_%s.csv" % (id, key)
@@ -83,7 +106,21 @@ class dvcVersionControl(BaseResourceVersionControl):
         
         return df 
 
-    def version_model(self, experiment, model, algo, key=None, **kwargs): 
+    def version_model(self, experiment, model, algo=None, key=None, *args, **kwargs): 
+        """
+        Version the input model using dvc (Data Version Control) and output information about the versioned model 
+        including versioning id and URI.
+        
+        Args: 
+        experiment: str, unique ID of the experiment.
+        model: object, the model to version.
+        algo: string, the algorithm used to train the model.
+        key: str, optional, default:None, a unique identifier for the model version. 
+        
+        Returns:
+        dictionary containing model versioning information including the URI and hexsha.
+        
+        """
         id = self.metadata_tracker.get_resource_id(experiment)
         model_version_id = self.metadata_tracker.get_parent_id(experiment, type="experiment")
         if key:
@@ -107,7 +144,18 @@ class dvcVersionControl(BaseResourceVersionControl):
 
         return {"uri" : URI, "hexsha": hexsha}
   
-    def get_model(self, experiment, key = None, **kwargs): 
+    def get_model(self, experiment, key = None, *args, **kwargs): 
+        """
+        Get the versioned model using versioning information about the model.
+
+        Args:
+        experiment: str, unique ID of the experiment.
+        key: str, optional, default: None, a unique identifier for the model version.
+
+        Returns:
+        the versioned model.
+
+        """
         id = self.metadata_tracker.get_resource_id(experiment)
         if key:
             id = "%s_%s" % (id, key)
