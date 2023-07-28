@@ -2,8 +2,14 @@ from lolpop.component.base_component import BaseComponent
 from sklearn import metrics as sk_metrics
 import pandas as pd 
 import numpy as np 
+from typing import Any 
 
 class BaseModelTrainer(BaseComponent): 
+
+    __REQUIRED_CONF__ = {
+        "components" : ["metadata_tracker", "resource_version_control"], 
+        "config": ["training_params"]
+    }
 
     model = None 
     mlflow_module = "you_need_to_implement_this_for_mlflow_use"
@@ -16,13 +22,18 @@ class BaseModelTrainer(BaseComponent):
             params = self._get_config("training_params", {})
         self.params = params
 
-    def fit(self, data, *args, **kwargs): 
+    def fit(self, data, *args, **kwargs) -> Any: 
         pass 
 
-    def predict(self, data, *args, **kwargs): 
+    def predict(self, data, *args, **kwargs) -> Any: 
         pass
     
     def save(self, experiment, *args, **kwargs): 
+        """Save the model.
+
+        Args:
+            experiment (object): experiment to save model into
+        """
         algo = type(self).__name__
         vc_info = self.resource_version_control.version_model(experiment, self.model, algo=algo)
         experiment_metadata = {
@@ -32,25 +43,35 @@ class BaseModelTrainer(BaseComponent):
         self.metadata_tracker.register_vc_resource(experiment, vc_info, additional_metadata = experiment_metadata)
 
 
-    def predict_df(self, df):
+    def predict_df(self, df, *args, **kwargs) -> Any:
         pass 
 
-    def predict_proba_df(self, df): 
+    def predict_proba_df(self, df, *args, **kwargs) -> Any: 
         pass 
 
-    def get_artifacts(self, id):
+    def get_artifacts(self, id, *args, **kwargs) -> dict[str,Any]:
         pass 
 
-    def _get_model(self):
+    def _get_model(self, *args, **kwargs) -> Any:
         return self.model 
     
     #used to set model object. 
-    def _set_model(self, model): 
+    def _set_model(self, model, *args, **kwargs): 
         self.model = model 
     #def _get_predictions(self): 
     #    return self.predictions
 
-    def calculate_metrics(self, data, predictions, metrics, **kwargs): 
+    def calculate_metrics(self, data, predictions, metrics, *args, **kwargs) -> dict[str, float]: 
+        """Calculates metrics on the trained model. 
+
+        Args:
+            data (dict): dictonary of train/test/validation data 
+            predictions (object): 
+            metrics (list): list of metrics to calculate
+
+        Returns:
+            metrics_out: dictionary of computed metrics
+        """
         metrics_out = {"train" : {}, "valid" : {}, "test" : {}}
 
         test_exists = data.get("y_test") is not None
@@ -179,8 +200,19 @@ class BaseModelTrainer(BaseComponent):
 
         return metrics_out
 
-    def build_model(self, data, model_version, *args, **kwargs): 
+    def build_model(self, data, model_version, *args, **kwargs) -> tuple[Any, Any]: 
+        """Trains a single model
+
+        Args:
+            data (dict): data dictionary of train/test/validation data
+            model_version (object): model version
+
+        Returns:
+            model: the trained model
+            exp: experiment where the model was trained
+        """
         #fit model
+
         model_obj = self.fit(data)
 
         #create experiment and save model 
@@ -205,7 +237,18 @@ class BaseModelTrainer(BaseComponent):
 
         return self, experiment 
 
-    def rebuild_model(self, data, model_version):
+    def rebuild_model(self, data, model_version, *args, **kwargs) -> tuple[Any, Any]:
+        """Trains model using all available data in the data dictionary
+
+        Args:
+            data (dict): dictionary of train/test/validation data
+            model_version (object): model version which we want to retrain
+
+        Returns:
+            model: newly trained model
+            exp: experiment in which the model was trained
+        """
+
         has_test = ("X_test" in data.keys())
 
         #merge all dfs 
@@ -228,6 +271,15 @@ class BaseModelTrainer(BaseComponent):
     
 
 def symmetric_mean_absolute_percentage_error(y_true, y_pred):
+    """computes symmetric mean absolute percentage error
+
+    Args:
+        y_true : actuals
+        y_pred : predictions
+
+    Returns:
+        float: symmetric mean absoulte percentage error
+    """
     epsilon = np.finfo(np.float64).eps
     smape = (2 * np.abs(y_pred - y_true) / np.maximum(np.abs(y_pred) + np.abs(y_true), epsilon))
     return np.average(smape[~np.isnan(smape)])

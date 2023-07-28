@@ -11,7 +11,22 @@ matplotlib.use('Agg')
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class YellowbrickModelVisualizer(BaseModelVisualizer): 
 
-    def generate_viz(self, data, model, model_version): 
+    __REQUIRED_CONF__ = {
+        "components": ["metdata_tracker"]
+    }
+
+    def generate_viz(self, data, model, model_version, *args, **kwargs): 
+        """Generate visualizations and save plots for model evaluation.
+
+            Args:
+            - `data`: A dictionary containing the training and testing data for the model evaluation.
+            - `model`: The trained model object for evaluation.
+            - `model_version`: The version string for the model being evaluated.
+
+            Returns:
+            - Generates several visualization plots as side-effects.
+            - No return values.
+        """
         
         if self.problem_type == "classification":
             classification_type = utils.get_multiclass(data["y_train"])
@@ -85,11 +100,35 @@ class YellowbrickModelVisualizer(BaseModelVisualizer):
             # and yb has some interesting feature analysis viz that we could use in data processing: https://www.scikit-yb.org/en/latest/api/features/index.html
 
     def _save_plot(self, viz, data, split, model_version, plot_name): 
+        """Fit and score a visualization object and save it to disk.
+
+            Args:
+            - `viz`: The Visualization object for plotting.
+            - `data`: A dictionary containing the training and testing data for the model evaluation.
+            - `split`: The string name of the sub-dataset we're plotting for.
+            - `model_version`: The version string for the model being evaluated.
+            - `plot_name`: The name of the file to save the plot as.
+
+            Returns:
+            - Generates a single visualization plot as a side-effect.
+            - No return values.
+        """
         viz.fit(data["X_train"], data["y_train"])
         viz.score(data["X_%s" %split], data["y_%s" %split])
         self._save_pyplot(plot_name, split, model_version)
 
     def _save_pyplot(self, name, label, model_version): 
+        """_Save a pyplot plot to disk.
+
+            Args:
+            - `name`: The name of the file to save the plot as.
+            - `label`: The string label for sub-dataset we're plotting for.
+            - `model_version`: The model version object to save the plots to. 
+
+            Returns:
+            - Returns a reference to the saved artifact.
+            - Saves a single plot as a side-effect.
+        """
         local_path = "%s/%s/%s" %(self._get_config("local_dir"), self.metadata_tracker.get_resource_id(model_version), label)
         os.makedirs(local_path, exist_ok=True)
         key = "%s_%s"%(name, label)

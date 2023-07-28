@@ -7,7 +7,6 @@ class XGBoostModelTrainer(BaseModelTrainer):
 
     mlflow_module = "xgboost"
 
-    #should set self.model in init
     def __init__(self, problem_type=None, params={}, *args, **kwargs): 
         #set normal config
         super().__init__(problem_type = problem_type, params=params, *args, **kwargs)
@@ -24,12 +23,34 @@ class XGBoostModelTrainer(BaseModelTrainer):
 
 
     def fit(self, data, *args, **kwargs): 
+        """Fits XGBoost model on given data.
+
+        Args:
+            data (dict): Dictionary containing input features X_train, y_train, X_valid, and X_test.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            XGBoost model object.
+
+        """
         self.log("Starting model training with parameters: %s" %str(self.params))
         self.model.fit(data["X_train"], data["y_train"])
         self.log("Finished model training.")
         return self.model  
 
     def predict(self, data, *args, **kwargs):
+        """Performs prediction using the XGBoost model.
+
+        Args:
+            data (dict): Dictionary containing input features X_train, y_train, X_valid, and X_test.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            dict: Dictionary containing train, valid, and test predictions and probablities if applicable.
+
+        """
         predictions = {}
 
         predictions["train"] = self.model.predict(data["X_train"])
@@ -50,13 +71,30 @@ class XGBoostModelTrainer(BaseModelTrainer):
 
         return predictions 
 
-    #def save(self, experiment, *args, **kwargs): 
-    #    pass
 
-    def predict_df(self,df): 
+    def predict_df(self, df, *args, **kwargs): 
+        """Performs prediction using the XGBoost model on a pandas DataFrame.
+
+        Args:
+            df (pandas DataFrame): Dataframe containing input features.
+
+        Returns:
+            numpy array: Predicted output.
+
+        """
         return self.model.predict(df)
 
-    def predict_proba_df(self,df, to_list=False): 
+    def predict_proba_df(self,df, to_list=False, *args, **kwargs): 
+        """Performs prediction probabilities estimation of the model on a pandas DataFrame.
+
+        Args:
+            df (pandas DataFrame): Dataframe containing input features.
+            to_list (bool): Whether to convert the probabilities into a list.
+
+        Returns:
+            numpy array or list: Predicted probabilities.
+
+        """
         predictions = self.model.predict_proba(df)
         if to_list: 
             predictions = predictions.tolist()

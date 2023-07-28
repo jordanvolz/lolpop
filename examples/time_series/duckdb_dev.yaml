@@ -43,7 +43,7 @@ train:
     model_checker: BaseModelChecker
     model_explainer: BaseModelExplainer
     model_bias_checker: BaseModelBiasChecker
-    model_visualizer: ProphetVisualizer
+    model_visualizer: ProphetModelVisualizer
   data_splitter: 
     config: 
       test_size: 4

@@ -154,15 +154,28 @@ nav:
         - BaseModelExplainer: base_model_explainer.md
         - Alibi: alibi_model_explainer.md
       - Model Repositories: 
-        - BaseModelRespository: base_model_respository.md
+        - BaseModelRespository: base_model_repository.md
+        - MLFlow: mlflow_model_repository.md
       - Model Trainers: 
         - BaseModelTrainer: base_model_trainer.md
+        - Prophet: prophet_model_trainer.md
+        - XGBoost: xgboost_model_trainer.md
       - Model Visualizers: 
         - BaseModelVisualizer: base_model_visualizer.md
+        - Prophet: prophet_model_visualizer.md
+        - Yellowbrick: yellowbrick_model_visualizer.md
       - Notifiers: 
         - BaseNotifier: base_notifier.md
+        #- Gmail: gmail_notifier.md
+        #- Slack: slack_notifier.md
+        - SMMTP: smtp_notifier.md
+        - StdOut: stdout_notifier.md
       - Resource Version Control: 
         - BaseResourceVersionControl: base_resource_version_control.md
+        - DVC: dvc_resource_version_control.md
+      - Test Recorder: 
+        - BaseTestRecorder: base_test_recorder.md
+        - Local: local_test_recorder.md
     - Pipelines: 
       - Overview: pipelines.md
       - BasePipeline: basepipeline.md 
