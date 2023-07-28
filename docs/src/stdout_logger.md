@@ -13,10 +13,7 @@ The `StdOutLogger` class is a Python class that provides a standard output log f
 
 ### Default Configuration
 
-`FileLogger` contains the following default configuration: 
-
-- `log_level`: The logging level. Defaults to `DEBUG`
-- `use_line_numbers`: Whether or not to include line numbers in the logging output. Defaults to `False`
+`StdOutLogger` has no default configuration. 
 
 ## Methods 
 

@@ -166,9 +166,9 @@ nav:
         - Yellowbrick: yellowbrick_model_visualizer.md
       - Notifiers: 
         - BaseNotifier: base_notifier.md
-        #- Gmail: gmail_notifier.md
+        - Gmail: gmail_notifier.md
         #- Slack: slack_notifier.md
-        - SMMTP: smtp_notifier.md
+        - SMTP : smtp_notifier.md
         - StdOut: stdout_notifier.md
       - Resource Version Control: 
         - BaseResourceVersionControl: base_resource_version_control.md
