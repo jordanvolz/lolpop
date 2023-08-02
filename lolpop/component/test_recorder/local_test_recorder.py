@@ -9,6 +9,16 @@ class LocalTestRecorder(BaseTestRecorder):
     test_results = []
 
     def record_test(self, obj, method, test, test_method, result, msg=None, *args, **kwargs):
+        """Records the results of a test.
+
+        Args:
+            obj (object): the lolpop integration tested
+            method (object): The method in the integration tested
+            test (object): The test module used
+            test_method (object): The method in the test module used 
+            result (bool): The result of the test. True = passed. 
+            msg (str, optional): Additiona information returned from the test. Defaults to None.
+        """
         self.test_results.append(
             {"method" : "%s.%s" %(obj.name,method.__name__), 
              "test": "%s.%s" %(test, test_method.__name__), 
@@ -16,6 +26,8 @@ class LocalTestRecorder(BaseTestRecorder):
         )
 
     def print_report(self): 
+        """Prints a testing repot. 
+        """
         for key, group in itertools.groupby(self.test_results, key=lambda x: x['method']):
             print("Method: %s" %key)
             for g in group: 

@@ -4,6 +4,8 @@ This Python class is used to establish a connection between Python and Amazon Re
 
 This class allows for the management of a Redshift cluster and to perform data-related tasks such as querying, insertion, and deletion.
 
+## Configuration 
+
 ### Required Configuration
 
 - `REDSHIFT_HOST`: Hostname of the Redshift db.

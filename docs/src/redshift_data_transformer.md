@@ -1,41 +1,56 @@
-# RedshiftDataTransformer Class Documentation
+# RedshiftDataTransformer
 
-
-## Description
 
 The `RedshiftDataTransformer` class provides a set of methods for retrieving data from Amazon Redshift databases. It provides a `transform` method that retrieves data from a RedshiftDataConnector object based on the SQL query provided.
 
+## Configuration 
 
-## Constructor
+### Required Configuration
 
-### `__init__(self, *args, **kwargs)`
+- `REDSHIFT_HOST`: Hostname of the Redshift db.
+- `REDSHIFT_PORT`: Port used by the Redshift db.
+- `REDSHIFT_USER`: User to use to connect to the Redshift db.
+- `REDSHIFT_PASSWORD`: Password for `REDSHIFT_USER`.
+- `REDSHIFT_DBNAME`: Redshift database to use to load/save data. 
+- `REDSHIFT_SCHEMA`: Default Redshift schema to use. 
 
-The constructor initializes a RedshiftDataTransformer object. It loads the required configuration details from the given configuration file passed as an argument. It also initializes `self.redshift_config` and `self.pg_config` attributes.
+### Optional Configuration 
 
-- `args`: variable arguments passed to the constructor
-- `kwargs`: keyword arguments passed to the constructor
+There is no optional configuration. 
 
+### Default Configuration 
+There is no default configuration. 
 
 ## Methods
 
-### `transform(self, sql, *args, **kwargs)`
-
+### transform 
 The `transform` method retrieves data based on the SQL query provided.
 
+
+```python 
+transform(self, sql, *args, **kwargs)
+```
+
+**Arguments**: 
+
 - `sql`: SQL query to retrieve data from the database
-- `args`: positional arguments passed to the method
-- `kwargs`: keyword arguments passed to the method
-- Returns:
+
+**Returns**:
+
   * `data` (pandas dataframe): A pandas dataframe containing the data retrieved from the Redshift database
 
 
-## Examples
+## Usage
 
 ```python
-import RedshiftDataTransformer
+from lolpop.component import RedshiftDataTransformer
+
+config = {
+  #insert component config here 
+}
 
 # Initialize RedshiftDataTransformer object
-redshift_transformer = RedshiftDataTransformer()
+redshift_transformer = RedshiftDataTransformer(conf=config)
 
 # Set required SQL query
 query = 'SELECT * FROM my_table'
@@ -45,11 +60,4 @@ data = redshift_transformer.transform(query)
 
 # Print the retrieved data
 print(data)
-```
-
-Output:
-```
-  column1  column2  column3
-0   value1   value2   value3
-1   value4   value5   value6
 ```

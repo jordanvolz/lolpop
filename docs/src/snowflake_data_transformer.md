@@ -1,48 +1,56 @@
-# SnowflakeDataTransformer class documentation
+# SnowflakeDataTransformer 
 
 The `SnowflakeDataTransformer` class is a Python class used for transforming data from a Snowflake database. This class inherits from the `BaseDataTransformer` class and has one method for data transformation.
 
-## Class Methods
+## Configuration
 
-### __init__(self, *args, **kwargs)
+### Required Configuration
 
-This is the constructor method of the `SnowflakeDataTransformer` class. It takes a variable length argument list `*args` and arbitrary keyword arguments `**kwargs`.
+- `SNOWFLAKE_ACCOUNT` - The name of the Snowflake account.
+- `SNOWFLAKE_USER` - The username for the Snowflake account.
+- `SNOWFLAKE_PASSWORD` - The password for the Snowflake account.
+- `SNOWFLAKE_DATABASE` - The name of the Snowflake database.
+- `SNOWFLAKE_SCHEMA` - The name of the schema to use in Snowflake.
+- `SNOWFLAKE_WAREHOUSE` - The name of the Snowflake warehouse to use.
 
-#### Parameters
+### Optional Configuration 
 
-* args (tuple): Variable length argument list.
-* kwargs (dict): Arbitrary keyword arguments.
+There is no optional configuration. 
 
-#### Returns
+### Default Configuration 
+There is no default configuration. 
+## Methods
 
-None
 
-#### Example
-
-```python
-transformer = SnowflakeDataTransformer(config=config_data)
-```
-
-### transform(self, sql, *args, **kwargs)
-
+### transform
 This method takes a SQL statement as input and extracts data from the Snowflake database using that SQL. It returns the data extracted from the Snowflake database.
 
-#### Parameters
-
-* sql (str): The SQL statement used to extract data from the Snowflake database.
-* args (tuple): Variable length argument list.
-* kwargs (dict): Arbitrary keyword arguments.
-
-#### Returns
-
-* data: The data extracted from the Snowflake database.
-
-#### Example
-
-```python
-transformer = SnowflakeDataTransformer(config=config_data)
-data = transformer.transform("SELECT * FROM table_name")
-print(data)
+```python 
+transform(self, sql, *args, **kwargs)
 ```
 
-The above example creates an instance of the `SnowflakeDataTransformer` class, `transformer`, using the `config_data` dictionary as input. It then extracts data from the `table_name` table in the Snowflake database using the SQL statement `"SELECT * FROM table_name"` and stores the extracted data in the `data` variable. The `data` variable is then printed to the console.
+
+
+**Arguments**: 
+
+* `sql` (str): The SQL statement used to extract data from the Snowflake database.
+
+
+**Returns**: 
+
+* `data`: The data extracted from the Snowflake database.
+
+#### Usage
+
+```python
+from lolpop.component import SnowflakeDataTransformer 
+
+config = {
+    #insert component config here 
+}
+
+transformer = SnowflakeDataTransformer(conf=config)
+
+data = transformer.transform("SELECT * FROM table_name")
+print(data.head())
+```

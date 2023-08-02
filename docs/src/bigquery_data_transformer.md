@@ -1,38 +1,55 @@
-# Documentation for BigQueryDataTransformer class
+# BigQueryDataTransformer
 
 The `BigQueryDataTransformer` class is a Python class that inherits from the `BaseDataTransformer` class. It is used to transform data using a BigQueryDataConnector. The class allows developers to execute SQL queries in BigQuery and return the transformed data.
 
-## Class methods
+
+## Configuration 
+
+### Required Configuration
+
+- `GOOGLE_PROJECT`: The GCP project to connect to 
+
+- `GOOGLE_DATASET`: The dataset in the GCP project to read/write to. 
+
+### Optional Configuration 
+
+- `GOOGLE_KEYFILE`: Location of a BigQuery credentials file to use in order to connect to BigQuery. If no keyfile is provided, the component will attempt to use the standard environment variable `GOOGLE_APPLICATION_CREDENTIALS`. 
+
+### Default Configuration 
+There is no default configuration. 
+
+## Methods
 
 The `BigQueryDataTransformer` class has the following methods:
 
-### __init__(self, *args, **kwargs)
-
-The `__init__` method is the constructor method for the `BigQueryDataTransformer` class. It calls the constructor method of the `BaseDataTransformer` class and loads the necessary configuration files. 
-
-### transform(self, sql, *args, **kwargs)
+### transform 
 
 The `transform` method is used to transform data using the BigQueryDataConnector. 
 
-#### Parameters
+```python 
+def transform(self, sql, *args, **kwargs)
+```
+
+**Arguments**: 
 
 * `sql` (str): The SQL query to be executed in BigQuery.
 
-* `args` and `kwargs` are optional parameters that can be used to pass additional variables to the method.
 
-#### Returns
+**Returns**: 
 
 The method returns the transformed data returned by the `BigQueryDataConnector._load_data` method.
 
-## Example usage
+## Usage
 
-```
-import BigQueryDataTransformer
+``` python
+from lolpop.component import BigQueryDataTransformer
+
+config = {
+    #insert component config here
+}
 
 sql = "SELECT * FROM my_dataset.my_table WHERE date >= '2022-01-01'"
 
-transformer = BigQueryDataTransformer(config={"GOOGLE_PROJECT": "my_project", "GOOGLE_DATASET": "my_dataset"})
+transformer = BigQueryDataTransformer(config=conf)
 data = transformer.transform(sql)
 ```
-
-In the example above, we import the `BigQueryDataTransformer` class and then create a new instance of the class with a dictionary that specifies the Google project and dataset names. We then execute a SQL query on the specified dataset and save the returned transformed data to the `data` variable.
