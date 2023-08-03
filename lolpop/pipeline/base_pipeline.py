@@ -95,12 +95,12 @@ class BasePipeline:
                 raise Exception ("Missing the following from pipeline configuration: %s" %missing)
         return conf
 
-    def log(self, msg, level="INFO", **kwargs): 
+    def log(self, msg, level="INFO", *args, **kwargs): 
         if not self.suppress_logger: 
             self.logger.log(msg, level, process_name=self.name,
                             line_num=currentframe().f_back.f_lineno, **kwargs)
 
-    def notify(self, msg, level="ERROR"): 
+    def notify(self, msg, level="ERROR", *args, **kwargs): 
         if not self.suppress_notifier: 
             self.notifier.notify(msg, level)
             self.log("Notification Sent: %s" %msg, level)

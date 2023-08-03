@@ -8,7 +8,17 @@ class OfflineProcess(BaseProcess):
         "config": []
     }
 
-    def transform_data(self, source_data_name): 
+    def transform_data(self, source_data_name, *args, **kwargs): 
+        """
+        Transforms source data by calling data_transformer class method.
+
+        Args:
+        source_data_name (str): A string containing the name of source data.
+
+        Returns:
+        data_out: The transformed data.
+        """
+        
         ##get source data
         #data = self.data_connector.get_data(source_data_name)
 
@@ -17,7 +27,17 @@ class OfflineProcess(BaseProcess):
 
         return data_out
 
-    def track_data(self, data, id): 
+    def track_data(self, data, id, *args, **kwargs): 
+        """
+        Tracks the data by creating a dataset version and registering version control metadata.
+
+        Args:
+        data (object): Data to be tracked.
+        id (str): The id of the dataset version.
+
+        Returns:
+        dataset_version: The dataset version of the registered version control metadata.
+        """
         #create dataset version 
         dataset_version = self.metadata_tracker.create_resource(id, type="dataset_version")
         self.datasets_used.append(dataset_version)
@@ -30,7 +50,18 @@ class OfflineProcess(BaseProcess):
         
         return dataset_version
       
-    def profile_data(self, data, dataset_version): 
+    def profile_data(self, data, dataset_version, *args, **kwargs): 
+        """
+        Profiles the data by logging the data profile to metadata tracker.
+
+        Args:
+        data (object): Data to be profiled.
+        dataset_version (object): The dataset version of the registered version control metadata.
+
+        Returns:
+        None
+        """
+        
         #profile data
         data_profile, file_path = self.data_profiler.profile_data(data)
 
@@ -42,7 +73,17 @@ class OfflineProcess(BaseProcess):
             profiler_class=type(self.data_profiler).__name__
             )
 
-    def check_data(self, data, dataset_version): 
+    def check_data(self, data, dataset_version, *args, **kwargs): 
+        """
+        Checks the data by logging a data report to the metadata tracker and sending a notification if `checks_status` is `ERROR` or `WARN`.
+
+        Args:
+        data (object): Data to be checked.
+        dataset_version (object): The dataset version of the registered version control metadata.
+
+        Returns:
+        None
+        """
         #run data checks
         data_report, file_path, checks_status = self.data_checker.check_data(data)
 
@@ -59,7 +100,17 @@ class OfflineProcess(BaseProcess):
             url = self.metadata_tracker.url
             self.notify("Issues found with data checks. Visit %s for more information." %url, checks_status)
         
-    def compare_data(self, data, dataset_version):
+    def compare_data(self, data, dataset_version, *args, **kwargs):
+        """
+        Compares a dataset version with the previous version and logs a comparison report to metadata tracker.
+
+        Args:
+        data (object): Data to be compared.
+        dataset_version (object): The dataset version of the registered version control metadata.
+
+        Returns:
+        None
+        """
         #get previous dataset version & dataframe 
         prev_dataset_version = self.metadata_tracker.get_prev_resource_version(dataset_version)
 

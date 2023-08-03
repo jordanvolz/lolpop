@@ -86,7 +86,7 @@ nav:
   - Integrations: 
     - Overview: integrations.md
     - Components: 
-      - Overview: components.md
+      #- Overview: components.md
       - BaseComponent: base_component.md
       - Data Checkers: 
         - BaseDataChecker: base_data_checker.md
@@ -177,28 +177,31 @@ nav:
         - BaseTestRecorder: base_test_recorder.md
         - Local: local_test_recorder.md
     - Pipelines: 
-      - Overview: pipelines.md
-      - BasePipeline: basepipeline.md 
+      #- Overview: pipelines.md
+      - BasePipeline: base_pipeline.md 
       - Deploy: 
         - BaseDeploy: base_deploy.md
         - Offline Deploy: offline_deploy.md
-        - Metaflow Offline Deploy: metaflow_offlione_deploy.md 
       - Predict: 
         - BasePredict: base_predict.md
         - Offline Predict: offline_predict.md
-        - Metaflow Offline Predict: metaflow_offline_predict.md
       - Process: 
         - BaseProcess: base_process.md
         - Offline Process: offline_process.md
-        - Metaflow Offline Process: metaflow_offline_process.md
       - Train: 
         - BaseTrain: base_train.md
         - OfflineTrain: offline_train.md
-        - Metaflow Offline Train: metaflow_offline_train.md 
-      - Reconcile: 
-        - BaseReconcile: base_reconcile.md
-        - Offline Reconcile: offline_reconcile.md
-        - Metaflow Offline Reconcile: metaflow_offline_reconcile.md
+      #- Reconcile: 
+      #  - BaseReconcile: base_reconcile.md
+      #  - Offline Reconcile: offline_reconcile.md
+      - Metaflow: 
+        - Overview: metaflow_overview.md
+        - Metaflow Offline Deploy: metaflow_offline_deploy.md 
+        - Metaflow Offline Predict: metaflow_offline_predict.md
+        - Metaflow Offline Process: metaflow_offline_process.md
+        - Metaflow Offline Train: metaflow_offline_train.md
+      #  - Metaflow Offline Reconcile: metaflow_offline_reconcile.md 
+      #  - Metaflow Pipeline Wrapper: metaflow_pipeline_wrapper.md
     - Runners: 
       - Overview: runners.md
       - Classification: 
@@ -212,6 +215,10 @@ nav:
         - Metaflow Time-Series Runner.md
   - Examples: 
     - Overview: examples.md
+    - Quick Start Examples: 
+      - Classification: classification_quickstart.md
+      - Regression: regression_quickstart.md
+      - Time Series Forecasting: timeseries_forecasting_quickstart.md
     - Classification: classification.md
     - Regression: regression.md 
     - Time Series Forecasting: timeseries_forecasting.md

@@ -6,7 +6,26 @@ from metaflow import Flow
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class MetaflowPipelineWrapper(BaseWrapper):
 
+    __DEFAULT_CONF__ = {
+        "config": ["metaflow_script"]
+    }
+
     def run(self):
+        """
+        Starts the Metaflow pipeline script specified in the config file at "metaflow_script". 
+        Gets the status of pipeline from the "flow_id" specified in the config file.
+        Logs the pipeline status.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+        
+        Raises:
+            None.
+
+        """
         metaflow_path = self._get_config("metaflow_script") 
         result, _ = utils.execute_cmd(["python3", metaflow_path, "run"], self)
         #self.log(result)
