@@ -190,7 +190,7 @@ nav:
         - Offline Process: offline_process.md
       - Train: 
         - BaseTrain: base_train.md
-        - OfflineTrain: offline_train.md
+        - Offline Train: offline_train.md
       #- Reconcile: 
       #  - BaseReconcile: base_reconcile.md
       #  - Offline Reconcile: offline_reconcile.md
@@ -203,16 +203,14 @@ nav:
       #  - Metaflow Offline Reconcile: metaflow_offline_reconcile.md 
       #  - Metaflow Pipeline Wrapper: metaflow_pipeline_wrapper.md
     - Runners: 
-      - Overview: runners.md
-      - Classification: 
-        - Classification Runner: classification_runner.md
+      - BaseRunner: base_runner.md
+      - Classification: classification_runner.md
+      - Regression:  regression_runner.md
+      - Time-Series: timeseries_runner.md
+      - Metaflow: 
         - Metaflow Classification Runner: metaflow_classification_runner.md
-      - Regression: 
-        - Regression Runner: regression_runner.md
-        - Metaflow Regression RunnerL: metaflow_regression_runner.md 
-      - Time-Series: 
-        - Time-Series Runner: timeseries_runner.md
-        - Metaflow Time-Series Runner.md
+        - Metaflow Regression Runner: metaflow_regression_runner.md 
+        - Metaflow Time-Series: metaflow_regression_runner.md
   - Examples: 
     - Overview: examples.md
     - Quick Start Examples: 

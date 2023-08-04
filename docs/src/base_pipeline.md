@@ -1,6 +1,6 @@
 ## Overview
 
-Every pipeli9ne should inherit from `BasePipeline`, either directly or indirectly (via inheriting from a pipeline that is built upon `BasePipeline`). The `__init__` function sets up the pipeline properly. If your pipeline needs to override `__init__` to include its own setup code, it is highly recommended to invoke the parent class' `__init__` via `super().__init__(*args, **kwargs)` as the first line of your own `__init__`. 
+Every pipeline should inherit from `BasePipeline`, either directly or indirectly (via inheriting from a pipeline that is built upon `BasePipeline`). The `__init__` function sets up the pipeline properly. If your pipeline needs to override `__init__` to include its own setup code, it is highly recommended to invoke the parent class' `__init__` via `super().__init__(*args, **kwargs)` as the first line of your own `__init__`. 
 
 In production workflows, pipelines should be built automatically runners, and users should not need to explicitly create pipelines. For testing or development purposes, you may find a need to build a specific pipeline. The base pipeline anticipates the following arguments when constructing a pipeline: 
 

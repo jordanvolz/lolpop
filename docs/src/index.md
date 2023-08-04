@@ -149,7 +149,7 @@ lolpop *doesn't really do anything*, it mainly helps you write better ML workflo
 
 - [Examples](examples.md): Go here to find some examples of using lolpop. 
 
-- [Resources](resources.md) : Go here to find out how to get in touch with the lolpop team, contributing to lolpop, etc. 
+- [Resources](about.md) : Go here to find out how to get in touch with the lolpop team, contributing to lolpop, etc. 
 
 
 
