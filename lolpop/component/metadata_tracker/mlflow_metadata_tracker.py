@@ -297,7 +297,7 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
             type (str, optional): rsource type. Defaults to None.
 
         Returns:
-            _type_: _description_
+            parent_id: str, or None
         """
         id = resource[0]
         if type == "experiment": 
@@ -407,7 +407,7 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
             pipeline_config (dict, optional): pipeline config to pass. Defaults to {}.
 
         Returns:
-            _type_: _description_
+            model: the model trainer object
         """
         model_trainer = self.get_metadata(model_version, "winning_experiment_model_trainer")
         model_cl = utils.load_class(model_trainer)

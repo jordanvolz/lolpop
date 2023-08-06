@@ -45,9 +45,9 @@ class MLFlowMetricsTracker(BaseMetricsTracker):
         Logs a metric with the corresponding resource ID, metric ID, and metric value
 
         Args:
-            resource: A resource object
-            id: A unique identifier for the metric
-            value: The value of the metric
+            resource (object): A resource object
+            id (str): A unique identifier for the metric
+            value (Any): The value of the metric
 
         Returns:
             None

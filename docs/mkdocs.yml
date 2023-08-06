@@ -139,8 +139,10 @@ nav:
         - StdOut Logger: stdout_logger.md
       - Metadata Trackers: 
         - BaseMetadataTracker: base_metadata_tracker.md
+        - MLFlow: mlflow_metadata_tracker.md
       - Metrics Trackers: 
         - BaseMetricsTracker: base_metrics_tracker.md
+        - MLFlow: mlflow_metrics_tracker.md
       - Model Bias Checker: 
         - BaseModelBiasChecker: base_model_bias_checker.md
         - AI Fairness 360: aifairness360_model_bias_checker.md
