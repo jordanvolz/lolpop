@@ -8,7 +8,9 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
 
     __DEFAULT_CONF__ = {
         "config": {
-            "synthesizer" : "SingleTablePreset"
+            "synthesizer" : "SingleTablePreset", 
+            "sdv_quality_report_name": "sdv_quality_report.pkl", 
+            "sdv_diagnostic_report_name": "sdv_diagnostic_report.pkl",
         }
     }
 
@@ -36,9 +38,10 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
         Args:
             data (pd.Dataframe): Data to synthesize. 
             metadata (dict): Metadata of the data. Should be ouput from load_data. 
+            synthesizer_str (str): Name of the synthesizer class to use
 
         Returns:
-            _type_: _description_
+            synthesizer: The Synthesizer Model fit on the data
         """
         synthesizer = None 
 
@@ -68,7 +71,7 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
 
         return data
 
-    def evaluate_data(self, real_data, synthetic_data, metadata, synthesizer_str, *args, **kwargs):
+    def evaluate_data(self, real_data, synthetic_data, metadata, synthesizer_str, output_dir=None, *args, **kwargs):
         """Evaluates the synthetic data
 
         Args:
@@ -83,18 +86,35 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
         if synthesizer_str is None: 
             synthesizer_str = self._get_config("synthesizer")
 
+        if output_dir is None: 
+            output_dir = self._get_config("local_dir")
+
         evaluator_cl = self._get_evaluator_class(synthesizer_str)
         quality_report = evaluator_cl(real_data = real_data, synthetic_data=synthetic_data, metadata=metadata)
+        quality_report.save(filepath="%s/%s" % (output_dir,
+                            self._get_config("SDV_QUALITY_REPORT_NAME")))
         
         diagnostic_cl = self._get_diagnostic_class(synthesizer_str)
         diagnostic_report = diagnostic_cl(
             real_data=real_data, synthetic_data=synthetic_data, metadata=metadata)
+        diagnostic_report.save(
+            filepath="%s/%s" % (output_dir, self._get_config("SDV_DIAGNOSTIC_REPORT_NAME")))
         
         #can also print some charts via sdv.evaluation.single_table.get_column_lot/get_column_pair_plot
 
-        return quality_report, diagnostic_report
+        return [quality_report, diagnostic_report]
 
     def _get_synthesizer_class(self, synthesizer): 
+        """
+        Loads a synthesizer class based on the given string.
+
+        Args:
+            synthesizer (str): String representing the synthesizer.
+
+        Returns:
+            synthesizer class: The synthesizer class.
+
+        """
         cl = None
         if synthesizer == "SingleTablePreset":
             cl = utils.load_class(synthesizer, "lite", "sdv")
@@ -112,6 +132,16 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
         return cl 
 
     def _get_evaluator_class(self, synthesizer):
+        """
+        Loads an evaluator class based on the given synthesizer. 
+
+        Args:
+            synthesizer (str): String representing the synthesizer. 
+
+        Returns:
+            evaluator class: The evaluator class.
+
+        """
         cl = None
         if synthesizer in ["SingleTablePreset", "CTGANSynthesizer", "CopulaGANSynthesizer", "GaussianCopulaSynthesizer", "TVAESynthesizer"]:
             cl = utils.load_class("evaluate_quality",
@@ -130,6 +160,16 @@ class SDVDataSynthesizer(BaseDataSynthesizer):
         return cl 
 
     def _get_diagnostic_class(self, synthesizer):
+        """
+        Loads a diagnostic class based on the given synthesizer.
+
+        Args:
+            synthesizer (str): String representing the synthesizer.
+
+        Returns:
+            diagnostic class: The diagnostic class.
+
+        """
         cl = None
         if synthesizer in ["SingleTablePreset", "CTGANSynthesizer", "CopulaGANSynthesizer", "GaussianCopulaSynthesizer", "TVAESynthesizer"]:
             cl = utils.load_class("run_diagnostic", "single_table", "sdv.evaluation")

@@ -45,11 +45,29 @@ class GMailNotifier(BaseNotifier):
         service = build('gmail', 'v1', credentials=creds)
         self.service = service
 
-    def notify(self, msg, level="ERROR", **kwargs): 
+    def notify(self, msg, level="ERROR", *args, **kwargs):
+        """
+       Sends a notification email using the authenticated Gmail API service object.
+
+       Parameters:
+       ----------
+       msg : str
+          The message to include in the email.
+       level : str, optional
+          The level of the notification, default is "ERROR".
+       **kwargs : dict
+          A dictionary of keyword arguments, including:
+             None
+
+       Returns:
+       -------
+       message : object
+          The sent message object.
+       """
         message = MIMEText(msg)
         #message['from'] = self.email_config.get("sender_email")
         message['to'] = self._get_config("recipient_email")
-        message['subject'] = "Notification from MLOps Jumpstart Workflow"
+        message['subject'] = "Notification from lolpop Workflow"
         create_message = {'raw': base64.urlsafe_b64encode(message.as_bytes()).decode()}
 
         try:

@@ -1,14 +1,34 @@
 from lolpop.component.base_component import BaseComponent
 from lolpop.utils import common_utils as utils
 import numpy as np 
+from typing import Any 
 
 class BaseModelChecker(BaseComponent): 
 
-    def check_model(self, data, model, **kwargs): 
+    __REQUIRED_CONF__ = {"components": ["metrics_tracker"],
+                         "config": ["baseline_method", "baseline_value", "perf_metric"]}
+
+    def check_model(self, data, model, *args, **kwargs) -> tuple[Any, str, str]:
         pass 
 
+    def calculate_model_drift(self, data, model, deployed_model, *args, **kwargs) -> tuple[Any, str]:
+        pass
 
-    def get_baseline_comparison(self, data, model, model_version):
+    def get_baseline_comparison(self, data, model, model_version, *args, **kwargs) -> tuple[bool, float]:
+        """
+        Compare the model performance against a baseline.
+
+        Args:
+            data: The data for model evaluation.
+            model: The trained model object.
+            model_version: The version of the model.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            The metric difference between the model and the baseline.
+
+        """
 
         #TODO: we are already getting predictions elsewhere. 
         #We should just save them and pass in instead of calculating again
@@ -30,9 +50,25 @@ class BaseModelChecker(BaseComponent):
         if is_baseline_better: 
             self.notify("Model performed worse than baseline by %s%%" %metric_diff, level="WARN")
 
-        return metric_diff 
+        return is_baseline_better, metric_diff 
 
-    def compare_models(self, data, model, prev_model, model_version, prev_model_version=None): 
+    def compare_models(self, data, model, prev_model, model_version, prev_model_version=None, *args, **kwargs) -> bool: 
+        """
+        Compare the performance of the current model against the previous model.
+
+        Args:
+            data: The data for model evaluation.
+            model: The current trained model object.
+            prev_model: The previous trained model object.
+            model_version: The version of the current model.
+            prev_model_version: The version of the previous model (default None).
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            bool: True if the current model is better than the previous model, False otherwise.
+
+        """
         #this should only happen during the first training of a model
         if prev_model_version == model_version:
             is_new_model_better = True 
@@ -43,8 +79,21 @@ class BaseModelChecker(BaseComponent):
         return is_new_model_better
 
     #default implementation of baseline predictions
-    def _get_baseline_predictions(self, data, baseline_method, baseline_value): 
-        
+    def _get_baseline_predictions(self, data, baseline_method, baseline_value, *args, **kwargs) -> dict[str,Any]: 
+        """
+        Get baseline predictions based on the baseline method and value.
+
+        Args:
+            data: The data for baseline comparison.
+            baseline_method: The method for baseline comparison.
+            baseline_value: The value used in baseline comparison.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: A dictionary containing the baseline predictions for different data splits.
+
+        """
         has_test = "X_test" in data.keys()
         has_valid = "X_valid" in data.keys()
         baseline_predictions = {}
@@ -177,7 +226,18 @@ class BaseModelChecker(BaseComponent):
 
         return baseline_predictions 
 
-    def _get_metric_comparison(self, champion_metric, challenger_metric, perf_metric): 
+    def _get_metric_comparison(self, champion_metric, challenger_metric, perf_metric, *args, **kwargs) -> tuple[bool, float]: 
+        """Compares two metric values and determines which is better. 
+
+        Args:
+            champion_metric (dict): champion metric
+            challenger_metric (dict): challenger metric
+            perf_metric (str): The performance metric to use to determine which metric is best
+
+        Returns:
+            bool: is the challenger metric better? True or False 
+            float: difference between champion and challenger metric
+        """
         old_metric = champion_metric.get("test").get(perf_metric)
         new_metric = challenger_metric.get("test").get(perf_metric)
         lower_is_better = not utils.get_metric_direction(perf_metric)
@@ -191,7 +251,20 @@ class BaseModelChecker(BaseComponent):
 
         return is_challenger_better, metric_diff
 
-    def _compare_model_performance(self, model, deployed_model, data, perf_metric, current_model_version): 
+    def _compare_model_performance(self, model, deployed_model, data, perf_metric, current_model_version, *args, **kwargs) -> tuple[bool, float]: 
+        """Commpares model performance to deployed model against a static data set. 
+
+        Args:
+            model (object): current model
+            deployed_model (object): deployed model
+            data (dictionary): dicitonary of training/test data
+            perf_metric (_type_): performance metric to use to determine which model is better
+            current_model_version (_type_): current model verison to log metrics into
+
+        Returns:
+            bool: Is the new model better? True or False
+            float: difference between metric values
+        """
         current_predictions = model.predict(data)
         deployed_predictions = deployed_model.predict(data)
 
@@ -203,6 +276,3 @@ class BaseModelChecker(BaseComponent):
         self.metrics_tracker.log_metric(current_model_version, "deployed_model_perf_metric_diff", metric_diff)
 
         return is_new_model_better, metric_diff
-
-    def calculate_model_drift(self, data, model, deployed_model, **kwargs):
-        pass

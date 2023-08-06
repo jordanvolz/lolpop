@@ -3,12 +3,29 @@ from colorama import init as colorama_init, Fore, Style
 from datetime import datetime 
 class StdOutLogger(BaseLogger): 
     
+
+    __DEFAULT_CONF__ = {"config": {"log_level": "DEBUG", "use_line_numbers": False}}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         colorama_init()
         
     def log(self, msg, level, time=None, process_name=None, line_num=None, *args, **kwargs): 
-        if self._get_level_value(level) <= self._get_level_value(self._get_config("log_level", "DEBUG")):
+        """
+        Logs the message to standard output.
+
+        Args:
+            msg (str): The message to be logged.
+            level (str): The level of logging for the message.
+            time (str, optional): The timestamp for the message (default=None).
+            process_name (str, optional): The name of the process (default=None).
+            line_num (int, optional): The line number of the message (default=None).
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        Returns:
+            None.
+        """
+        if self._get_level_value(level) <= self._get_level_value(self._get_config("log_level")):
             msg_out = ""
             if not time:
                 formatted_level = self._get_level_format(level)
@@ -16,7 +33,7 @@ class StdOutLogger(BaseLogger):
             msg_out = msg_out + "%s [%s] " % (time, formatted_level)
             if process_name: 
                 msg_out = msg_out + "<%s%s%s" %(Fore.BLUE,process_name,Style.RESET_ALL)
-                if line_num and self._get_config("use_line_numbers",False): 
+                if line_num and self._get_config("use_line_numbers"): 
                     msg_out = msg_out + \
                         "|%s%s%s> ::: %s" % (Fore.GREEN, line_num, Style.RESET_ALL,  msg)
                 else: 
@@ -26,6 +43,18 @@ class StdOutLogger(BaseLogger):
             print(msg_out)
 
     def _get_level_value(self, level): 
+        """
+        Returns the numeric logging level value associated with the specified string level value.
+
+        Args:
+            level (str): The string logging level value.
+
+        Returns:
+            The corresponding numeric logging level value.
+
+        Raises:
+            None.
+        """
         if level == "NONE": 
             return 0 
         elif level == "FATAL":
@@ -45,6 +74,14 @@ class StdOutLogger(BaseLogger):
 
 
     def _get_level_format(self, level):
+        """
+        Returns the level formatted with color codes.
+
+        Args:
+            level (str): The level of logging.
+        Returns:
+            The level formatted with color codes according to its level of severity.
+        """
         level_num = self._get_level_value(level)
         if level_num < 3:
             return "%s%s%s" % (Fore.RED, level, Style.RESET_ALL)

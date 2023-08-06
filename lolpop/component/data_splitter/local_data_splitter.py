@@ -9,8 +9,8 @@ class LocalDataSplitter(BaseDataSplitter):
         "config" : ["MODEL_TARGET", "DROP_COLUMNS"]
     }
 
-    def split_data(self, data, **kwargs):
-        """_summary_
+    def split_data(self, data, *args, **kwargs):
+        """Split data
 
         Args:
             data (pd.DataFrame): DataFrame to split
@@ -52,10 +52,29 @@ class LocalDataSplitter(BaseDataSplitter):
 
         return data_out
 
-    def _split_timeseries_data(self, data, time_index, target, test_size=0, validation_size=0,): 
-        #make sure data is ordered 
+    def _split_timeseries_data(self, data, time_index, target, test_size=0, validation_size=0): 
+        """Split time series data. 
+
+        Args:
+            data (pd.DataFrame): Dataframe to split. 
+            time_index (_type_): Column representing the time index
+            target (_type_): Column representing the model target
+            test_size (int, optional): Size of the test dataset. Defaults to 0.
+            validation_size (int, optional): Size of the validation dataset. Defaults to 0.
+
+        Returns:
+            data_out (dict(pd.DataFrame)): A dictionary of dataframes. Depending on 
+                the provided configuration it can contain the following: 
+                    X_train = Features of the training dataset  
+                    y_train = Labels of the training dataset 
+                    X_valid = Features of the validation dataset
+                    y_valid = Labels of the validation dataset
+                    X_test = Features of the test/holdout dataset
+                    y_test = Labels of the validation dataset
+        """
         data_out = {}
 
+        #make sure data is ordered
         data = data.sort_values(time_index).reset_index(drop=True)
 
         test = None 

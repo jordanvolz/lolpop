@@ -7,6 +7,15 @@ import pandas as pd
 class LocalDataConnector(BaseDataConnector):
 
     def get_data(self, source_path, *args, **kwargs):
+        """
+        Reads a CSV, Parquet, or ORC file from a local storage and returns the data as a pandas DataFrame.
+
+        Args:
+            source_path (str): The path to the data source file.
+
+        Returns:
+            pandas.DataFrame: Returns data as a pandas DataFrame.
+        """
         file_type = source_path.split(".")[-1]
         if file_type == "csv":
             data = pd.read_csv(source_path, engine="pyarrow", **kwargs)
@@ -21,6 +30,16 @@ class LocalDataConnector(BaseDataConnector):
         return data 
 
     def save_data(self, data, target_path, *args, **kwargs):
+        """
+        Writes a CSV or Parquet file to a local storage and returns the saved data.
+
+        Args:
+            data (pandas.DataFrame): Data to be saved.
+            target_path (str): The path to the target file.
+
+        Returns:
+            pandas.DataFrame: Returns saved data.
+        """
         file_type = target_path.split(".")[-1]
         if file_type == "csv":
             data = data.to_csv(target_path, **kwargs)

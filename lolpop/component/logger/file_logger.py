@@ -3,6 +3,11 @@ import logging
 from datetime import datetime 
 class FileLogger(BaseLogger): 
 
+    __DEFAULT_CONF__ = {"config": {"log_level": "DEBUG",
+                                   "use_line_numbers": False, 
+                                   "log_format": "%(message)s", 
+                                   "log_filename": "lolpop.log"}}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         filename = self._get_config("log_filename","lolpop.log")
@@ -24,7 +29,24 @@ class FileLogger(BaseLogger):
         self.log("Initialized logger for lolpop workflow.", level="INFO")
 
     def log(self, msg, level="INFO", time = None, process_name=None, line_num=None, *args, **kwargs): 
-        if self._get_level_value(level) >= self._get_level_value(self._get_config("log_level", "DEBUG")):
+        """
+        Logs a message using the specified logging level and additional information.
+
+        Args:
+            msg (str): Message to be logged.
+            level (str): Logging level to use.
+            time (datetime, optional): Time to use. Defaults to None.
+            process_name (str, optional): Name of the process. Defaults to None.
+            line_num(int, optional): Line number associated with message.
+                                     Defaults to None.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
+        if self._get_level_value(level) >= self._get_level_value(self._get_config("log_level")):
             msg_out = ""
             if not time:
                 time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S.%f")
@@ -32,7 +54,7 @@ class FileLogger(BaseLogger):
             if process_name:
                 msg_out = msg_out + \
                     "<%s" % (process_name)
-                if line_num and self._get_config("use_line_numbers", False):
+                if line_num and self._get_config("use_line_numbers"):
                     msg_out = msg_out + \
                         "|%s> ::: %s" % (
                             line_num, msg)
@@ -43,6 +65,18 @@ class FileLogger(BaseLogger):
             self.logger.log(self._get_level_value(level), msg_out, **kwargs)
 
     def _get_level_value(self, level):
+        """
+        Returns the numeric logging level value associated with the specified string level value.
+
+        Args:
+            level (str): The string logging level value.
+
+        Returns:
+            The corresponding numeric logging level value.
+
+        Raises:
+            None.
+        """
         if level == "FATAL" or level == "CRITICAL":
             return 50
         elif level == "ERROR":

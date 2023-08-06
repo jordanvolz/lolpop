@@ -16,6 +16,20 @@ class MetaflowOfflineProcess(BaseProcess):
     }
 
     def run(self, source_data_name, source_data, **kwargs):
+        """
+        Execute the offline Metaflow flow.
+
+        Args:
+            source_data_name (str): The name of the data source.
+            source_data (object): The object containing the source data.
+            **kwargs: Any additional arguments to pass to the flow.
+
+        Returns:
+            None.
+
+        Raises:
+            Any exceptions raised during Metaflow execution.
+        """
         #get flow class object from this file
         mod_cl = meta_utils.get_flow_class(__file__, METAFLOW_CLASS)
 
@@ -26,6 +40,18 @@ class MetaflowOfflineProcess(BaseProcess):
         self.log("Metaflow pipeline %s finished." % METAFLOW_CLASS)
 
     def get_artifacts(self, artifact_keys):
+        """
+        Retrieve artifacts from the latest run of the pipeline.
+
+        Args:
+            artifact_keys (list): A list of artifact keys to retrieve.
+
+        Returns:
+            artifacts (dict): A dictionary containing the requested artifacts.
+
+        Raises:
+            Any exception raised during the retrieval of artifacts from the run.
+        """
         #get latest run of this pipeline
         run = meta_utils.get_latest_run(METAFLOW_CLASS)
 

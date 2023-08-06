@@ -6,12 +6,26 @@ import duckdb
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class DuckDBDataConnector(BaseDataConnector):
+    __REQUIRED_CONF__ = {"config": ["duckdb_path"]}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.path = self._get_config("duckdb_path")
 
     def get_data(self, table, sql=None, *args, **kwargs):
+        """
+        Retrieves data from the DuckDBDataConnector table or custom SQL provided and returns in a pandas dataframe.
+
+        Args:
+            table (str): Name of the table to retrieve data from.
+            sql (str): The optional SQL query to execute. Default value is None.
+
+        Returns:
+            data: Pandas dataframe object containing the data.
+
+        Raises:
+            Exception: If both table and sql statement are not provided.
+        """
         if sql is None:
             if table is not None:
                 sql = "SELECT * FROM %s" % table
@@ -24,6 +38,16 @@ class DuckDBDataConnector(BaseDataConnector):
         return data
 
     def save_data(self, data, table, *args, **kwargs):
+        """
+        Saves data to the specified table in the specified DuckDBDataConnector instance.
+        If the table does not exist, it gets created with the data structure from the dataframe provided.
+        If a column is missing, it adds the column as nulls. This preserves the structure of the destination table.
+
+        Args:
+            data (pandas.DataFrame): Pandas dataframe containing the data to be saved.
+            table (str): Name of the table to save the data to.
+
+        """
         #check if table already exists
         tables = self.get_data(None, sql="SHOW TABLES")
 
@@ -41,7 +65,7 @@ class DuckDBDataConnector(BaseDataConnector):
                sql = "ALTER TABLE %s " % (table)
                for col_name in new_features:
                     col_type = data.dtypes[col_name]
-                    duckdb_type = self._map_pandas_col_type_to_duckdb_type(col_type)
+                    duckdb_type = self.__map_pandas_col_type_to_duckdb_type(col_type)
                     sql = sql + ("ADD COLUMN %s %s" %
                                  (col_name.upper(), duckdb_type))
                self.get_data(None, sql=sql)
@@ -56,14 +80,37 @@ class DuckDBDataConnector(BaseDataConnector):
 
      #load data into df
     @classmethod
-    def _load_data(self, sql, path):
+    def _load_data(self, sql, path, *args, **kwargs):
+        """
+        Loads data into a pandas dataframe.
+        
+        Args:
+            sql (str): SQL query to execute to fetch data.
+            path (str): Path to database.
+        
+        Returns:
+            result: Pandas dataframe object containing the data from the query.
+        """
         result = pd.DataFrame()
         with duckdb.connect(database = path) as con: 
             res = con.sql(sql)
             result = res.df() 
         return result
 
-    def _save_data(self, data, table_name, path, table_exists):
+    def _save_data(self, data, table_name, path, table_exists, *args, **kwargs):
+        """
+        Saves data into the DuckDBDataConnector table.
+        
+        Args:
+            data (pd.DataFrame): Pandas dataframe object containing data.
+            table_name (str): Name of the table.
+            path (str): Path to database.
+            table_exists (bool): Check if the table exists or not.
+        
+        Returns: 
+            None
+
+        """
         if data is not None and len(data)>0: 
             with duckdb.connect(database = path) as con: 
                 if not table_exists: 
@@ -72,14 +119,16 @@ class DuckDBDataConnector(BaseDataConnector):
                     con.sql("INSERT INTO %s as SELECT * from data" % table_name)
 
 
-    def _map_pandas_col_type_to_duckdb_type(self, col_type):
-        """_summary_
-
+    def __map_pandas_col_type_to_duckdb_type(self, col_type):
+        """
+        This is a private method. It maps pandas data types to duckdb data types.
+        
         Args:
-            col_type (_type_): _description_
+            col_type (pd.dtype): Pandas data type.
 
         Returns:
-            _type_: _description_
+            column_type: DuckDB data type corresponding to pandas data type.
+
         """
         if col_type.kind == 'M':
             # datetime and timestamp columns in pandas are converted to datetime64[ns] dtype, which corresponds to 'TIMESTAMP'

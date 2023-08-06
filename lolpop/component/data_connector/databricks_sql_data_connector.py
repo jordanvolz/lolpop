@@ -9,6 +9,11 @@ from tqdm import tqdm
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class DatabricksSQLDataConnector(BaseDataConnector):
+    __REQUIRED_CONF__ = {"config": ["DATABRICKS_SERVER_HOSTNAME",
+                                    "DATABRICKS_HTTP_PATH",
+                                    "DATABRICKS_TOKEN",
+                                    "DATABRICKS_CATALOG",
+                                    "DATABRICKS_SCHEMA"]}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,6 +28,18 @@ class DatabricksSQLDataConnector(BaseDataConnector):
             , self.config)
 
     def get_data(self, table, sql=None, *args, **kwargs):
+        """
+        Returns the data from the given Databricks SQL table or from a provided SQL query in DataFrame format.
+        ----------
+        Parameters:
+            table:
+                str: Name of the SQL table to retrieve data from.
+            sql:
+                str: SQL Query to retrieve data from Databricks SQL table.
+
+        Returns:
+            pd.DataFrame: DataFrame containing the data from either the Databricks SQL table or from the SQL query passed.
+        """
         if sql is None:
             if table is not None:
                 sql = "SELECT * FROM %s" % table
@@ -35,6 +52,18 @@ class DatabricksSQLDataConnector(BaseDataConnector):
         return data
 
     def save_data(self, data, table, *args, **kwargs):
+        """
+        Saves the given data to a specific table in Databricks SQL or updates the existing table's structure as necessary.
+        ----------
+        Parameters:
+            data:
+                pd.DataFrame: DataFrame containing the data to be saved to a Databricks SQL table.
+            table:
+                str: Name of the SQL table to save data to.
+
+        Returns:
+            None
+        """
         #check if table already exists
         tables = self.get_data(None, sql="SHOW TABLES")
 
@@ -52,7 +81,7 @@ class DatabricksSQLDataConnector(BaseDataConnector):
                sql = "ALTER TABLE %s " % (table)
                for col_name in new_features:
                    col_type = data.dtypes[col_name]
-                   dbricks_type = self._map_pandas_col_type_to_databrickssql_type(
+                   dbricks_type = self.__map_pandas_col_type_to_databrickssql_type(
                        col_type)
                    sql = sql + ("ADD COLUMN %s %s" %
                                 (col_name.upper(), dbricks_type))
@@ -68,7 +97,19 @@ class DatabricksSQLDataConnector(BaseDataConnector):
 
      #load data into df
     @classmethod
-    def _load_data(self, sql, config):
+    def _load_data(self, sql, config, *args, **kwargs):
+        """
+        Loads data from SQL query in Databricks DataFrame
+        ----------
+        Parameters:
+            sql:
+                str: SQL Query to retrieve data from Databricks SQL table.
+            config:
+                Dict: Configuration key-value pairs.
+
+        Returns:
+            pd.DataFrame: DataFrame containing the data from the SQL query passed.
+        """
         df = pd.DataFrame()
         with databricks_sql.connect(server_hostname=config.get("DATABRICKS_SERVER_HOSTNAME"),
                          http_path=config.get("DATABRICKS_HTTP_PATH"),
@@ -82,7 +123,21 @@ class DatabricksSQLDataConnector(BaseDataConnector):
 
         return df
 
-    def _save_data(self, data, table, config):
+    def _save_data(self, data, table, config, *args, **kwargs):
+        """
+        Saves the data to Databricks SQL in chunks
+        ----------
+        Parameters:
+            data:
+                pd.DataFrame: DataFrame containing the data to be saved to a Databricks SQL table.
+            table:
+                str: Name of the SQL table to save data to.
+            config:
+                Dict: Configuration key-value pairs.
+
+        Returns:
+            None
+        """
         chunksize = 16384 
         catalog = config.get("DATABRICKS_CATALOG", "")
         schema = config.get("DATABRICKS_SCHEMA", "")
@@ -99,14 +154,16 @@ class DatabricksSQLDataConnector(BaseDataConnector):
         connection.close()
         engine.dispose()
 
-    def _map_pandas_col_type_to_databrickssql_type(self, col_type):
-        """_summary_
-
-        Args:
-            col_type (_type_): _description_
+    def __map_pandas_col_type_to_databrickssql_type(self, col_type):
+        """
+        Maps the given pandas column data type to a Databricks SQL data type.
+        ----------
+        Parameters:
+            col_type:
+                pd.dtype: pandas column data type.
 
         Returns:
-            _type_: _description_
+            str: Databricks SQL data type corresponding to the given pandas column data type.
         """
         if col_type.kind == 'M':
             # datetime and timestamp columns in pandas are converted to datetime64[ns] dtype, which corresponds to 'TIMESTAMP'

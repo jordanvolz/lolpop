@@ -1,5 +1,4 @@
 from lolpop.component import EvidentlyAIDataChecker
-from lolpop.utils import common_utils as utils 
 from tests.fixtures import * 
 
 class TestEvidentlyAIDataChecker:

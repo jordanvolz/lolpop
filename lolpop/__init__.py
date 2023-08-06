@@ -12,4 +12,13 @@ def __get_template_dir__():
 
     return TEMPLATE_DIR
 
+def __suppress_warnings__(): 
+    import os 
+
+    #deepchecks
+    os.environ["DISABLE_LATEST_VERSION_CHECK"]="True"
+    #alibi
+    os.environ["TF_CPP_MIN_LOG_LEVEL"]="1"
+
 __template_path__ = __get_template_dir__()
+__suppress_warnings__()

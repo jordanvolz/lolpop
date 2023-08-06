@@ -2,6 +2,6 @@ from lolpop.component.base_component import BaseComponent
 
 class BaseNotifier(BaseComponent): 
 
-    def notify(self, msg, level, **kwargs): 
+    def notify(self, msg, level, *args, **kwargs): 
         pass 
 

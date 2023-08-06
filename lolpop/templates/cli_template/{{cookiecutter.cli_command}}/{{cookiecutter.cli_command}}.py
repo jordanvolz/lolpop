@@ -14,7 +14,7 @@ def default(ctx: typer.Context):
     else:
         typer.echo(ctx.command.get_help(ctx))
 
-@app.command("my_first_command", help="This is the first command in the command group.")
+@app.command("my-first-command", help="This is the first command in the command group.")
 def my_first_command(
     my_first_argument: str = typer.Argument(..., help="A description of this argument"),
     my_first_option: str = typer.Option(None, help="A description of this option."),
@@ -24,7 +24,7 @@ def my_first_command(
     pass 
 
 
-@app.command("my_second_command", help="This is the first second in the command group.")
+@app.command("my-second-command", help="This is the first second in the command group.")
 def my_second_command(
     my_first_argument: str = typer.Argument(...,
                                             help="A description of this argument"),

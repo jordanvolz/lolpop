@@ -36,7 +36,15 @@ class MLFlowModelRepository(BaseModelRepository):
             self.log("Using MLFlow in experiment %s with run id: %s" %(experiment_name, self.run.info.run_id), level="INFO")
 
     def register_model(self, model_version, model, *args, **kwargs):
-        # Log the sklearn model and register as version 1
+        """ Registers model  in MLFlow and returns the name of the registered model.
+        
+        Args:
+            model_version (object): the version of the model to register.
+            model (object): the  model object to register.
+            
+        Returns:
+            reg_name (str): the name of the registered model.
+        """
         model_module = getattr(mlflow, model.mlflow_module.lower()) 
 
         model_id = self.metadata_tracker.get_resource_id(model_version)
@@ -57,7 +65,20 @@ class MLFlowModelRepository(BaseModelRepository):
         return reg_name
 
     def promote_model(self, registered_model_name, from_stage="None", to_stage="Production", demote_previous_model_versions=True, *args, **kwargs):
+        """ Promotes the specified registered model to a given stage and logs the promotion in the metadata tracker.
+        
+        Args:
+            registered_model_name (str): the name of the registered model to promote.
+            from_stage (str): the starting stage of the registered model. Default is "None".
+            to_stage (str): the target stage to promote the registered model to. Default is "Production".
+            demote_previous_model_versions (bool): a boolean variable to enable or disable demotion of previous instances of the registered model. Default is True.
+            *args: additional positional arguments.
+            **kwargs: additional keyword arguments.
+            
+        Returns:
+            model_version (tuple): a tuple containing the ID of the registered model and an MLFlow run object for the promoted model version.
 
+        """
         registered_model_version = self.client.get_latest_versions(registered_model_name, stages=[from_stage])[0]
 
         self.client.transition_model_version_stage(

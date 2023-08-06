@@ -1,5 +1,4 @@
 from lolpop.component.data_transformer.base_data_transformer import BaseDataTransformer
-from lolpop.component.data_connector.local_data_connector import LocalDataConnector
 from lolpop.utils import common_utils as utils
 
 from pathlib import Path 
@@ -9,16 +8,20 @@ from omegaconf import dictconfig
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class LocalDataTransformer(BaseDataTransformer):
 
-    #use load_config to allow setting "DBT_TARGET", "DBT_PROFILE", "DBT_PROJECT_DIR", "DBT_PROFILES_DIR",  via env variables
     __REQUIRED_CONF__ = {
         "config": ["transformer_path"]
+    }
+
+    __DEFAULT_CONF__ = {
+        "config": {"transformer_func": "transform", 
+                   "data_connector": "LocalDataConnector"}
     }
 
     def __init__(self, components={}, *args, **kwargs):
         super().__init__(components=components, *args, **kwargs)
 
         transformer_path = Path(self._get_config("transformer_path")) 
-        transformer_func = self._get_config("transformer_func", "transform")
+        transformer_func = self._get_config("transformer_func")
         
         if transformer_path.exists(): 
             transformer = utils.load_plugin(transformer_path, self)
@@ -28,7 +31,7 @@ class LocalDataTransformer(BaseDataTransformer):
             self.log("Transformer path not found %s" %transformer_path)
 
         #load data connector
-        data_connector_cl_name=self._get_config("data_connector", "LocalDataConnector")
+        data_connector_cl_name=self._get_config("data_connector")
         data_connector_config = self._get_config(
             "data_connector_config", {})
         data_connector_cl = utils.load_class(data_connector_cl_name)

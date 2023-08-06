@@ -14,7 +14,18 @@ class TimeSeriesRunner(BaseRunner):
     def __init__(self, problem_type="timeseries", *args, **kwargs):
         super().__init__(problem_type=problem_type, *args, **kwargs)
 
-    def process_data(self, source="train"):
+    def process_data(self, source="train", *args, **kwargs):
+        """
+        Method to run data transformation and encoding, track and version data, profile data, run data checks, run data comparison/drift and return transformed data and dataset version.
+
+        Args:
+            source (str): The source of the data. It can be either "train" (default) or "eval".
+
+        Returns:
+            data (object): The transformed dataset
+            dataset_version (object): The dataset version.
+
+        """
         #run data transformations and encodings
         source_data_name = "%s_data" % source
         source_data = self._get_config(source_data_name)
@@ -38,8 +49,20 @@ class TimeSeriesRunner(BaseRunner):
         #return data
         return data, dataset_version
 
-    def train_model(self, data, dataset_version=None):
+    def train_model(self, data, dataset_version=None, *args, **kwargs):
+        """
+        Method to split data, train a model, analyze the model, build a model lineage, and compare the new model version to the previous version.
 
+        Args:
+            data (object): The dataset to train the model on.
+            dataset_version (object): The dataset version.
+
+        Returns:
+            model_version (object): The model version.
+            model (object): The trained model object.
+            True
+
+        """
         if data is None:
             if dataset_version is not None:
                 data = self.resource_version_control.get_data(
@@ -93,7 +116,18 @@ class TimeSeriesRunner(BaseRunner):
 
         return model_version, model, True
 
-    def deploy_model(self, model_version, model):
+    def deploy_model(self, model_version, model, *args, **kwargs):
+        """
+        Method to promote and deploy the latest trained model.
+
+        Args:
+            model_version (str): Model version to be deployed.
+            model (object): The trained model object.
+
+        Returns:
+            deployment (ibhect): The deployed model.
+
+        """
         #promote model
         promotion = self.deploy.promote_model(model_version, model)
 
@@ -106,7 +140,21 @@ class TimeSeriesRunner(BaseRunner):
 
         return deployment
 
-    def predict_data(self, model_version, model, data, dataset_version):
+    def predict_data(self, model_version, model, data, dataset_version, *args, **kwargs):
+        """
+        Method to predict data, version data, analyze the prediction drift, and save the predictions.
+
+        Args:
+            model_version (object): The version of the model to be used for prediction. 
+            model (object): The trained model object.
+            data (object): The dataset for which the predictions need to be obtained.
+            dataset_version (object): The dataset version.
+
+        Returns:
+            data (object): The dataset containing the predictions.
+            prediction_job (Object): The prediction job ID.
+
+        """
         if model is None:
             if model_version is not None:
                 experiment = self.metadata_tracker.get_winning_experiment(
@@ -139,7 +187,17 @@ class TimeSeriesRunner(BaseRunner):
 
         return data, prediction_job
 
-    def evaluate_ground_truth(self, prediction_job=None):
+    def evaluate_ground_truth(self, prediction_job=None, *args, **kwargs):
+        """
+        Method to evaluate the ground truth of the predictions.
+
+        Args:
+            prediction_job (str): The prediction job ID.
+
+        Returns:
+            None
+
+        """
         #if prediction job isn't known, get the most recent job
         if prediction_job == None:
             model = self.metadata_tracker.get_resource(
@@ -197,10 +255,16 @@ class TimeSeriesRunner(BaseRunner):
                         self.metadata_tracker.get_resource_id(prediction_job), level="WARNING")
 
     def stop(self):
+        """
+        Method to stop the metadata tracker.
+        """
         self.metadata_tracker.stop()
         pass
 
-    def build_all(self):
+    def build_all(self, *args, **kwargs):
+        """
+        Method to process the data, train the model, deploy the trained model, predict the evaluation data, and evaluate the ground truth of the predictions.
+        """
         data, dataset_version = self.process_data()
         model_version, model, is_new_model_better = self.train_model(
             data, dataset_version)

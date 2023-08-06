@@ -9,6 +9,11 @@ class SweetvizDataProfiler(BaseDataProfiler):
         "config" : ["local_dir", "model_target"]
     }
 
+    __DEFAULT_CONF__ = {
+        "config": {"SWEETVIZ_PROFILE_REPORT_NAME": "SWEETVIZ_DATA_PROFILE_REPORT.HTML",
+                   "SWEETVIZ_COMPARISON_REPORT_NAME": "SWEETVIZ_DATA_COMPARISON_REPORT.HTML"}
+    }
+
     def profile_data(self, data, *args, **kwargs): 
         """Profiles data using Sweetviz
 
@@ -22,7 +27,7 @@ class SweetvizDataProfiler(BaseDataProfiler):
         model_target = self._get_config("model_target")
         feat_cfg = sv.FeatureConfig(force_num=[model_target]) #sv only supports numeric and boolean targets, so we may as well just force all categorical to be numeric
         data_report = sv.analyze(data, target_feat = model_target, feat_cfg = feat_cfg)
-        file_path =  "%s/SWEETVIZ_DATA_PROFILE_REPORT.html" %self._get_config("local_dir")
+        file_path =  "%s/%s" %(self._get_config("local_dir"), self._get_config("SWEETVIZ_PROFILE_REPORT_NAME"))
         data_report.show_html(filepath = file_path, open_browser=False) 
         
         return data_report, file_path
@@ -42,7 +47,7 @@ class SweetvizDataProfiler(BaseDataProfiler):
         model_target = self._get_config("model_target")
         feat_cfg = sv.FeatureConfig(force_num=[model_target]) 
         data_report = sv.compare([data, "Current Data"], [prev_data, "Previous Data"], target_feat = model_target, feat_cfg = feat_cfg)
-        file_path =  "%s/SWEETVIZ_DATA_COMPARISON_REPORT.html" %self._get_config("local_dir")
+        file_path =  "%s/%s" %(self._get_config("local_dir"),self._get_config("SWEETVIZ_COMPARISON_REPORT_NAME"))
         data_report.show_html(filepath = file_path, open_browser=False) 
 
         return data_report, file_path

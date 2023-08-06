@@ -14,7 +14,16 @@ class MetaflowClassificationRunner(BaseRunner):
     def __init__(self, problem_type="classification", *args, **kwargs):
         super().__init__(problem_type=problem_type, *args, **kwargs)
 
-    def process_data(self, source = "train"):
+    def process_data(self, source = "train", *args, **kwargs):
+        """Runs the metaflow process pipeline, retrieves artifacts from the pipeline and returns the processed data. 
+
+            Args:
+            - `source` (str, optional): The source of data to process. Defaults to "train".
+
+            Returns:
+            - `data` (dataframe): Dataframe with the processed data.
+            - `dataset_version` (objet):  The dataset version
+        """
         #run the metaflow process pipeline
         source_data_name = "%s_data" % source
         source_data = self._get_config(source_data_name)
@@ -26,8 +35,18 @@ class MetaflowClassificationRunner(BaseRunner):
         #return data
         return data, dataset_version
 
-    def train_model(self, data, dataset_version=None):
+    def train_model(self, data, dataset_version=None, *args, **kwargs):
+        """Runs the metaflow train pipeline, retrieves artifacts from the pipeline and returns the trained model artifacts. 
 
+            Args:
+            - `data` (dataframe): Dataframe with input features and target variable.
+            - `dataset_version` (object, optional): The  dataset version. Defaults to None.
+
+            Returns:
+            - `model_version` (dict): Model version information.
+            - `model` (sklearn.model): Trained model object.
+            - `is_new_model_better` (bool): Boolean indicating whether the new model is better than the previous model.
+        """
         if data is None:
             if dataset_version is not None:
                 data = self.resource_version_control.get_data(
@@ -46,7 +65,16 @@ class MetaflowClassificationRunner(BaseRunner):
 
         return model_version, model, is_new_model_better
 
-    def deploy_model(self, model_version, model):
+    def deploy_model(self, model_version, model, *args, **kwargs):
+        """Runs the metaflow deploy pipeline, retrieves artifacts from the pipeline and returns the deployment artifacts. 
+
+            Args:
+            - `model_version` (object): Model version object.
+            - `model` (object): Trained model object.
+
+            Returns:
+            - `deployment` (object): The deployment object.
+        """
         #run the metaflow deploy pipeline
         self.deploy.run(model, model_version)
 
@@ -56,7 +84,19 @@ class MetaflowClassificationRunner(BaseRunner):
 
         return deployment
 
-    def predict_data(self, model_version, model, data, dataset_version):
+    def predict_data(self, model_version, model, data, dataset_version, *args, **kwargs):
+        """Runs the metaflow predict pipeline, retrieves artifacts from the pipeline and returns the predicted data. 
+
+            Args:
+            - `model_version` (object): Model version object.
+            - `model` (object, optional): Trained model object. Defaults to None.
+            - `data` (dataframe): Dataframe with input features.
+            - `dataset_version` (object): The dataset version objecvt
+
+            Returns:
+            - `data` (dataframe): Dataframe with predicted data.
+            - `prediction_job` (object): The prediction job
+        """
         if model is None: 
             if model_version is not None: 
                 experiment = self.metadata_tracker.get_winning_experiment(model_version)
@@ -72,7 +112,16 @@ class MetaflowClassificationRunner(BaseRunner):
         return data, prediction_job
 
     #todo: move this into a new pipeline type: "evaluate"?
-    def evaluate_ground_truth(self, prediction_job=None): 
+    def evaluate_ground_truth(self, prediction_job=None, *args, **kwargs):
+        """ 
+        Evaluates the ground truth and prediction data, calculate metrics and logs them.
+
+        Args:
+        - `prediction_job` (object, optional): The prediction job. Defaults to None.
+
+        Returns:
+        - None
+        """
         #if prediction job isn't known, get the most recent job
         if prediction_job == None: 
             model = self.metadata_tracker.get_resource(self._get_config("model_name"), type="model")
@@ -113,10 +162,15 @@ class MetaflowClassificationRunner(BaseRunner):
             self.notify("Current training data has no overlap with the prediction job %s" %self.metadata_tracker.get_resource_id(prediction_job), level = "WARNING")
 
     def stop(self):
+        """Stops the metadata tracker and has no return value.
+        """
         self.metadata_tracker.stop()
         pass
 
-    def build_all(self):
+    def build_all(self, *args, **kwargs):
+        """Runs the process,train,deploy & evaluation pipelines, retrieves artifacts from the pipelines and logs the metrics.
+
+        """
         data, dataset_version = self.process_data()
         model_version, model, is_new_model_better = self.train_model(data, dataset_version)
         if is_new_model_better: 
@@ -124,4 +178,5 @@ class MetaflowClassificationRunner(BaseRunner):
         eval_data, eval_dataset_version = self.process_data(source="eval")
         data, prediction_job = self.predict_data(model_version,model, eval_data, eval_dataset_version)
         self.evaluate_ground_truth(prediction_job)
+        self.stop()
     

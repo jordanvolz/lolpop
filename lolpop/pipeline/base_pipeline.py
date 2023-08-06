@@ -1,6 +1,7 @@
 from lolpop.utils import common_utils as utils
 from omegaconf import OmegaConf
 from inspect import currentframe
+import os
 class BasePipeline: 
 
     __REQUIRED_CONF__ = {
@@ -94,12 +95,12 @@ class BasePipeline:
                 raise Exception ("Missing the following from pipeline configuration: %s" %missing)
         return conf
 
-    def log(self, msg, level="INFO", **kwargs): 
+    def log(self, msg, level="INFO", *args, **kwargs): 
         if not self.suppress_logger: 
             self.logger.log(msg, level, process_name=self.name,
                             line_num=currentframe().f_back.f_lineno, **kwargs)
 
-    def notify(self, msg, level="ERROR"): 
+    def notify(self, msg, level="ERROR", *args, **kwargs): 
         if not self.suppress_notifier: 
             self.notifier.notify(msg, level)
             self.log("Notification Sent: %s" %msg, level)
@@ -110,6 +111,8 @@ class BasePipeline:
         value = utils.lower_conf(self.config).get(key, None)
         if value is None: 
             value = utils.lower_conf(self.runner_conf).get(key, default_value)
+            if value is None: 
+                value = os.getenv(key)
         return value 
 
     def _set_config(self, key, value): 

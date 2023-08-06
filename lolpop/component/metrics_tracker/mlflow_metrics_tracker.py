@@ -40,21 +40,53 @@ class MLFlowMetricsTracker(BaseMetricsTracker):
 
             self.log("Using MLFlow in experiment %s with run id: %s" %(experiment_name, self.run.info.run_id), level="INFO")
 
-    def log_metric(self, resource, id, value, **kwargs): 
+    def log_metric(self, resource, id, value, *args, **kwargs): 
+        """
+        Logs a metric with the corresponding resource ID, metric ID, and metric value
+
+        Args:
+            resource (object): A resource object
+            id (str): A unique identifier for the metric
+            value (Any): The value of the metric
+
+        Returns:
+            None
+        """
         run_id = resource[1].info.run_id
         resource_id = self.metadata_tracker.get_resource_id(resource)
         id = "%s.%s" %(resource_id, id)
         self.client.log_metric(run_id, id, value, **kwargs)
         self.log("Saving metric=%s, value=%s in run %s" % (id, value, run_id))
         
-    def get_metric(self, resource, id):
+    def get_metric(self, resource, id, *args, **kwargs):
+        """
+        Retrieves a metric with the corresponding resource ID and metric ID
+
+        Args:
+            resource: A resource object
+            id: The metric ID
+
+        Returns:
+            metric: The value of the metric or None if the metric is not found
+        """
         run = mlflow_utils.get_run(self.client, resource[1].info.run_id)
         resource_id = self.metadata_tracker.get_resource_id(resource)
         id = "%s.%s" % (resource_id, id)
         metric =  run.data.metrics.get(id)
         return metric 
 
-    def log_metrics(self, resource, metrics, perf_metric):
+    def log_metrics(self, resource, metrics, perf_metric, *args, **kwargs):
+        """
+        Logs multiple metrics with the corresponding resource ID and specified performance metric
+
+        Args:
+            resource: A resource object
+            metrics: A dictionary containing the metrics
+            perf_metric: A performance metric
+
+        Returns:
+            None
+        """
         for split in metrics.keys(): 
             for metric, val in metrics[split].items(): 
                 key = "%s_%s" %(split, metric)
@@ -68,8 +100,16 @@ class MLFlowMetricsTracker(BaseMetricsTracker):
     
     #copy metrics from one resource to another. 
     #Mainly used to copy winning exp metrics to model version
-    def copy_metrics(self, from_resource, to_resource, **kwargs): 
+    def copy_metrics(self, from_resource, to_resource, *args, **kwargs): 
+        """
+        Copies metrics from one resource to another
 
+        Args:
+            from_resource: The resource to copy metrics from
+            to_resource: The resource to copy metrics to
+        Returns:
+            None
+        """
         from_run = mlflow_utils.get_run(self.client, from_resource[1].info.run_id)
 
         for k,v in from_run.data.metrics.items():
@@ -89,7 +129,17 @@ class MLFlowMetricsTracker(BaseMetricsTracker):
             "training_params", 
             json.loads(self.metadata_tracker.get_metadata(from_resource, "training_params").replace("\'","\"")))
 
-    def log_prediction_metrics(self, prediction_job, predictions):
+    def log_prediction_metrics(self, prediction_job, predictions, *args, **kwargs):
+        """
+        Logs prediction metrics with the corresponding prediction job ID and list of predictions
+
+        Args:
+            prediction_job: A prediction job
+            predictions: A list of predictions
+
+        Returns:
+            None
+        """
         prediction_id = self.metadata_tracker.get_resource_id(prediction_job)
         if self.problem_type == "classification":  
             df_values = predictions.value_counts()

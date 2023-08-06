@@ -10,6 +10,12 @@ class YDataProfilingDataProfiler(BaseDataProfiler):
         "config" : ["local_dir"]
     }
 
+
+    __DEFAULT_CONF__ = {
+        "config": {"YDATA_PROFILE_REPORT_NAME": "YDATA_DATA_PROFILE_REPORT.HTML",
+                "YDATA_COMPARISON_REPORT_NAME": "YDATA_DATA_COMPARISON_REPORT.HTML"}
+    }
+
     def profile_data(self, data, *args, **kwargs): 
         """Profiles data using Ydata Profiling
 
@@ -22,7 +28,8 @@ class YDataProfilingDataProfiler(BaseDataProfiler):
         """
         is_timeseries = self.problem_type == "timeseries"
         data_report = ProfileReport(data, tsmode=is_timeseries)
-        file_path =  "%s/PANDAS_PROFILING_DATA_PROFILE_REPORT.html" %self._get_config("local_dir")
+        file_path = "%s/%s" % (self._get_config("local_dir"),
+                               self._get_config("YDATA_PROFILE_REPORT_NAME"))
         data_report.to_file(file_path)
         
         return data_report, file_path
@@ -47,7 +54,7 @@ class YDataProfilingDataProfiler(BaseDataProfiler):
             profile = ProfileReport(data, tsmode=is_timeseries)
             old_profile = ProfileReport(prev_data, tsmode=is_timeseries)
             comparison = profile.compare(old_profile)
-            file_path =  "%s/PANDAS_PROFILING_DATA_COMPARISON_REPORT.html" %self._get_config("local_dir")
+            file_path = "%s/%s" % (self._get_config("local_dir"), self._get_config("YDATA_COMPARISON_REPORT_NAME"))
             comparison.to_file(file_path)
 
         return comparison, file_path

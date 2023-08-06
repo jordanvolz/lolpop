@@ -1,5 +1,6 @@
 import pytest 
 import pandas as pd 
+import numpy as np 
 import random 
 from faker import Faker 
 from lolpop.component import StdOutLogger, StdOutNotifier
@@ -11,6 +12,14 @@ fake = Faker()
 def simple_data(): 
     return pd.DataFrame(create_rows_faker(10000))
 
+
+@pytest.fixture(scope="session")
+def simple_ts_data():
+    data = pd.DataFrame({
+        "date": pd.date_range(start='2022-01-01', periods=100, freq='D'),
+        "value": np.random.normal(0, 1, 100)
+    })
+    return data
 
 def create_rows_faker(num=1):
     output = [{"id": x,
@@ -31,7 +40,7 @@ def create_rows_faker(num=1):
 @pytest.fixture
 def fake_component_config(tmp_path_factory):
     return {
-        "config": {
+        "conf": {
             "config": {
                 "local_dir": str(tmp_path_factory.mktemp("pytest")),
             }

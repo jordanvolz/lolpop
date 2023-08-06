@@ -11,6 +11,13 @@ from tqdm import tqdm
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class SnowflakeDataConnector(BaseDataConnector):
 
+    __REQUIRED_CONF__ = {"config": ["SNOWFLAKE_ACCOUNT",
+                                    "SNOWFLAKE_USER",
+                                    "SNOWFLAKE_PASSWORD",
+                                    "SNOWFLAKE_DATABASE",
+                                    "SNOWFLAKE_SCHEMA",
+                                    "SNOWFLAKE_WAREHOUSE"]}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.snowflake_config = utils.load_config([
@@ -22,6 +29,16 @@ class SnowflakeDataConnector(BaseDataConnector):
             "SNOWFLAKE_WAREHOUSE"], self.config)
 
     def get_data(self, table, sql=None, *args, **kwargs):
+        """
+        Retrieves data from the SnowflakeDataConnector.
+
+        Args:
+            table (str): The name of the table to retrieve data from (default: None).
+            sql (str): The SQL command to execute (default: None).
+
+        Returns:
+            pd.DataFrame: A pandas DataFrame containing the data retrieved from the Snowflake data warehouse.
+        """
         if sql is None:
             if table is not None:
                 sql = "SELECT * FROM %s" % table
@@ -34,11 +51,12 @@ class SnowflakeDataConnector(BaseDataConnector):
         return data
 
     def save_data(self, data, table, *args, **kwargs):
-        """_summary_
+        """
+        Saves a pandas DataFrame to the Snowflake data warehouse.
 
         Args:
-            data (_type_): _description_
-            table (_type_): _description_
+            data (pd.DataFrame): The pandas DataFrame to save.
+            table (str): The name of the table to save the data to.
         """
         #check if table already exists
         tables = self.get_data(None, sql="SHOW TABLES like '%s'" % table)
@@ -56,7 +74,7 @@ class SnowflakeDataConnector(BaseDataConnector):
                 sql = "ALTER TABLE %s " % (table)
                 for col_name in new_features:
                     col_type = data.dtypes[col_name]
-                    sf_type = self._map_pandas_col_type_to_sf_type(col_type)
+                    sf_type = self.__map_pandas_col_type_to_sf_type(col_type)
                     sql = sql + ("ADD COLUMN %s %s" %
                                  (col_name.upper(), sf_type))
                 self.get_data(None, sql=sql)
@@ -69,14 +87,15 @@ class SnowflakeDataConnector(BaseDataConnector):
         #now we can save our data
         self._save_data(data, table, self.snowflake_config)
 
-    def _map_pandas_col_type_to_sf_type(self, col_type):
-        """_summary_
+    def __map_pandas_col_type_to_sf_type(self, col_type):
+        """
+        Maps a pandas DataFrame column type to the corresponding Snowflake data type.
 
         Args:
-            col_type (_type_): _description_
+            col_type (pd.dtype): The data type of the pandas DataFrame column.
 
         Returns:
-            _type_: _description_
+            str: The corresponding Snowflake data type.
         """
         if col_type.kind == 'M':
             # datetime and timestamp columns in pandas are converted to datetime64[ns] dtype, which corresponds to 'datetime64' in Snowflake
@@ -100,7 +119,17 @@ class SnowflakeDataConnector(BaseDataConnector):
 
     #load data into df
     @classmethod
-    def _load_data(self, sql, config):
+    def _load_data(self, sql, config, *args, **kwargs):
+        """
+        Loads data from the Snowflake data warehouse and returns it as a pandas DataFrame.
+
+        Args:
+            sql (str): The SQL command to execute.
+            config: The configuration for the Snowflake data warehouse.
+
+        Returns:
+            pd.DataFrame: A pandas DataFrame containing the data retrieved from the Snowflake data warehouse.
+        """
         result = pd.DataFrame()
         result = get_from_snowflake(
             sql,
@@ -113,7 +142,15 @@ class SnowflakeDataConnector(BaseDataConnector):
         )
         return result
 
-    def _save_data(self, data, table_name, config):
+    def _save_data(self, data, table_name, config, *args, **kwargs):
+        """
+        Saves a pandas DataFrame to the Snowflake data warehouse.
+
+        Args:
+            data (pd.DataFrame): The pandas DataFrame to save.
+            table_name (str): The name of the table to save the data to.
+            config: The configuration for the Snowflake data warehouse.
+        """
         save_to_snowflake(
             data,
             table_name,
@@ -126,8 +163,6 @@ class SnowflakeDataConnector(BaseDataConnector):
         )
 
 #get df from snowflake
-
-
 def get_from_snowflake(sql, account, user, password, database, schema, warehouse):
     connection = snow_conn.connect(
         account=account,

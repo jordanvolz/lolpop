@@ -58,7 +58,7 @@ def pipeline(
                     pipeline_class, template_path, project_dir, extension_name)
 
 
-@app.command("runner", help="Initialize a custom component.")
+@app.command("runner", help="Initialize a custom runner.")
 def runner(
     runner_type: str = typer.Argument(..., help="Component type (Should be snake_case)"),
     runner_class: str = typer.Argument(..., help="Component class name (Should be snake_case)."),
@@ -71,10 +71,10 @@ def runner(
                     runner_class, template_path, project_dir, extension_name)
     
 
-@app.command("cli-command", help="Initialize a custom component.")
+@app.command("cli-command", help="Initialize a custom cli command.")
 def cli_command(
     command_name: str = typer.Argument(
-        ..., help="Name of the cli command to create."),
+        ..., help="Name of the cli command to create. (Use Snake Case)"),
     template_path: str = typer.Option(
         lolpop_template_path + "/cli_template", help="Path to the template file. Or a git url of a template file."),
     command_description: str = typer.Option(None, help="description for the command_name"),
@@ -124,14 +124,16 @@ def create_template(template_type, object_type, object_class, template_path, pro
 def create_documentation(
     source_file: Path = typer.Argument(
         ..., help="Path to the source file."),
-    class_name: str = typer.Option(
-        None, "--class-name", "-c", help="Class name in source_file to document."),
+    class_name: str = typer.Argument(
+        ..., help="Class name in source_file to document."),
     method_filter: List[str] = typer.Option([], "--method-filter", "-f", help="Methods to include in the documentation. default=all."),
     generator_class: str = typer.Option(
         "OpenAIChatbot", "--generator-class", "-g", help="Generative AI Chatbot class name."),
     generator_kwargs: str = typer.Option(
         "{}", "--kwargs", "-k", help="Keyword arguments to pass into the generator class"),
     output_path: Path = typer.Option(None, "--output-path", "-o", help="The location to save the documentation"),
+    documentation_format: str = typer.Option(
+        "markdown", "--documentation-format", "-d", help="The format you would like the documentation to be written in.")
 ):
     chatbot = load_chatbot(generator_class)
     class_code, num_lines = get_source_from_file(source_file, class_name)
@@ -143,7 +145,7 @@ def create_documentation(
         filter_text = "this class"
         if len(method_filter)>0: 
             filter_text = "these methods in the class: %s" %str(method_filter)
-        messages.append(chatbot.prepare_message(role="user", content="The following is a python class. I would like you to write technical documentation for %s. Include a description of each method in the class, as well as providing at least one example of using the class in a small code snippet. Please write your documentation in markdown format. Class Code: %s" %(filter_text,class_code)))
+        messages.append(chatbot.prepare_message(role="user", content="The following is a python class. I would like you to write technical documentation for %s. Include a description of each method in the class, as well as providing at least one example of using the class in a small code snippet. Please write your documentation in %s format. Class Code: %s" %(filter_text, documentation_format, class_code)))
         typer.secho("Prompting chatbot and awaiting a response ...", fg="blue")
         response = chatbot.ask(messages=messages, **json.loads(generator_kwargs))
         typer.secho("Successfully queried chatbot. Received response: \n\n %s" %response, fg="green")
@@ -161,8 +163,8 @@ def create_documentation(
 def create_tests(
     source_file: Path = typer.Argument(
         ..., help="Path to the source file."),
-    class_name: str = typer.Option(
-        None, "--class-name", "-c", help="Class name in source_file to document."),
+    class_name: str = typer.Argument(
+        ..., help="Class name in source_file to document."),
     method_filter: List[str] = typer.Option(
         [], "--method-filter", "-f", help="Methods to include in the documentation. default=all."),
     generator_class: str = typer.Option(
@@ -185,7 +187,7 @@ def create_tests(
         if len(method_filter) > 0:
             filter_text = "these methods in the class: %s" % str(
                 method_filter)
-        messages.append(chatbot.prepare_message(role="user", content="The following is a python class. I would like you to write tests for %s. Use the %s testing framework and python to write your tests. Please write at least two tests for each method and respond in the form of a python file. Class Code: %s" % (filter_text, testing_framework, class_code)))
+        messages.append(chatbot.prepare_message(role="user", content="The following is a python class. I would like you to write tests for %s. Use the %s testing framework and python to write your tests. Please write at least two tests for each method and respond in the form of a python file. Only include the python file and no other text in your response. Class Code: %s" % (filter_text, testing_framework, class_code)))
         typer.secho("Prompting chatbot and awaiting a response ...", fg="blue")
         response = chatbot.ask(messages=messages, **
                                json.loads(generator_kwargs))
@@ -207,8 +209,8 @@ def create_tests(
 def create_docstrings(
     source_file: Path = typer.Argument(
         ..., help="Path to the source file."),
-    class_name: str = typer.Option(
-        None, "--class-name", "-c", help="Class name in source_file to document."),
+    class_name: str = typer.Argument(
+        ..., help="Class name in source_file to document."),
     method_filter: List[str] = typer.Option(
         [], "--method-filter", "-f", help="Methods to include in the documentation. default=all."),
     generator_class: str = typer.Option(
@@ -216,7 +218,10 @@ def create_docstrings(
     generator_kwargs: str = typer.Option(
         "{}", "--kwargs", "-k", help="Keyword arguments to pass into the generator class"),
     output_path: Path = typer.Option(
-        None, "--output-path", "-o", help="The location to save the documentation")
+        None, "--output-path", "-o", help="The location to save the documentation"),
+    docstring_format: str = typer.Option(
+        "Google", "--docstring-format", "-d", help="The format you would like the docstring to be written in.")
+
     ):
     chatbot = load_chatbot(generator_class)
     class_code, num_lines = get_source_from_file(source_file, class_name)
@@ -230,7 +235,7 @@ def create_docstrings(
         if len(method_filter) > 0:
             filter_text = "these methods in the class: %s" % str(
                 method_filter)
-        messages.append(chatbot.prepare_message(role="user", content="The following is a python class. I would like you to write docstrings for %s following Google's python guide. Be sure to include descriptios of all inputs (along with default values) and outputs, as well as a description of what each method does.  Class Code: %s" % (filter_text, class_code)))
+        messages.append(chatbot.prepare_message(role="user", content="The following is a python class. I would like you to write docstrings in python for %s following the %s format. Be sure to include descriptions of all inputs (along with default values) and outputs, as well as a description of what each method does.  Class Code: %s" % (filter_text, docstring_format, class_code)))
         typer.secho("Prompting chatbot and awaiting a response ...", fg="blue")
         response = chatbot.ask(messages=messages, **
                                json.loads(generator_kwargs))

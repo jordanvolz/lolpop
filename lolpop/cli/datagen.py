@@ -54,8 +54,9 @@ def create(
 
     if evaluate_fake_data: 
         typer.secho("Evaluating synthetic dataset...", fg="blue")
-        quality_report, diagnostic_report = data_generator.evaluate_data(data, fake_data, metadata, synthesizer_class)
+        reports = data_generator.evaluate_data(data, fake_data, metadata, synthesizer_class)
         typer.secho("Successfully evaluated synthetic data!", fg="green")
+
 
     typer.secho("Saving synthetic data to output directory %s" % output_path, fg="blue")   
     (source_file_name, source_file_type) = str(source_file).split("/")[-1].split(".")

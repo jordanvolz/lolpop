@@ -14,7 +14,18 @@ class ClassificationRunner(BaseRunner):
     def __init__(self, problem_type="classification", *args, **kwargs):
         super().__init__(problem_type=problem_type, *args, **kwargs)
 
-    def process_data(self, source = "train"):
+    def process_data(self, source = "train", *args, **kwargs):
+        """
+        Processes data and performs transformations, tracking, profiling, checks, and comparisons between different instances of data.
+
+        Args:
+            source (str): Default is "train". Indicates the source of the data. 
+
+        Returns:
+            data (pd.DataFrame): DataFrame version of the processed data.
+            dataset_version (object): The dataset version object.
+        """
+
         #run data transformations and encodings
         source_data_name = "%s_data" % source
         source_data = self._get_config(source_data_name)
@@ -35,8 +46,22 @@ class ClassificationRunner(BaseRunner):
         #return data
         return data, dataset_version
 
-    def train_model(self, data, dataset_version=None):
+    def train_model(self, data, dataset_version=None, *args, **kwargs):
+        """
+        Trains the model on the processed data and performs analysis, checks, bias checks, versioning, building lineage, and comparisons between different model versions.
 
+        Args:
+            data (pd.DataFrame): DataFrame version of the processed data.
+            dataset_version (object): The dataset version object.
+
+        Returns:
+            model_version (object): The model version object
+            model (Any): The trained model object.
+            is_new_model_better (bool): Boolean value of whether or not a better model version was trained.
+
+        Raises:
+            Exception: If no data is available to train the model.
+        """
         if data is None:
             if dataset_version is not None:
                 data = self.resource_version_control.get_data(
@@ -77,7 +102,17 @@ class ClassificationRunner(BaseRunner):
 
         return model_version, model, is_new_model_better
 
-    def deploy_model(self, model_version, model):
+    def deploy_model(self, model_version, model, *args, **kwargs):
+        """
+        Deploys the trained model if it is approved.
+
+        Args:
+            model_version (object): The version of the trained model.
+            model (Any): The trained model object.
+
+        Returns:
+            deployment (Any): The model deployment object.
+        """
         #promote model
         promotion = self.deploy.promote_model(model_version, model)
 
@@ -90,7 +125,20 @@ class ClassificationRunner(BaseRunner):
 
         return deployment
 
-    def predict_data(self, model_version, model, data, dataset_version):
+    def predict_data(self, model_version, model, data, dataset_version, *args, **kwargs):
+        """
+        Predicts outcomes for a given dataset using the trained model, and performs data comparison, tracking, drift analysis, and checks.
+
+        Args:
+            model_version (object): The version of the trained model.
+            model (object): The trained model object.
+            data (pd.DataFrame): DataFrame version of the dataset to run predictions on.
+            dataset_version (object): The version of the dataset.
+
+        Returns:
+            data (pd.DataFrame): DataFrame version of the dataset with predictions and explanations.
+            prediction_job (str): The version of the prediction job.
+        """
         if model is None: 
             if model_version is not None: 
                 experiment = self.metadata_tracker.get_winning_experiment(model_version)
@@ -117,7 +165,13 @@ class ClassificationRunner(BaseRunner):
 
         return data, prediction_job
 
-    def evaluate_ground_truth(self, prediction_job=None): 
+    def evaluate_ground_truth(self, prediction_job=None, *args, **kwargs): 
+        """
+        Evaluates prediction data against actual data.
+
+        Args:
+            prediction_job (object): Default is None. The version of the prediction job.
+        """
         #if prediction job isn't known, get the most recent job
         if prediction_job == None: 
             model = self.metadata_tracker.get_resource(self._get_config("model_name"), type="model")
@@ -158,10 +212,15 @@ class ClassificationRunner(BaseRunner):
             self.notify("Current training data has no overlap with the prediction job %s" %self.metadata_tracker.get_resource_id(prediction_job), level = "WARNING")
 
     def stop(self):
+        """
+        Makes sure that all current metadata is saved once the process is stopped.
+        """
         self.metadata_tracker.stop()
-        pass
 
-    def build_all(self):
+    def build_all(self, *args, **kwargs):
+        """
+        Performs all phases of the classification task including data processing, model training, model deployment, prediction, and evaluation, and notifies the user if a new version of the model is better.
+        """
         data, dataset_version = self.process_data()
         model_version, model, is_new_model_better = self.train_model(data, dataset_version)
         if is_new_model_better: 
@@ -169,4 +228,5 @@ class ClassificationRunner(BaseRunner):
         eval_data, eval_dataset_version = self.process_data(source="eval")
         data, prediction_job = self.predict_data(model_version,model, eval_data, eval_dataset_version)
         self.evaluate_ground_truth(prediction_job)
+        self.stop()
     

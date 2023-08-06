@@ -15,7 +15,18 @@ class MetaflowOfflineTrain(BaseTrain):
         "config": []
     }
 
-    def run(self, data, **kwargs):
+    def run(self, data, *args, **kwargs):
+        """
+        This method runs the Metaflow pipeline with the provided data.
+
+        Args:
+            data (pandas dataframe): The data to be used in the training process.
+            **kwargs (dictionary): Additional keyword arguments that may be needed for the training process.
+
+        Returns:
+            None
+        """
+
         #get flow class object from this file
         mod_cl = meta_utils.get_flow_class(__file__, METAFLOW_CLASS)
 
@@ -27,6 +38,15 @@ class MetaflowOfflineTrain(BaseTrain):
         self.log("Metaflow pipeline %s finished." % METAFLOW_CLASS)
 
     def get_artifacts(self, artifact_keys):
+        """
+        This method retrieves the artifacts associated with the Metaflow pipeline run.
+
+        Args:
+            artifact_keys (list): A list of artifact keys (strings) to retrieve from the run.
+
+        Returns:
+            artifacts (dictionary): A dictionary containing the artifacts retrieved from the run.
+        """
         #get latest run of this pipeline
         run = meta_utils.get_latest_run(METAFLOW_CLASS)
 
@@ -158,9 +178,10 @@ class MetaflowOfflineTrainSpec(FlowSpec):
     @step
     def check_model_bias(self):
         #check model bias
-        self.lolpop.model_bias_checker.check_model_bias(
-            self.data_dict, self.model, self.model_version)
-        
+        bias_metrics = self.lolpop.model_bias_checker.check_model_bias(self.data_dict, self.model)
+        for k, v in bias_metrics.items():
+            self.lolpop.metrics_tracker.log_metric(self.model_version, k, v)
+
         self.next(self.compare_models)
 
     @step

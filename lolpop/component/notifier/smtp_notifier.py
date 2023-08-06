@@ -8,7 +8,18 @@ class SMTPNotifier(BaseNotifier):
         "config": ["sender_email", "sender_password", "smtp_server", "smtp_port", "recipient_email"]
     }
 
-    def notify(self, msg, level="ERROR", **kwargs):
+    def notify(self, msg, level="ERROR", *args, **kwargs):
+        """
+        Sends an email notification using the provided message and log level.
+
+        Args:
+            msg (str): The body of the email message.
+            level (str): The severity level of the notification. Default is "ERROR".
+            **kwargs: Additional keyword arguments used if needed.
+
+        Returns:
+            None
+        """
         with smtplib.SMTP(self._get_config("smtp_sever"), self._get_config("smtp_port")) as smtp:
             # Starting TLS encryption
             smtp.starttls()

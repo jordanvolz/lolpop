@@ -1,15 +1,16 @@
 from lolpop.component.base_component import BaseComponent
+from typing import Any 
 
 class BaseResourceVersionControl(BaseComponent): 
 
-    def version_data(self, id, data, *args, **kwargs): 
+    def version_data(self, dataset_version, data, *args, **kwargs) -> dict[str, Any]: 
         pass 
 
-    def get_data(self, id, *args, **kwargs):
+    def get_data(self, dataset_version,  *args, **kwargs) -> Any :
         pass
 
-    def version_model(self, id, model, *args, **kwargs): 
+    def version_model(self, experiment, model, *args, **kwargs) -> dict[str, Any]:
         pass
     
-    def get_model(self, id, *args, **kwargs): 
+    def get_model(self, experiment, *args, **kwargs) -> Any : 
         pass

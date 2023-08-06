@@ -18,6 +18,15 @@ class ProphetModelTrainer(BaseModelTrainer):
         self.model = Prophet(**params)
 
     def fit(self, data, *args, **kwargs):
+        """
+        Fits the model to the training data.
+
+        Args:
+        data: Dictionary containing the training data with columns 'X_train' and 'y_train'
+
+        Output:
+        Returns a trained Prophet Model object.
+        """
         self.log("Starting model training with parameters: %s" %
                  str(self.params))
 
@@ -42,6 +51,15 @@ class ProphetModelTrainer(BaseModelTrainer):
         return self.model
 
     def predict(self, data, *args, **kwargs):
+        """
+        Predicts values for train, validation and test data.
+
+        Args:
+        data: A dictionary containing training, validation and test data with columns 'X_train', 'y_train', 'X_valid', 'y_valid', 'X_test', 'y_test'
+
+        Output:
+        Returns a dictionary containing predictions for train, validation and test sets.
+        """
         predictions={}
         target_min = self._get_config("target_min")
         target_max = self._get_config("target_max")
@@ -70,6 +88,17 @@ class ProphetModelTrainer(BaseModelTrainer):
     #prophet doesn't seem to do a good job of respecting defined floor/cap on historic data
     #this can cause errors with metrics when numbers are negative, etc 
     def _apply_prediction_bounds(self, data, target_min=None, target_max=None): 
+        """
+        Applies min/max target values to the predicted values.
+
+        Args:
+        data: dataframe containing the predicted values
+        target_min: Minimum permissible value for the predicted values
+        target_max: Maximum permissible value for the predicted values
+
+        Output:
+        Returns a dataframe containing the predicted values within the range of [target_min, target_max].
+        """
         data_out = data.copy()
         if target_min is not None: 
             data_out["yhat"] = data["yhat"].apply(lambda x: target_min if x < target_min else x)
@@ -83,11 +112,30 @@ class ProphetModelTrainer(BaseModelTrainer):
     #        predictions[key]=predictions[key]["yhat"].to_numpy()
     #    return super().calculate_metrics(data, predictions, metrics, **kwargs) 
 
-    def predict_df(self, df):
+    def predict_df(self, df, *args, **kwargs):
+        """
+        Predicts values for the given dataframe.
+
+        Args:
+        df: Dataframe containing the data to be processed
+
+        Output:
+        Returns the predicted values.
+        """
         data = self._process_data(df)
         return self.model.predict(data)["yhat"]
 
     def _process_data(self, data): 
+        """
+        Processes data as per the requirement of Prophet model.
+
+        Args:
+        data: Dataframe containing the dataset to be processed.
+
+        Output:
+        Returns the processed dataset.
+        """
+
         #prophet expects labels are in a column 'y' and timestamp is 'ds'
         df_train = data.rename(columns={
             self._get_config("time_index"): "ds",
@@ -106,7 +154,17 @@ class ProphetModelTrainer(BaseModelTrainer):
 
         return data_out
     
-    def get_artifacts(self, id): 
+    def get_artifacts(self, id, *args, **kwargs): 
+        """
+        Generates plots for visualizing the forecasted data.
+
+        Args:
+        id: Id for the model being used for generating plots.
+
+        Output:
+        Returns a dictionary containing paths of saved plots.
+        """
+
         artifacts_out  = {}
 
         # generate component plot
