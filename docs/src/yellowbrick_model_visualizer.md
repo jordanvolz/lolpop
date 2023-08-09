@@ -9,7 +9,7 @@ The `YellowbrickModelVisualizer` class is a subclass of the `BaseModelVisualizer
 
 The `YellowbrickModelVisualizer` class requires the following components: 
 
-- `metdata_tracker`
+- `metadata_tracker`
 
 and the following configuration:
 
@@ -35,7 +35,7 @@ def generate_viz(data, model, model_version, *args, **kwargs)
 
 - `data`: A dictionary containing the training and testing data for the model evaluation.
 - `model`: The trained model object for evaluation.
-- `model_version`: The model version object from the `metdata_tracker` to save the visualizations to. 
+- `model_version`: The model version object from the `metadata_tracker` to save the visualizations to. 
 
 **Returns:**
 
@@ -53,7 +53,7 @@ def _save_plot(viz, data, split, model_version, plot_name)
 - `viz`: The Visualization object for plotting.
 - `data`: A dictionary containing the training and testing data for the model evaluation.
 - `split`: The string name of the sub-dataset we're plotting for.
-- `model_version`: The model version object from the `metdata_tracker` to save the visualizations to. 
+- `model_version`: The model version object from the `metadata_tracker` to save the visualizations to. 
 - `plot_name`: The name of the file to save the plot as.
 
 **Returns:**

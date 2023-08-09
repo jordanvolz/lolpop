@@ -151,7 +151,7 @@ This method is used to save interesting parts of the study containing the optimi
 
  - `name` (str): A name for the saved HTML file
  - `plot` (object): The `Optuna` plot
- - `model_version` (object): The model version object to save the plot into, obtained from the `metdata_tracker` 
+ - `model_version` (object): The model version object to save the plot into, obtained from the `metadata_tracker` 
  - `algo` (str): The name of the `model_trainer` class used for this experiment.  
 
 **Returns**: 

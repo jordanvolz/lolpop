@@ -173,7 +173,7 @@ class ClassificationRunner(BaseRunner):
             prediction_job (object): Default is None. The version of the prediction job.
         """
         #if prediction job isn't known, get the most recent job
-        if prediction_job == None: 
+        if prediction_job is None: 
             model = self.metadata_tracker.get_resource(self._get_config("model_name"), type="model")
             prediction_job = self.metadata_tracker.get_latest_model_resource(model, type="prediction_job")
         

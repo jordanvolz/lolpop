@@ -17,8 +17,8 @@ class AIFairnessModelBiasChecker(BaseModelBiasChecker):
                 data (dict): A dictionary containing the training/testing data.
                 model (object): The model trainer object being checked for bias.
         """
+        metrics_out = {}
         if self.problem_type == "classification": 
-            metrics_out = {}
             #set up data/predictions
             df_train = data["X_train"]
             df_train_w_labels = df_train.copy() 

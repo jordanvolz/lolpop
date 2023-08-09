@@ -1,6 +1,6 @@
-0. Code Review (check formatting, base to child params, inputs/output types, etc)
+xx 0. Code Review (check formatting, base to child params, inputs/output types, etc) --Done
 xx--> change src --> lolpop -- DONE 
---> docstrings -- IN PROGRESS
+xx--> docstrings -- Done
 --> pre-commit hook for python formatting
 xx--> change all __init__ calls to use keyword args only. This allows for easier inheritance and multiple inheritence as other classes can super().__init__ and just pass all **kwargs -- DONE
 xx00. mlflow integration -- DONE

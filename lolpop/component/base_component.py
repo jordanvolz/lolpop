@@ -17,7 +17,10 @@ class BaseComponent:
                  components = {}, skip_config_validation=False, *args, **kwargs):
         #set basic properties, like name and configs
         self.name = type(self).__name__
-        self.type = self.__module__.split(".")[-2]
+        try: 
+            self.type = self.__module__.split(".")[-2]
+        except: 
+            self.type = self.__module__
         self.integration_type = self.__module__.split(".")[-1]
         config = utils.get_conf(conf)
         self.pipeline_conf = pipeline_conf

@@ -8,7 +8,6 @@ class BaseModelTrainer(BaseComponent):
 
     __REQUIRED_CONF__ = {
         "components" : ["metadata_tracker", "resource_version_control"], 
-        "config": ["training_params"]
     }
 
     model = None 
@@ -188,7 +187,7 @@ class BaseModelTrainer(BaseComponent):
             elif metric == "rmsle":
                 #predictions can be negative, which will break this calculation.
                 #if you're using rmsle we'll assume you intended non-negative predictions
-                for key in predictions.keys(): 
+                for key in set(["train", "valid", "test"]).intersection(predictions.keys()): 
                     predictions[key] = [max(x,0) for x in predictions[key]]
                 metrics_out["train"][metric] = sk_metrics.mean_squared_log_error(data["y_train"], predictions["train"], squared=False)
                 if valid_exists:

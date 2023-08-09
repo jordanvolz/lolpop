@@ -1,5 +1,6 @@
 from lolpop.utils import common_utils as utils
 from inspect import currentframe
+import os
 class BaseRunner: 
 
     __REQUIRED_CONF__ = {
@@ -18,7 +19,10 @@ class BaseRunner:
                  skip_config_validation=False, *args, **kwargs):
         #handle configuration 
         self.name = type(self).__name__
-        self.type = self.__module__.split(".")[-2]
+        try: 
+            self.type = self.__module__.split(".")[-2]
+        except: #using some kind of custom class
+            self.type = self.__module__
         self.integration_type = self.__module__.split(".")[-1]
         conf = utils.get_conf(conf)
         conf = utils.resolve_conf_variables(conf)
@@ -59,6 +63,8 @@ class BaseRunner:
                                                             plugin_mods=plugin_mods, 
                                                             skip_config_validation=skip_config_validation,
                                                             components = runner_components)
+
+        print
 
         #build all other components
         for component in conf.get("components",{}).keys(): 

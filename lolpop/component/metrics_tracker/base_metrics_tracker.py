@@ -1,5 +1,5 @@
 from lolpop.component.base_component import BaseComponent
-from typing import any 
+from typing import Any 
 
 class BaseMetricsTracker(BaseComponent): 
 
