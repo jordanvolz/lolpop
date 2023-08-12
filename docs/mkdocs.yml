@@ -222,6 +222,10 @@ nav:
     - Classification: classification.md
     - Regression: regression.md 
     - Time Series Forecasting: timeseries_forecasting.md
+    - Metaflow: 
+      - Metaflow Classification: classification_metaflow.md
+      - Metaflow Regression: regression_metaflow.md
+      - Metaflow TimeSeries: timeseries_metaflow.md
 
 
 

@@ -78,8 +78,12 @@ def load_plugin(plugin_path, obj=None):
 
 #load class object
 def load_class_obj(class_name, class_type="component", parent="lolpop"): 
-    module = import_module("%s.%s" %(parent, class_type))
-    cl = getattr(module, class_name)
+    try: 
+        module = import_module("%s.%s" %(parent, class_type))
+        cl = getattr(module, class_name)
+    except: 
+        module = import_module(parent)
+        cl = getattr(module, class_name)
     return cl
 
 def load_class(class_name, class_type="component", plugin_mods = [], self_obj=None): 

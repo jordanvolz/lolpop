@@ -23,19 +23,25 @@ def default(ctx: typer.Context):
 @app.command("workflow", help="Run a workflow.")
 def workflow(
     runner_class: str = typer.Argument(..., help="Runner class."),
-    config_file: Path = typer.Option(..., help="Location of runner configuration file."),
-    build_method: str = typer.Option("main",
+    config_file: Path = typer.Option(..., "-c", "--config-file", help="Location of runner configuration file."),
+    build_method: str = typer.Option("main", "-b", "--build-method",
                                        help="The method in the runner class to execute."),
     build_args: List[str] = typer.Option([], help="List of args to pass into build_method."),
     build_kwargs: str = typer.Option("{}", help="Dict (as a string) of kwargs to pass into build_method"),
+    local_file: Path = typer.Option(None, "-l", "--local-file", help="Local file to use to read class definition instead of reading directly from lolpop. Useful when you want to run a modified local class that isn't properly registered. "),
+    skip_validation: bool = typer.Option(False, "--skip-validation", help="Skip configuration validation.")
 ): 
 
+    plugin_mods = []
+    if local_file is not None: 
+        cl = utils.load_module_from_file(local_file)
+        plugin_mods = [cl.__name__]
     typer.secho("Loading class %s" %runner_class, fg="blue")
-    runner_cl = utils.load_class(runner_class, class_type="runner")
+    runner_cl = utils.load_class(runner_class, plugin_mods=plugin_mods, class_type="runner")
     typer.secho("Loaded %s!" %runner_class, fg="green")
 
     typer.secho("Initializing class %s with config file %s" %(runner_class, config_file), fg="blue")
-    runner = runner_cl(conf=config_file)
+    runner = runner_cl(conf=config_file, skip_config_validation=skip_validation)
     typer.secho("Initialized!", fg="green")
     
     if hasattr(runner, build_method): 

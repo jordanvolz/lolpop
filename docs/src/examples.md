@@ -30,3 +30,7 @@ These should be *excellent examples* to pull from as you start migrating your ow
     - [Classification](classification.md)
     - [Regression](regression.md)
     - [Time Series Forecasting](timeseries_forecasting.md)
+- Metaflow Examples 
+    - [Classification](classification_metaflow.md)
+    - [Regression](regression_metaflow.md)
+    - [Time Series Forecasting](timeseries_forecasting_metaflow.md)
