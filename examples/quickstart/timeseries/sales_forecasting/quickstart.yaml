@@ -11,10 +11,10 @@ components:
   resource_version_control: BaseResourceVersionControl
   metrics_tracker: BaseMetricsTracker
 config: 
-  train_data: /Users/jordanvolz/Downloads/sales_data/train.csv
-  eval_data: /Users/jordanvolz/Downloads/sales_data/test.csv
-  prediction_data: /Users/jordanvolz/Downloads/sales_data/predictions.csv
-  model_name: generic_sales_forecast
+  train_data: train.csv
+  eval_data: test.csv
+  prediction_data: predictions.csv
+  model_name: sales_forecast
   model_target: Revenue
   time_index: Period
   drop_columns: [Sales_quantity,Average_cost, The_average_annual_payroll_of_the_region]
@@ -26,7 +26,7 @@ process:
     data_transformer: LocalDataTransformer
   data_transformer: 
     config: 
-      transformer_path: /Users/jordanvolz/github/lolpop/examples/quickstart_ts/process_sales_data.py
+      transformer_path: process_sales_data.py
 
 train: 
   components: 
@@ -65,8 +65,8 @@ predict:
 #component config
 metadata_tracker: 
   config: 
-    mlflow_tracking_uri: file:///Users/jordanvolz/Downloads/mlruns
-    mlflow_experiment_name: generic_sales_forecast
+    mlflow_tracking_uri: ./mlruns
+    mlflow_experiment_name: sales_forecast
 logger:
   config: 
-    log_level: DEBUG
+    log_level: INFO

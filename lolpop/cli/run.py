@@ -38,6 +38,9 @@ def workflow(
         plugin_mods = [cl.__name__]
     typer.secho("Loading class %s" %runner_class, fg="blue")
     runner_cl = utils.load_class(runner_class, plugin_mods=plugin_mods, class_type="runner")
+    if runner_cl is None: 
+        typer.secho("Failed to properly load class %s. Exiting..." %runner_class, fg="red")
+        raise typer.Exit(code=1)
     typer.secho("Loaded %s!" %runner_class, fg="green")
 
     typer.secho("Initializing class %s with config file %s" %(runner_class, config_file), fg="blue")

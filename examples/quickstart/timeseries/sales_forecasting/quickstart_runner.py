@@ -49,3 +49,17 @@ class QuickstartTimeSeriesRunner(BaseRunner):
     def stop(self):
         self.metadata_tracker.stop()
         pass
+
+    def build_all(self): 
+        #run data processing
+        train_data = self.process_data()
+
+        #train model
+        model, model_version = self.train_model(train_data)
+
+        #run prediction
+        eval_data = self.process_data(source="eval")
+        data, _ = self.predict_data(model, model_version, eval_data)
+
+        #exit
+        self.stop()
