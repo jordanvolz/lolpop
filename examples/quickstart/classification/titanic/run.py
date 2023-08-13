@@ -1,5 +1,4 @@
 from quickstart_runner import QuickstartRunner
-#from lolpop.runner import ClassificationRunner
 
 #create runner from config
 config_file = "quickstart.yaml"
@@ -16,7 +15,7 @@ eval_data = runner.process_data(source="eval")
 data, _ = runner.predict_data(model, model_version, eval_data)
 
 #view top predictions
-data.head() 
+print(data.head())
 
 #exit
 runner.stop()

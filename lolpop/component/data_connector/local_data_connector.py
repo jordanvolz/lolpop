@@ -6,6 +6,10 @@ import pandas as pd
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class LocalDataConnector(BaseDataConnector):
 
+    __DEFAULT_CONF__ = {
+        "config" : {"save_index": True}
+    }
+
     def get_data(self, source_path, *args, **kwargs):
         """
         Reads a CSV, Parquet, or ORC file from a local storage and returns the data as a pandas DataFrame.
@@ -29,7 +33,7 @@ class LocalDataConnector(BaseDataConnector):
 
         return data 
 
-    def save_data(self, data, target_path, *args, **kwargs):
+    def save_data(self, data, target_path, save_index=None, *args, **kwargs):
         """
         Writes a CSV or Parquet file to a local storage and returns the saved data.
 
@@ -40,10 +44,12 @@ class LocalDataConnector(BaseDataConnector):
         Returns:
             pandas.DataFrame: Returns saved data.
         """
+        if save_index is None: 
+            save_index = self._get_config("save_index")
         file_type = target_path.split(".")[-1]
         if file_type == "csv":
-            data = data.to_csv(target_path, **kwargs)
+            data = data.to_csv(target_path, index=save_index, **kwargs)
         elif file_type == "parquet" or file_type == "pq":
-            data = data.to_parquet(target_path, **kwargs)
+            data = data.to_parquet(target_path, index=save_index, **kwargs)
         self.log("Successfully saved data to %s." %target_path)
         return data

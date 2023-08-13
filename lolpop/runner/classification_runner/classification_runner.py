@@ -158,7 +158,7 @@ class ClassificationRunner(BaseRunner):
         self.predict.analyze_prediction_drift(dataset_version, prediction_job, data)
 
         #run prediction checks
-        self.predict.check_predictions(data.drop(["explanations", "predictions_proba"],axis=1, errors="ignore"), prediction_job)
+        self.predict.check_predictions(data.drop(["explanations", "prediction_proba"],axis=1, errors="ignore"), prediction_job)
 
         #run save predictions
         self.predict.save_predictions(data, self._get_config("prediction_data"))
@@ -196,7 +196,7 @@ class ClassificationRunner(BaseRunner):
             train_data_sorted = train_data_filtered.sort_values(by=index).reset_index(drop=True)
             prediction_data_sorted = prediction_data_filtered.sort_values(by=index).reset_index(drop=True)
             ground_truth = {"y_train": train_data_sorted[self._get_config("model_target")]}
-            predictions = {"train": prediction_data_sorted["predictions"]}
+            predictions = {"train": prediction_data_sorted["prediction"]}
           
             #get model object and calculate metrics
             model_version = self.metadata_tracker.get_prediction_job_model_version(prediction_job)

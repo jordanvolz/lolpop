@@ -1,21 +1,19 @@
 
-This guide will walk us through a quick example of predicting survivors on the infamous [sinking of the Titanic](https://en.wikipedia.org/wiki/Sinking_of_the_Titanic). Pretend like you've never seen this example worked out before. 
-
-Buckle up, throw on Gavin Bryars' [iconic soundtrack](https://philipjeck.bandcamp.com/album/the-sinking-of-the-titanic-1969), and enjoy the slow descent. Spoiler: [Leo doesn't make it out alive](https://www.youtube.com/watch?v=KV-apmpMe80). 
+This guide will walk us through a quick example of predicting medical bills for patients. 
 
 ## Setup
 
 1. First, let's create a virtual environment for this example: 
 
     ```bash
-    python3 -m venv ~/venv/titanic
+    python3 -m venv ~/venv/medical_bills
     ```
-    Feel free to replace `~/venv/titanic` with any path where you'd like to store the virtual environment. 
+    Feel free to replace `~/venv/medical_bills` with any path where you'd like to store the virtual environment. 
 
     Now, activate the  virtual environment: 
 
     ```bash
-    source ~/venv/titanic/bin/activate
+    source ~/venv/medical_bills/bin/activate
     ```
 
 2. Now let's install the packages we'll need for this example: 
@@ -29,16 +27,26 @@ Buckle up, throw on Gavin Bryars' [iconic soundtrack](https://philipjeck.bandcam
     ```bash
     cd ~/Downloads 
     git clone git@github.com:jordanvolz/lolpop.git
-    cd lolpop/examples/quickstart/classification/titanic
+    cd lolpop/examples/quickstart/regression/medical_bills
     ```
 
 4. Now we'll download the data for the example from Kaggle. If you already use kaggle from the command line you can simply execute the following: 
 
     ```bash
-    kaggle competitions download -c titanic
-    unzip titanic.zip
+    kaggle datasets download mirichoi0218/insurance 
+    unzip insurance.zip
     ```
-    Or, Manually download the data from the following [link](https://www.kaggle.com/competitions/titanic/data) and unzip it. You should now have a `train.csv` and `test.csv` file in the `lolpop/examples/quickstart/classification/titanic` directory. 
+    Or, Manually download the data from the following [link](https://www.kaggle.com/datasets/mirichoi0218/insurance) and unzip it. You should now have a `insurance.csv` file in the `lolpop/examples/quickstart/regression/medical_bills` directory. 
+
+5. We'll now break this file into two separate csv files, `train.csv` and `test.csv`. Execute the following: 
+
+    ```bash 
+    split -l 1000 insurance.csv csv_
+	echo $$(head -1 csv_aa) | cat - csv_ab > tmp
+	awk 'BEGIN{FS=OFS=","}{NF--;print}' tmp > test.csv
+    mv csv_aa train.csv
+    rm csv_ab tmp insurance.csv
+    ```
 
 ## Running the Workflow 
 
@@ -52,14 +60,20 @@ Buckle up, throw on Gavin Bryars' [iconic soundtrack](https://philipjeck.bandcam
 
     ```bash 
     ...
-    2023/08/11 02:52:40.478907 [INFO] <MLFlowMetadataTracker> ::: Saving metadata key=model_trainer, value=XGBoostModelTrainer to run 3eba6becd94b46cf9281d77fa602cf0a
-    2023/08/11 02:52:40.479475 [INFO] <MLFlowMetadataTracker> ::: Saving tag key=3eba6becd94b46cf9281d77fa602cf0a.titanic_survival.model_trainer, value=XGBoostModelTrainer to run 3eba6becd94b46cf9281d77fa602cf0a
-    2023/08/11 02:52:40.602068 [INFO] <MLFlowMetadataTracker> ::: Saving metadata key=winning_experiment_id, value={'winning_experiment_id': '3eba6becd94b46cf9281d77fa602cf0a.titanic_survival'} to run 5539824a84ea43129ba04d003d51e8e4
-    2023/08/11 02:52:40.602662 [INFO] <MLFlowMetadataTracker> ::: Saving tag key=titanic_survival.winning_experiment_id, value={'winning_experiment_id': '3eba6becd94b46cf9281d77fa602cf0a.titanic_survival'} to run 5539824a84ea43129ba04d003d51e8e4
-    2023/08/11 02:52:40.604804 [INFO] <MLFlowMetadataTracker> ::: Saving metadata key=winning_experiment_model_trainer, value={'winning_experiment_model_trainer': 'XGBoostModelTrainer'} to run 5539824a84ea43129ba04d003d51e8e4
-    2023/08/11 02:52:40.605447 [INFO] <MLFlowMetadataTracker> ::: Saving tag key=titanic_survival.winning_experiment_model_trainer, value={'winning_experiment_model_trainer': 'XGBoostModelTrainer'} to run 5539824a84ea43129ba04d003d51e8e4
-    2023/08/11 02:52:40.613509 [INFO] <LocalDataConnector> ::: Successfully loaded data from test.csv into DataFrame.
-    2023/08/11 02:52:40.618509 [INFO] <LocalDataConnector> ::: Successfully saved data to predictions.csv.
+    2023/08/13 04:18:19.969694 [INFO] <MLFlowMetadataTracker> ::: Saving metadata key=model_trainer, value=XGBoostModelTrainer to run ac4478852905467e9bcf9741748cd280
+    2023/08/13 04:18:19.970273 [INFO] <MLFlowMetadataTracker> ::: Saving tag key=ac4478852905467e9bcf9741748cd280.medical_bills.model_trainer, value=XGBoostModelTrainer to run ac4478852905467e9bcf9741748cd280
+    2023/08/13 04:18:20.070205 [INFO] <MLFlowMetadataTracker> ::: Saving metadata key=winning_experiment_id, value={'winning_experiment_id': 'ac4478852905467e9bcf9741748cd280.medical_bills'} to run babd239b4aeb4e95986896c2d0dff2c9
+    2023/08/13 04:18:20.070917 [INFO] <MLFlowMetadataTracker> ::: Saving tag key=medical_bills.winning_experiment_id, value={'winning_experiment_id': 'ac4478852905467e9bcf9741748cd280.medical_bills'} to run babd239b4aeb4e95986896c2d0dff2c9
+    2023/08/13 04:18:20.073200 [INFO] <MLFlowMetadataTracker> ::: Saving metadata key=winning_experiment_model_trainer, value={'winning_experiment_model_trainer': 'XGBoostModelTrainer'} to run babd239b4aeb4e95986896c2d0dff2c9
+    2023/08/13 04:18:20.073899 [INFO] <MLFlowMetadataTracker> ::: Saving tag key=medical_bills.winning_experiment_model_trainer, value={'winning_experiment_model_trainer': 'XGBoostModelTrainer'} to run babd239b4aeb4e95986896c2d0dff2c9
+    2023/08/13 04:18:20.082237 [INFO] <LocalDataConnector> ::: Successfully loaded data from test.csv into DataFrame.
+    2023/08/13 04:18:20.160234 [INFO] <LocalDataConnector> ::: Successfully saved data to predictions.csv.
+    age  sex     bmi  children  smoker  region  SPLIT    prediction
+    0   36    0  26.885         0       0       1  TRAIN   4850.282227
+    1   30    1  22.990         2       1       1  TRAIN  17770.599609
+    2   24    1  32.700         0       1       3  TRAIN  38070.242188
+    3   24    1  25.800         0       0       3  TRAIN   2838.389893
+    4   48    1  29.600         0       0       3  TRAIN   7963.153320
     exiting...
     ```
 
@@ -71,7 +85,7 @@ Buckle up, throw on Gavin Bryars' [iconic soundtrack](https://philipjeck.bandcam
     mlflow ui
     ```
 
-2. You can then open up your web browser and navigate to `http://localhost:5000`. You'll notice an experiment named `titantic_survival` with a recently completed run. Feel free to dig around and look at what information got logged. Note: for the quickstart example, we've paired this down to the bare minimum, so there is not a ton to see here. The regular examples contain much more information. 
+2. You can then open up your web browser and navigate to `http://localhost:5000`. You'll notice an experiment named `medical_bills` with a recently completed run. Feel free to dig around and look at what information got logged. Note: for the quickstart example, we've paired this down to the bare minimum, so there is not a ton to see here. The regular examples contain much more information. 
 
 3. Predictions from the model get saved to `predictions.csv`. You can view them via: 
 
@@ -90,7 +104,7 @@ Buckle up, throw on Gavin Bryars' [iconic soundtrack](https://philipjeck.bandcam
 ## Understanding the Example
 
 !!! Note
-    The text here is exactly the same as the text in our [regression quickstart](classification_regression.md#understanding-the-example) example. The reason being that both use the same quickstart_runner.py class. The only difference is the value of the `problem_type` set during initialization of the class. 
+    The text here is exactly the same as the text in our [classification quickstart](classification_quickstart.md#understanding-the-example) example. The reason being that both use the same quickstart_runner.py class. The only difference is the value of the `problem_type` set during initialization of the class. 
 
 To gain some understanding about what is happening, let's look into the `run.py` file. This is a small script that loads our runner and executes a workflow. 
 
@@ -169,7 +183,7 @@ process:
     data_transformer: LocalDataTransformer
   data_transformer: 
     config: 
-      transformer_path: /path/to/lolpop/examples/quickstart/process_titanic.py
+      transformer_path: /path/to/lolpop/examples/quickstart/process_bills.py
 ...
 ```
 
@@ -194,7 +208,7 @@ def transform(self, input_data, *args, **kwargs):
 ...
 ```
 
-Since we're passing a string into this function, it will call `get_data` out of the data_connector component to retrieve data, then call `self._transform` on that data. In this [init](https://github.com/jordanvolz/lolpop/blob/main/lolpop/component/data_transformer/local_data_transformer.py#L17) method, we can see that `self._transform` is just the entry point into our transformer script which is defined in `transformer_path`, i.e. the `process_titanic.py` script. 
+Since we're passing a string into this function, it will call `get_data` out of the data_connector component to retrieve data, then call `self._transform` on that data. In this [init](https://github.com/jordanvolz/lolpop/blob/main/lolpop/component/data_transformer/local_data_transformer.py#L17) method, we can see that `self._transform` is just the entry point into our transformer script which is defined in `transformer_path`, i.e. the `process_bills.py` script. 
 
 Similarly, we can trace through the rest of run.py. The next step is to train a model. The script calls the runner method `train_model`. This will in turn leverage the `OfflineTrain` pipeline, which will then use one or more components to train a model. 
 

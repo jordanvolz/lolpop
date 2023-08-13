@@ -179,7 +179,7 @@ class TimeSeriesRunner(BaseRunner):
 
         #run prediction checks
         #self.predict.check_predictions(data.drop(
-        #    ["explanations", "predictions_proba"], axis=1, errors="ignore"), prediction_job)
+        #    ["explanations", "prediction_proba"], axis=1, errors="ignore"), prediction_job)
 
         #run save predictions
         self.predict.save_predictions(
@@ -232,7 +232,7 @@ class TimeSeriesRunner(BaseRunner):
                 by=index).reset_index(drop=True)
             ground_truth = {
                 "y_train": train_data_sorted[self._get_config("model_target")]}
-            predictions = {"train": prediction_data_sorted["predictions"]}
+            predictions = {"train": prediction_data_sorted["prediction"]}
 
             #get model object and calculate metrics
             model_version = self.metadata_tracker.get_prediction_job_model_version(
