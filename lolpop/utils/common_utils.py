@@ -36,8 +36,8 @@ def load_config(config_keys, conf):
     return config
 
 #comits a single file to git
-def git_commit_file(file_path, repo_path=None, msg="Commiting file from lolpop", push=True, logger=None):
-    repo = Repo(repo_path)
+def git_commit_file(file_path, repo_path=None, msg="Commiting file from lolpop", push=False, logger=None):
+    repo = Repo(repo_path,search_parent_directories=True)
     repo.index.add(file_path)
     hexsha = repo.index.commit(msg).hexsha
 

@@ -37,7 +37,7 @@ class LocalDataTransformer(BaseDataTransformer):
         data_connector_cl = utils.load_class(data_connector_cl_name)
         data_connector = data_connector_cl(
             conf = {"config": data_connector_config}, pipeline_conf = {}, runner_conf = {}, 
-            components={"logger": self.logger})
+            components={"logger": self.logger, "notifier": self.notifier, "metadata_tracker": self.metadata_tracker})
         self.data_connector = data_connector
 
     def transform(self, input_data, *args, **kwargs):

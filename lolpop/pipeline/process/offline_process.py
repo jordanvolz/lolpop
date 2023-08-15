@@ -119,13 +119,14 @@ class OfflineProcess(BaseProcess):
             prev_data = self.resource_version_control.get_data(prev_dataset_version, vc_info)
 
             #compare current dataset version with previous dataset version
-            comparison_report, file_path = self.data_profiler.compare_data(data, prev_data)
+            if prev_data is not None and not prev_data.empty:
+                comparison_report, file_path = self.data_profiler.compare_data(data, prev_data)
 
-            self.metadata_tracker.log_data_comparison(
-                dataset_version,
-                file_path = file_path, 
-                report = comparison_report, 
-                profiler_class = type(self.data_profiler).__name__
-                )
+                self.metadata_tracker.log_data_comparison(
+                    dataset_version,
+                    file_path = file_path, 
+                    report = comparison_report, 
+                    profiler_class = type(self.data_profiler).__name__
+                    )
         else: 
             self.log("No previous dataset version found for dataset: %s" %(self.metadata_tracker.get_resource_id(dataset_version)))

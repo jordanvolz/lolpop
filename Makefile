@@ -6,14 +6,14 @@ docs:
 tests: 
 	pytest tests
 
-all: docs tests 
+all: docs examples tests 
 
 .PHONY: example_titanic
 example_titanic: 
 	kaggle competitions download -c titanic
 	unzip -o titanic.zip -d examples/quickstart/classification/titanic
 	rm titanic.zip 
-	echo "Data for Titanic Example setup successfully!"
+	echo "Data for Titanic Example set up successfully!"
 
 .phony: example_medical_bills
 example_medical_bills: 
@@ -25,7 +25,7 @@ example_medical_bills:
 	awk 'BEGIN{FS=OFS=","}{NF--;print}' tmp > examples/quickstart/regression/medical_bills/test.csv 
 	mv csv_aa examples/quickstart/regression/medical_bills/train.csv
 	rm csv_ab tmp insurance.zip examples/quickstart/regression/medical_bills/insurance.csv
-	echo "Data for Medical Bills Example setup successfully!"
+	echo "Data for Medical Bills Example set up successfully!"
 
 .phony: example_sales_forecasting
 example_sales_forecasting: 
@@ -36,7 +36,21 @@ example_sales_forecasting:
 	echo $$(head -1 csv_aa) | cat - csv_ab > examples/quickstart/timeseries/sales_forecasting/test.csv 
 	mv csv_aa examples/quickstart/timeseries/sales_forecasting/train.csv
 	rm time-series-starter-dataset.zip csv_ab examples/quickstart/timeseries/sales_forecasting/Month_Value_1.csv
-	echo "Data for Sales Forecasting Example setup successfully!"
+	echo "Data for Sales Forecasting Example set up successfully!"
 
-examples: example_titanic example_medical_bills example_sales_forecasting
+.phony: example_petfinder
+example_petfinder: 
+	kaggle competitions download -c petfinder-adoption-prediction
+	unzip -j -o petfinder-adoption-prediction.zip train/train.csv test/test.csv -d examples/classification/petfinder/data
+	mkdir -p examples/classification/petfinder/dvc
+	mkdir -p /tmp/artifacts
+	cd examples/classification/petfinder && dvc init --subdir && dvc remote add -d local /tmp/artifacts 
+	rm petfinder-adoption-prediction.zip 
+	echo "Data for Petfinder Adoption Example set up successfully!"
+
+.phony: example_crabs
+example_crabs: 
+	kaggle competitions download -c petfinder-adoption-prediction
+
+examples: example_titanic example_medical_bills example_sales_forecasting example_petfinder
 	

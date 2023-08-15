@@ -10,9 +10,9 @@ components:
   resource_version_control: dvcVersionControl
   notifier: StdOutNotifier
 config: 
-  train_data: /Users/jordanvolz/Downloads/PETFINDER/train.csv
-  eval_data: /Users/jordanvolz/Downloads/PETFINDER/test.csv
-  prediction_data: /Users/jordanvolz/Downloads/PETFINDER/predictions.csv
+  train_data: data/train.csv
+  eval_data: data/test.csv
+  prediction_data: data/predictions.csv
   model_name: petfinder_adoption_speed
   model_target: AdoptionSpeed
   model_index: PetID
@@ -27,7 +27,7 @@ process:
     data_checker: DeepchecksDataChecker
   data_transformer: 
     config: 
-      transformer_path: /Users/jordanvolz/github/lolpop/examples/classification/mlflow/process_petfinder.py
+      transformer_path: process_petfinder.py
 
 train: 
   components: 
@@ -101,18 +101,12 @@ predict:
 #component config
 metadata_tracker: 
   config: 
-    mlflow_tracking_uri: file:///Users/jordanvolz/Downloads/mlruns
+    mlflow_tracking_uri: ./mlruns
     mlflow_experiment_name: petfinder_adoption_speed
 metrics_tracker: 
   config: 
-    mlflow_tracking_uri: file:///Users/jordanvolz/Downloads/mlruns
+    mlflow_tracking_uri: ./mlruns
     mlflow_experiment_name: petfinder_adoption_speed
-notifier: 
-  config: 
-    gcloud_credentials_file: /home/jordanvolz/.config/gcloud/email-notification-account.json
-    gcloud_credentials_token: /home/jordanvolz/.config/gcloud/email-notification-account-token.json
-    receipient_email: jordan@continual.ai
-    sender_email: lolpop@continual.ai
 logger:
   config: 
-    log_level: DEBUG
+    log_level: INFO

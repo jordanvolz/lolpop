@@ -226,8 +226,8 @@ class BaseModelTrainer(BaseComponent):
 
         #log stuff
         self.metrics_tracker.log_metrics(experiment, metrics_val, self._get_config("perf_metric"))
-        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_id", data={"winning_experiment_id" : self.metadata_tracker.get_resource_id(experiment)})
-        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_model_trainer", data={"winning_experiment_model_trainer" : type(self).__name__})
+        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_id", data=self.metadata_tracker.get_resource_id(experiment))
+        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_model_trainer", data = type(self).__name__)
 
         #save splits
         for k,v in data.items(): 

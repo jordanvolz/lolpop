@@ -12,7 +12,9 @@ import pandas as pd
 class dvcVersionControl(BaseResourceVersionControl): 
 
     __DEFAULT_CONF__ = {
-        "config": {"dvc_dir": "dvc/", "dvc_remote": "local"}
+        "config": {"dvc_dir": "dvc/", 
+                   "dvc_remote": "local", 
+                   "disable_git_commit": True}
     }
 
     def __init__(self, *args, **kwargs): 
@@ -66,9 +68,12 @@ class dvcVersionControl(BaseResourceVersionControl):
         #commit file to dvc and .dvc file to git, and  then dvc push
         _,_ = utils.execute_cmd(["dvc", "add", file_path], self)
         _,_ = utils.execute_cmd(["dvc",  "commit", file_path], self)
-        #git repo needs to have .dvc directory or else dvc doesn't know where to download from when using `dvc get`
-        hexsha = utils.git_commit_file(".dvc/", msg="Committing .dvc directory", push=False, logger=self)
-        hexsha = utils.git_commit_file("%s.dvc" %file_path, msg="Committing dvc file", logger=self)
+        #git repo needs to have .dvc/config or else dvc doesn't know where to download from when using `dvc get`
+        hexsha=None
+        if not self._get_config("disable_git_commit"):
+            git_push = not self._get_config("disable_git_push", True)
+            hexsha = utils.git_commit_file("%s.dvc" % file_path, msg="Committing dvc file", logger=self)
+            utils.git_commit_file(".dvc/", msg="Committing .dvc directory", push=git_push, logger=self)
         _,_ = utils.execute_cmd(["dvc", "push", "--remote", self.dvc_remote], self)
         #I don't think the URI is really needed. We should always access via dvc commands 
         URI, _ = utils.execute_cmd(["dvc", "get", os.getcwd(), file_path, "--show-url"], self)
@@ -91,19 +96,21 @@ class dvcVersionControl(BaseResourceVersionControl):
         if vc_info is None: 
             vc_info = self.metadata_tracker.get_vc_info(dataset_version)
         hexsha = vc_info.get("hexsha")
-        id = self.metadata_tracker.get_resource_id(dataset_version)
-        if key:
-            dvc_file = "%s_%s.csv" % (id, key)
-        else:
-            dvc_file = "%s.csv" % (id)
+        df = pd.DataFrame()
+        if hexsha is not None and hexsha != 'None': 
+            id = self.metadata_tracker.get_resource_id(dataset_version)
+            if key:
+                dvc_file = "%s_%s.csv" % (id, key)
+            else:
+                dvc_file = "%s.csv" % (id)
 
-        file_path = self.dvc_dir + dvc_file 
-        #if path exists, remove it before downloading. 
-        if os.path.exists(dvc_file):
-            os.remove(dvc_file)
-        _, _ = utils.execute_cmd(["dvc", "get", self.git_url, file_path, "--rev", hexsha, "-o", dvc_file], self)
-        df = pd.read_csv(dvc_file)
-        
+            file_path = self.dvc_dir + dvc_file 
+            #if path exists, remove it before downloading. 
+            if os.path.exists(dvc_file):
+                os.remove(dvc_file)
+            _, _ = utils.execute_cmd(["dvc", "get", self.git_url, file_path, "--rev", hexsha, "-o", dvc_file], self)
+            df = pd.read_csv(dvc_file)
+            
         return df 
 
     def version_model(self, experiment, model, algo=None, key=None, *args, **kwargs): 
@@ -137,8 +144,11 @@ class dvcVersionControl(BaseResourceVersionControl):
         #now commit to dvc
         _,_ = utils.execute_cmd(["dvc", "add", model_path], self)
         _,_ = utils.execute_cmd(["dvc", "commit", model_path], self)
-        hexsha = utils.git_commit_file(".dvc/", msg="Committing .dvc directory", push=False, logger=self)
-        hexsha = utils.git_commit_file("%s.dvc" %model_path,msg="Committing dvc file", logger=self)
+        hexsha=None
+        if not self._get_config("disable_git_commit"): 
+            git_push = not self._get_config("disable_git_push", True)
+            hexsha = utils.git_commit_file("%s.dvc" % model_path, msg="Committing dvc file", logger=self)
+            utils.git_commit_file(".dvc/", msg="Committing .dvc directory", push=git_push, logger=self)
         _,_ = utils.execute_cmd(["dvc", "push", "--remote", self.dvc_remote], self)
         URI, _ = utils.execute_cmd(["dvc", "get", os.getcwd(), model_path, "--show-url"], self)
 

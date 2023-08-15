@@ -29,14 +29,15 @@ class OfflinePredict(BasePredict):
         train_df = self.resource_version_control.get_data(model_version, vc_info, key = "X_train")
 
         #compare current dataset version with previous dataset version
-        comparison_report, file_path = self.data_profiler.compare_data(data, train_df)
+        if train_df is not None and not train_df.empty: 
+            comparison_report, file_path = self.data_profiler.compare_data(data, train_df)
 
-        self.metadata_tracker.log_data_comparison(
-            dataset_version,
-            file_path = file_path, 
-            report = comparison_report, 
-            profiler_class = self.data_profiler.name
-            )
+            self.metadata_tracker.log_data_comparison(
+                dataset_version,
+                file_path = file_path, 
+                report = comparison_report, 
+                profiler_class = self.data_profiler.name
+                )
         
     def get_predictions(self, model, model_version, data, *args, **kwargs):
         """
@@ -114,14 +115,15 @@ class OfflinePredict(BasePredict):
             prev_data = self.resource_version_control.get_data(prev_dataset_version, vc_info)
 
             #compare current dataset version with previous dataset version
-            comparison_report, file_path = self.data_profiler.compare_data(data, prev_data)
+            if prev_data is not None and not prev_data.empty:
+                comparison_report, file_path = self.data_profiler.compare_data(data, prev_data)
 
-            self.metadata_tracker.log_data_comparison(
-                prediction_job,
-                file_path = file_path, 
-                report = comparison_report, 
-                profiler_class = type(self.data_profiler).__name__
-                )
+                self.metadata_tracker.log_data_comparison(
+                    prediction_job,
+                    file_path = file_path, 
+                    report = comparison_report, 
+                    profiler_class = type(self.data_profiler).__name__
+                    )
         
     def check_predictions(self, data, prediction_job, *args, **kwargs):
         """
