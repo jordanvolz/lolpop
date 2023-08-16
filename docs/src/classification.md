@@ -80,10 +80,6 @@ This guide will walk us through a quick example of predicting the time to adopti
     Issues found with data checks. Visit ./mlruns for more information.
     2023/08/13 20:52:40.370758 [ERROR] <OfflinePredict> ::: Notification Sent: Issues found with data checks. Visit ./mlruns for more information.
     2023/08/13 20:52:40.541118 [INFO] <LocalDataConnector> ::: Successfully saved data to data/predictions.csv.
-    2023/08/13 20:52:40.551292 [INFO] <dvcVersionControl> ::: Executing command: `dvc get git@github.com:jordanvolz/lolpop_petfinder_example.git dvc/petfinder_adoption_speed_predictions.csv --rev 9bb722ba3e9e3128dd0404bd9f4439fe2eaeb7e3 -o petfinder_adoption_speed_predictions.csv`
-    2023/08/13 20:52:47.856724 [INFO] <LocalDataConnector> ::: Successfully loaded data from data/train.csv into DataFrame.                                                                                                             
-    Current training data has no overlap with the prediction job petfinder_adoption_speed_predictions
-    2023/08/13 20:52:48.088906 [WARNING] <ClassificationRunner> ::: Notification Sent: Current training data has no overlap with the prediction job petfinder_adoption_speed_predictions
     exiting...
     ```
 
@@ -112,3 +108,55 @@ This guide will walk us through a quick example of predicting the time to adopti
     ```
 
 ## Understanding the Example
+
+To get a feel for tracing through the runner, pipeline and component code, see the [quickstart](classification_quickstart.md) guide. This example follows the same principles, it just does much more. As a summary for what this workflow accomplishes: 
+
+**Data Processing**: 
+
+- Data is transformed via a `data_transformer` component. This would typically involve doing some light data engineering or feature engineering to get data into a single dataset. 
+
+- Data is versioned and tracked using the `metadata_tracker` and the `resource_version_control`
+
+- Data is profiled via a `data_profiler`. This performs an EDA style analysis of the data and save the output report. 
+
+- Data is run through a series of data checks, via a `data_checker`. These checks are typically associated with data quality/integrity. Again, the output report should be saved into the `metadata_tracker`.
+
+- Finally, the `data_profiler` fetches the previous data version and runs a data comparison report. The output report will be saved into the `metadata_tracker`. 
+
+**Model Training**: 
+
+- The input dataset is split into training, validation, and test datasets using a `data_splitter`. 
+
+- A model is trained! This fits a model using a `hyperparamter_tuner` or just a single `model_trainer`, depending on the configuration. All experiments will be tracked into the `metadat_tracker`. All models created will be verisoned and tracked into the `resource_version_control`, also with the data splits themselves. 
+
+- The model is analyzed. This will perform tasks like computing feature importance via a `model_explainer`, running a baseline comparison, and creating visualizations with a `model_visualizer`. 
+
+- Checks are performed on the model with a `model_checker.` This will typically look at things like model error, overfitting, drift, etc. 
+
+- The model is checked for biase using a `model_bias_checker`. This will compute several bias metrics and log them into a `metrics_tracker`. 
+
+- The model lineage is create and tracked in the `metadata_tracker`. 
+
+- A comparison is run between the previous model version and the current model version. This comparison determines if the new model verison is better than the previous model version on a static dataset. 
+
+- Optionally, if the new model version is better than the previous ones, the workflow can retrain the model using all available data. This effectives retrain the model given the configuration of the best experiment on the entire dataset. 
+
+**Model Deployment**: 
+
+- Promotes a model using a `model_repository`. 
+
+- Checks if a model has been approved. If so, the model will be deployed using a `model_deployer`. 
+
+**Model Inference**: 
+
+- Compares the incoming prediction data to the training data using a `data_profiler`. Generates a report and saves it to the `metadata_tracker`. 
+
+- Uses the `model_trainer` to generate predictions for the new data. 
+
+- Tracks and versions the new predictions using the `metadata_tracker` and the `resource_version_control`. 
+
+- Compares the current prediction data to the previous prediction data and calculates drift using a `data_profiler`. Generates a report and saves it to the `metadata_tracker`
+
+- Runs checks on the predictions using a `data_checker`. Generates a report and saves it to the `metadat_tracker`. 
+
+- Saves the predictions to a target location via a `data_connector`. 
