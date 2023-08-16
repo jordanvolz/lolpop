@@ -36,8 +36,10 @@ def load_config(config_keys, conf):
     return config
 
 #comits a single file to git
-def git_commit_file(file_path, repo_path=None, msg="Commiting file from lolpop", push=False, logger=None):
+def git_commit_file(file_path, repo_path=None, msg="Commiting file from lolpop", push=False, path_from_root=None, logger=None):
     repo = Repo(repo_path,search_parent_directories=True)
+    if path_from_root is not None: 
+        file_path = "%s/%s" %(path_from_root, file_path)
     repo.index.add(file_path)
     hexsha = repo.index.commit(msg).hexsha
 
@@ -324,7 +326,11 @@ def error_handler(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            raise Exception(f"An error occurred: {e}")
+            #prevent unnecessary nesting
+            if str(e).startswith("An error occurred:"): 
+                raise e
+            else: 
+                raise Exception(f"An error occurred: {e}")
     return wrapper
 
 # decorate all public methods in a class with decorator

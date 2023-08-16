@@ -1,5 +1,6 @@
 from lolpop.component.resource_version_control.base_resource_version_control import BaseResourceVersionControl
 from lolpop.utils import common_utils as utils
+from pathlib import Path 
 import os 
 import joblib
 import pandas as pd
@@ -14,7 +15,10 @@ class dvcVersionControl(BaseResourceVersionControl):
     __DEFAULT_CONF__ = {
         "config": {"dvc_dir": "dvc/", 
                    "dvc_remote": "local", 
-                   "disable_git_commit": True}
+                   "disable_git_commit": False, 
+                   "disable_git_push": False, 
+                   "git_path_to_dvc_dir": None, 
+                   }
     }
 
     def __init__(self, *args, **kwargs): 
@@ -37,6 +41,14 @@ class dvcVersionControl(BaseResourceVersionControl):
                 _ = utils.execute_cmd(["dvc", "remote", "add", "-d", "local",  local_dir])
 
         self.git_url = utils.execute_cmd(["git", "config", "--get", "remote.origin.url"], self)[0].strip()
+        
+        if not self._get_config("disable_git_commit"): 
+            #make sure the .dvc/config file is comitted. 
+            utils.git_commit_file(".dvc/config", 
+                                msg="Committing .dvc/config", 
+                                push=False, 
+                                path_from_root=self._get_config("git_path_to_dvc_dir"),
+                                logger=self)
 
     def version_data(self, dataset_version, data, key = None, *args, **kwargs): 
         """
@@ -71,9 +83,12 @@ class dvcVersionControl(BaseResourceVersionControl):
         #git repo needs to have .dvc/config or else dvc doesn't know where to download from when using `dvc get`
         hexsha=None
         if not self._get_config("disable_git_commit"):
-            git_push = not self._get_config("disable_git_push", True)
-            hexsha = utils.git_commit_file("%s.dvc" % file_path, msg="Committing dvc file", logger=self)
-            utils.git_commit_file(".dvc/", msg="Committing .dvc directory", push=git_push, logger=self)
+            git_push = not self._get_config("disable_git_push")
+            hexsha = utils.git_commit_file("%s.dvc" % file_path, 
+                                           msg="Committing dvc file", 
+                                           push=git_push, 
+                                           path_from_root=self._get_config("git_path_to_dvc_dir"),
+                                           logger=self)
         _,_ = utils.execute_cmd(["dvc", "push", "--remote", self.dvc_remote], self)
         #I don't think the URI is really needed. We should always access via dvc commands 
         URI, _ = utils.execute_cmd(["dvc", "get", os.getcwd(), file_path, "--show-url"], self)
@@ -105,6 +120,8 @@ class dvcVersionControl(BaseResourceVersionControl):
                 dvc_file = "%s.csv" % (id)
 
             file_path = self.dvc_dir + dvc_file 
+            if self._get_config("git_path_to_dvc_dir") is not None: 
+                file_path = str(Path(self._get_config("git_path_to_dvc_dir")) / file_path)
             #if path exists, remove it before downloading. 
             if os.path.exists(dvc_file):
                 os.remove(dvc_file)
@@ -146,9 +163,12 @@ class dvcVersionControl(BaseResourceVersionControl):
         _,_ = utils.execute_cmd(["dvc", "commit", model_path], self)
         hexsha=None
         if not self._get_config("disable_git_commit"): 
-            git_push = not self._get_config("disable_git_push", True)
-            hexsha = utils.git_commit_file("%s.dvc" % model_path, msg="Committing dvc file", logger=self)
-            utils.git_commit_file(".dvc/", msg="Committing .dvc directory", push=git_push, logger=self)
+            git_push = not self._get_config("disable_git_push")
+            hexsha = utils.git_commit_file("%s.dvc" % model_path, 
+                                           msg="Committing dvc file", 
+                                           push = git_push,
+                                           path_from_root=self._get_config("git_path_to_dvc_dir"), 
+                                           logger=self)
         _,_ = utils.execute_cmd(["dvc", "push", "--remote", self.dvc_remote], self)
         URI, _ = utils.execute_cmd(["dvc", "get", os.getcwd(), model_path, "--show-url"], self)
 
@@ -172,13 +192,17 @@ class dvcVersionControl(BaseResourceVersionControl):
         model_version_id = self.metadata_tracker.get_parent_id(experiment, type="experiment")
         algo = self.metadata_tracker.get_metadata(experiment,id="model_trainer")
         hexsha = self.metadata_tracker.get_vc_info(experiment, key="hexsha").get("hexsha")
-        dvc_file = "models/%s/%s/%s" %(model_version_id,algo,id)
-        file_path = self.dvc_dir + dvc_file
-        #if path exists, remove it before downloading.
-        if os.path.exists(dvc_file):
-            os.remove(dvc_file)
-        _, _ = utils.execute_cmd(["dvc", "get", self.git_url, file_path,  "--rev", hexsha, "-o", dvc_file], self)
-        model = joblib.load(dvc_file)
+        model = None
+        if hexsha is not None and hexsha != 'None':    
+            dvc_file = "models/%s/%s/%s" %(model_version_id,algo,id)
+            file_path = self.dvc_dir + dvc_file
+            if self._get_config("git_path_to_dvc_dir") is not None:
+                file_path = str(Path(self._get_config("git_path_to_dvc_dir")) / file_path)
+            #if path exists, remove it before downloading.
+            if os.path.exists(dvc_file):
+                os.remove(dvc_file)
+            _, _ = utils.execute_cmd(["dvc", "get", self.git_url, file_path,  "--rev", hexsha, "-o", dvc_file], self)
+            model = joblib.load(dvc_file)
         return model
 
     

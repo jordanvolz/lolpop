@@ -16,8 +16,8 @@ if deploy_model:
 eval_data, eval_dataset_version = runner.process_data(source="eval")
 data, prediction_job = runner.predict_data(model_version, model, eval_data, eval_dataset_version)
 
-#evaluate ground truth
-runner.evaluate_ground_truth(prediction_job)
+##evaluate ground truth
+#runner.evaluate_ground_truth(prediction_job)
 
 #exit
 runner.stop()

@@ -52,6 +52,8 @@ class EvidentlyAIModelChecker(BaseModelChecker):
         model_target = self._get_config("MODEL_TARGET")
         column_mapping.target = model_target
         column_mapping.prediction = "prediction"
+        column_mapping.id = self._get_config("model_index")
+        column_mapping.datetime = self._get_config("model_time_index")
 
         #set up data + predictions for train/test drift
         df_train, df_test = self.data_splitter.get_train_test_dfs(data_dict) 
@@ -106,8 +108,15 @@ class EvidentlyAIModelChecker(BaseModelChecker):
 
         #create column mapping
         column_mapping = ColumnMapping()
-        column_mapping.target=self._get_config("model_target")
-        column_mapping.target="prediction"
+        column_mapping.target = check_col_exists(
+            self._get_config("MODEL_TARGET"), df_current, df_deployed)
+        column_mapping.prediction = "prediction"
+        column_mapping.id = check_col_exists(
+            self._get_config("model_index"), df_current, df_deployed)
+        column_mapping.datetime = check_col_exists(
+            self._get_config("model_time_index"), df_current, df_deployed)
+
+
         df_current["prediction"] = current_model.predict_df(df_current)
         df_deployed["prediction"] = deployed_model.predict_df(df_deployed)
 
@@ -121,3 +130,12 @@ class EvidentlyAIModelChecker(BaseModelChecker):
 
         return drift_report, file_path
         
+#drift reports error if one dataset doesn't contain something in the column mapping
+# so this ensures we don't get into a mapping that will cause an error.
+
+
+def check_col_exists(col, dfA, dfB):
+    if col in dfA.columns and col in dfB.columns:
+        return col
+    else:
+        return None
