@@ -1,0 +1,4 @@
+outs:
+- md5: fbc52d06ca1089f38f5f93e3948daeeb
+  size: 148349
+  path: crab_age_y_train.csv
