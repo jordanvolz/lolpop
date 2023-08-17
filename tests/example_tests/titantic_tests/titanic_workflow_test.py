@@ -9,7 +9,7 @@ runner = CliRunner()
 example_dir = Path(__file__).parent.parent.parent.parent.resolve() / "examples/quickstart/classification/titanic/"
 original_dir = os.getcwd() 
 
-def test_workflow_runs_successfully():
+def test_titanic_workflow_runs_successfully():
     os.chdir(example_dir)
     # Provide valid arguments for the workflow command
     result = runner.invoke(app, ["workflow", "QuickstartRunner",

@@ -11,7 +11,7 @@ example_dir = Path(__file__).parent.parent.parent.parent.resolve(
 original_dir = os.getcwd()
 
 
-def test_workflow_runs_successfully():
+def test_sales_forecasting_workflow_runs_successfully():
     os.chdir(example_dir)
     # Provide valid arguments for the workflow command
     result = runner.invoke(app, ["workflow", "QuickstartTimeSeriesRunner",

@@ -44,7 +44,7 @@ example_petfinder:
 	unzip -j -o petfinder-adoption-prediction.zip train/train.csv test/test.csv -d examples/classification/petfinder/data
 	mkdir -p examples/classification/petfinder/dvc
 	mkdir -p /tmp/artifacts
-	cd examples/classification/petfinder && dvc init --subdir && dvc remote add -d local /tmp/artifacts 
+	cd examples/classification/petfinder && dvc init --subdir --force && dvc remote add -d local /tmp/artifacts 
 	rm petfinder-adoption-prediction.zip 
 	echo "Data for Petfinder Adoption Example set up successfully!"
 
@@ -54,7 +54,9 @@ example_crabs:
 	unzip -j -o playground-series-s3e16.zip train.csv test.csv -d examples/regression/crab_age/data
 	mkdir -p examples/regression/crab_age/dvc
 	mkdir -p /tmp/artifacts
-	cd examples/regression/crab_age && dvc init --subdir && dvc remote add -d local /tmp/artifacts 
+	cd examples/regression/crab_age && dvc init --subdir --force && dvc remote add -d local /tmp/artifacts 
+	mkdir -p examples/regression/crab_age/duckdb
+	cd examples/regression/crab_age && python3 setup_duckdb.py
 	rm playground-series-s3e16.zip 
 	echo "Data for Crab Age Example set up successfully!"
 

@@ -27,10 +27,10 @@ process:
     data_checker: DeepchecksDataChecker
   data_transformer: 
     config: 
-      transformer_path: /Users/jordanvolz/github/lolpop/examples/regression/process_crab_data.py
+      transformer_path: process_crab_data.py
       data_connector: DuckDBDataConnector
       data_connector_config: 
-        duckdb_path: /Users/jordanvolz/Downloads/duck.db
+        duckdb_path: duckdb/duck.db
 train: 
   components: 
     data_splitter: LocalDataSplitter
@@ -94,7 +94,10 @@ predict:
     data_profiler: $process.components.data_profiler
     model_explainer: $train.components.model_explainer
     data_checker: $process.components.data_checker
-    data_connector: LocalDataConnector
+    data_connector: DuckDBDataConnector
+  data_connector: 
+    config:
+      duckdb_path: duckdb/duck.db
   model_explainer: 
     config: 
       explainer_class: $train.model_explainer.config.explainer_class
@@ -103,12 +106,12 @@ predict:
 #component config
 metadata_tracker: 
   config: 
-    mlflow_tracking_uri: file:///Users/jordanvolz/Downloads/mlruns
+    mlflow_tracking_uri: ./mlruns
     mlflow_experiment_name: crab_age
 metrics_tracker: 
   config: 
-    mlflow_tracking_uri: file:///Users/jordanvolz/Downloads/mlruns
+    mlflow_tracking_uri: ./mlruns
     mlflow_experiment_name: crab_age
 logger:
   config: 
-    log_level: DEBUG
+    log_level: INFO

@@ -9,18 +9,18 @@ from lolpop.cli.run import app
 runner = CliRunner()
 
 example_dir = Path(__file__).parent.parent.parent.parent.resolve(
-) / "examples/classification/petfinder/"
+) / "examples/regression/crab_age/"
 original_dir = os.getcwd()
 
 
-def test_petfinder_dev_workflow_runs_successfully(tmp_path):
+def test_crab_age_dev_workflow_runs_successfully(tmp_path):
     os.chdir(example_dir)
     
     #change config to disable commits so we don't commit stuff into the main branch. 
     config = OmegaConf.load("dev.yaml")
     rvc_conf = config.get("resource_version_control", OmegaConf.create({"config": {}}))
     rvc_conf.config["disable_git_commit"] = True 
-    rvc_conf.config["git_path_to_dvc_dir"] = "examples/classification/petfinder"
+    rvc_conf.config["git_path_to_dvc_dir"] = "examples/regression/crab_age"
     config["resource_version_control"] = rvc_conf
     #dvc is set up as a subdir, i.e dvc init --subdir, so we have to provide the path to the dvc dir 
     #so that git commits will work
@@ -28,7 +28,7 @@ def test_petfinder_dev_workflow_runs_successfully(tmp_path):
     OmegaConf.save(config, file_path)
 
     #run workflow! 
-    result = runner.invoke(app, ["workflow", "ClassificationRunner",
+    result = runner.invoke(app, ["workflow", "RegressionRunner",
                                  "--config-file", "%s" %file_path,
                                  "--build-method", "build_all"
                                  ])

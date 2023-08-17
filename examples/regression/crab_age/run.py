@@ -1,7 +1,7 @@
 from lolpop.runner import RegressionRunner
 
 #create runner from config
-config_file = "/Users/jordanvolz/github/lolpop/examples/regression/local_dev.yaml"
+config_file = "dev.yaml"
 runner = RegressionRunner(conf=config_file)
 
 #run data processing
@@ -18,7 +18,7 @@ data, prediction_job = runner.predict_data(
     model_version, model, eval_data, eval_dataset_version)
 
 #evaluate ground truth
-runner.evaluate_ground_truth(prediction_job)
+#runner.evaluate_ground_truth(prediction_job)
 
 #exit
 runner.stop()
