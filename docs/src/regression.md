@@ -112,7 +112,7 @@ This guide will walk us through a quick example of predicting the age of crabs g
 
 ## Understanding the Example
 
-To get a feel for tracing through the runner, pipeline and component code, see the [quickstart](classification_quickstart.md) guide. This example follows the same principles, it just does much more. As a summary for what this workflow accomplishes: 
+To get a feel for tracing through the runner, pipeline and component code, see the [quickstart](regression_quickstart.md) guide. This example follows the same principles, it just does much more. As a summary for what this workflow accomplishes: 
 
 **Data Processing**: 
 
@@ -130,7 +130,7 @@ To get a feel for tracing through the runner, pipeline and component code, see t
 
 - The input dataset is split into training, validation, and test datasets using a `data_splitter`. 
 
-- A model is trained! This fits a model using a `hyperparamter_tuner` or just a single `model_trainer`, depending on the configuration. All experiments will be tracked into the `metadat_tracker`. All models created will be verisoned and tracked into the `resource_version_control`, also with the data splits themselves. 
+- A model is trained! This fits a model using a `hyperparamter_tuner` or just a single `model_trainer`, depending on the configuration. All experiments will be tracked into the `metadata_tracker`. All models created will be versioned and tracked into the `resource_version_control`, also with the data splits themselves. 
 
 - The model is analyzed. This will perform tasks like computing feature importance via a `model_explainer`, running a baseline comparison, and creating visualizations with a `model_visualizer`. 
 
@@ -140,7 +140,7 @@ To get a feel for tracing through the runner, pipeline and component code, see t
 
 - The model lineage is create and tracked in the `metadata_tracker`. 
 
-- A comparison is run between the previous model version and the current model version. This comparison determines if the new model verison is better than the previous model version on a static dataset. 
+- A comparison is run between the previous model version and the current model version. This comparison determines if the new model version is better than the previous model version on a static dataset. 
 
 - Optionally, if the new model version is better than the previous ones, the workflow can retrain the model using all available data. This effectives retrain the model given the configuration of the best experiment on the entire dataset. 
 
@@ -160,6 +160,6 @@ To get a feel for tracing through the runner, pipeline and component code, see t
 
 - Compares the current prediction data to the previous prediction data and calculates drift using a `data_profiler`. Generates a report and saves it to the `metadata_tracker`
 
-- Runs checks on the predictions using a `data_checker`. Generates a report and saves it to the `metadat_tracker`. 
+- Runs checks on the predictions using a `data_checker`. Generates a report and saves it to the `metadata_tracker`. 
 
 - Saves the predictions to a target location via a `data_connector`. 
