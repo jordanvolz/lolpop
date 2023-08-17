@@ -50,7 +50,13 @@ example_petfinder:
 
 .phony: example_crabs
 example_crabs: 
-	kaggle competitions download -c petfinder-adoption-prediction
+	kaggle competitions download -c playground-series-s3e16
+	unzip -j -o playground-series-s3e16.zip train.csv test.csv -d examples/regression/crab_age/data
+	mkdir -p examples/regression/crab_age/dvc
+	mkdir -p /tmp/artifacts
+	cd examples/regression/crab_age && dvc init --subdir && dvc remote add -d local /tmp/artifacts 
+	rm playground-series-s3e16.zip 
+	echo "Data for Crab Age Example set up successfully!"
 
-examples: example_titanic example_medical_bills example_sales_forecasting example_petfinder
+examples: example_titanic example_medical_bills example_sales_forecasting example_petfinder example_crabs
 	

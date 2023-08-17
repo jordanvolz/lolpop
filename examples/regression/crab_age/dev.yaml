@@ -1,5 +1,3 @@
-#data from: https://www.kaggle.com/competitions/playground-series-s3e16
-
 #runner config
 pipelines: 
   process: OfflineProcess 
