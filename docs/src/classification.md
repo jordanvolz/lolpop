@@ -135,11 +135,11 @@ To get a feel for tracing through the runner, pipeline and component code, see t
 
 - The model is checked for biase using a `model_bias_checker`. This will compute several bias metrics and log them into a `metrics_tracker`. 
 
-- The model lineage is create and tracked in the `metadata_tracker`. 
+- The model lineage is created and tracked in the `metadata_tracker`. 
 
 - A comparison is run between the previous model version and the current model version. This comparison determines if the new model version is better than the previous model version on a static dataset. 
 
-- Optionally, if the new model version is better than the previous ones, the workflow can retrain the model using all available data. This effectives retrain the model given the configuration of the best experiment on the entire dataset. 
+- Optionally, if the new model version is better than the previous ones, the workflow can retrain the model using all available data. This retrains the model given the configuration of the best experiment on the entire dataset. 
 
 **Model Deployment**: 
 

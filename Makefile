@@ -4,9 +4,8 @@ docs:
 
 .PHONY: tests
 tests: 
+	examples
 	pytest tests
-
-all: docs examples tests 
 
 .PHONY: example_titanic
 example_titanic: 
@@ -60,5 +59,27 @@ example_crabs:
 	rm playground-series-s3e16.zip 
 	echo "Data for Crab Age Example set up successfully!"
 
-examples: example_titanic example_medical_bills example_sales_forecasting example_petfinder example_crabs
+.phony: example_grocery_sales
+example_grocery_sales: 
+	kaggle competitions download -c store-sales-time-series-forecasting
+	unzip -j -o store-sales-time-series-forecasting.zip train.csv test.csv holidays_events.csv -d examples/time_series/grocery_sales/data
+	mkdir -p examples/time_series/grocery_sales/dvc
+	mkdir -p /tmp/artifacts
+	cd examples/time_series/grocery_sales && dvc init --subdir --force && dvc remote add -d local /tmp/artifacts 
+	mkdir -p examples/time_series/grocery_sales/duckdb
+	cd examples/time_series/grocery_sales && python3 setup_duckdb.py
+	rm store-sales-time-series-forecasting.zip 
+	echo "Data for Grocery Sales Forecasting set up successfully!"
+
+examples: 
+	example_titanic 
+	example_medical_bills 
+	example_sales_forecasting 
+	example_petfinder 
+	example_crabs 
+	example_grocery_sales
 	
+all: 
+	docs 
+	examples 
+	tests 

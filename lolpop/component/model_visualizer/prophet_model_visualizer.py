@@ -119,3 +119,4 @@ class ProphetModelVisualizer(BaseModelVisualizer):
         name = file_name.split(".")[0]
         if model_version is not None: 
             self.metadata_tracker.log_artifact(model_version, name, file_path)
+        plt.close()

@@ -1,4 +1,0 @@
-outs:
-- md5: 29d52350b41174c618d5014f62832a88
-  size: 29680
-  path: store_sales_forecast_y_train.csv
