@@ -1,0 +1,4 @@
+outs:
+- md5: 5b1b70482d648e3aa779f559946ed75c
+  size: 503
+  path: store_sales_forecast_predictions.csv
