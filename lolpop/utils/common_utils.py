@@ -60,6 +60,7 @@ def load_plugins(plugin_paths=[]):
     return plugins
 
 def load_plugin(plugin_path, obj=None): 
+    #get plugin directory path and name
     if plugin_path.is_dir(): 
         plugin_dir = str(plugin_path)
         plugin_name = plugin_path.name
@@ -68,10 +69,15 @@ def load_plugin(plugin_path, obj=None):
         plugin_name = plugin_path.stem
     else: 
         raise Exception("Invalid plugin path: %s. Path is not a file nor a directory." %plugin_path)
+    #append directory to sys path
     if plugin_dir: 
         sys.path.append(plugin_dir)
+    #import module
+    mod = None
     if plugin_name: 
         mod = import_module(plugin_name)
+    #if object passed in, append plugin dir to plugin_paths config
+    #this is mainly used for local data transformer component
     if obj: 
         plugin_paths = obj._get_config("plugin_paths",[]) 
         plugin_paths.append(plugin_dir)

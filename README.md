@@ -1,5 +1,5 @@
 # lolpop
-A software engineering framework to jumpstart your Machine Learning projects
+A software engineering framework to jump start your Machine Learning projects
 
 ## Installing 
 
@@ -154,17 +154,17 @@ lolpop *doesn't really do anything*, it mainly helps you write better ML workflo
 
 ## Next Steps
 
-- [Quickstart](quickstart.md): Go here for a quickstart guide. Learn how to install lolpop and get it up and running. Run your first workflow, dance, and celebrate!
+- [Quickstart](https://lolpop.readthedocs.io/en/latest/quickstart): Go here for a quickstart guide. Learn how to install lolpop and get it up and running. Run your first workflow, dance, and celebrate!
 
-- [User Guide](lolpop_overview.md): Go here to learn how to work with lolpop. 
+- [User Guide](https://lolpop.readthedocs.io/en/latest/lolpop_overview): Go here to learn how to work with lolpop. 
 
-- [Integrations](integrations.md): Go here to learn about pre-built runner, pipelines, and components that you can use to build out your own workflows.  
+- [Integrations]https://lolpop.readthedocs.io/en/latest/(integrations): Go here to learn about pre-built runner, pipelines, and components that you can use to build out your own workflows.  
 
-- [Extensions](extensions.md): Go here to learn all you need to do to start building your own runners, pipelines, and components. 
+- [Extensions](https://lolpop.readthedocs.io/en/latest/extensions): Go here to learn all you need to do to start building your own runners, pipelines, and components. 
 
-- [CLI](cli.md): Go here to learn how to use the lolpop command line interface. 
+- [CLI](https://lolpop.readthedocs.io/en/latest/cli): Go here to learn how to use the lolpop command line interface. 
 
-- [Examples](examples.md): Go here to find some examples of using lolpop. 
+- [Examples](https://lolpop.readthedocs.io/en/latest/examples): Go here to find some examples of using lolpop. 
 
-- [Resources](about.md) : Go here to find out how to get in touch with the lolpop team, contributing to lolpop, etc. 
+- [Resources](https://lolpop.readthedocs.io/en/latest/about) : Go here to find out how to get in touch with the lolpop team, contributing to lolpop, etc. 
 

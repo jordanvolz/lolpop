@@ -32,7 +32,7 @@ class MetaflowOfflineProcess(BaseProcess):
         """
         #get flow class object from this file
         mod_cl = meta_utils.get_flow_class(__file__, METAFLOW_CLASS)
-
+        
         flow = meta_utils.load_flow(mod_cl, self, PLUGIN_PATHS, source_data=source_data, source_data_name=source_data_name)
         self.log("Loaded metaflow flow %s" % METAFLOW_CLASS)
 

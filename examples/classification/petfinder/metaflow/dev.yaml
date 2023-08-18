@@ -1,31 +1,26 @@
 #runner config
 pipelines: 
-  wrapper: MetaflowPipelineWrapper
-  process: OfflineProcess
-  train: OfflineTrain
-  deploy: OfflineDeploy
-  predict: OfflinePredict
+  process: MetaflowOfflineProcess 
+  train: MetaflowOfflineTrain
+  deploy: MetaflowOfflineDeploy
+  predict: MetaflowOfflinePredict
 components: 
   metadata_tracker: MLFlowMetadataTracker
   metrics_tracker: MLFlowMetricsTracker
   resource_version_control: dvcVersionControl
   notifier: StdOutNotifier
 config: 
-  train_data: /Users/jordanvolz/Downloads/PETFINDER/train.csv
-  eval_data: /Users/jordanvolz/Downloads/PETFINDER/test.csv
-  prediction_data: /Users/jordanvolz/Downloads/PETFINDER/predictions.csv
+  train_data: data/train.csv
+  eval_data: data/test.csv
+  prediction_data: data/predictions.csv
   model_name: petfinder_adoption_speed
   model_target: AdoptionSpeed
   model_index: PetID
   drop_columns: [Name, PetID, RescuerID, Description, SPLIT]
   local_dir: /tmp/artifacts/
+  disable_git_commit: True
 
 #pipelines config
-wrapper: 
-  config: 
-    metaflow_script: /Users/jordanvolz/Downloads/mlflow_int/scripts/example_metaflow.py
-    flow_id: LinearFlow
-
 process: 
   components: 
     data_transformer: LocalDataTransformer
@@ -33,7 +28,7 @@ process:
     data_checker: DeepchecksDataChecker
   data_transformer: 
     config: 
-      transformer_path: /Users/jordanvolz/github/lolpop/examples/classification/mlflow/process_petfinder.py
+      transformer_path: process_petfinder.py
 
 train: 
   components: 
@@ -107,18 +102,15 @@ predict:
 #component config
 metadata_tracker: 
   config: 
-    mlflow_tracking_uri: file:///Users/jordanvolz/Downloads/mlruns
+    mlflow_tracking_uri: ./mlruns
     mlflow_experiment_name: petfinder_adoption_speed
 metrics_tracker: 
   config: 
-    mlflow_tracking_uri: file:///Users/jordanvolz/Downloads/mlruns
+    mlflow_tracking_uri: ./mlruns
     mlflow_experiment_name: petfinder_adoption_speed
-notifier: 
-  config: 
-    gcloud_credentials_file: /home/jordanvolz/.config/gcloud/email-notification-account.json
-    gcloud_credentials_token: /home/jordanvolz/.config/gcloud/email-notification-account-token.json
-    receipient_email: jordan@continual.ai
-    sender_email: lolpop@continual.ai
 logger:
   config: 
-    log_level: DEBUG
+    log_level: INFO
+resource_version_control: 
+  config: 
+    git_path_to_dvc_dir: examples/classification/petfinder
