@@ -1,0 +1,4 @@
+outs:
+- md5: afa3293d0bd8b90efbcd0503ffd7bfa8
+  size: 49977
+  path: store_sales_forecast_X_train.csv
