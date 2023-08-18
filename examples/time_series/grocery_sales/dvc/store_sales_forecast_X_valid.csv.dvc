@@ -1,0 +1,4 @@
+outs:
+- md5: 1dac75a3762f18b1df55ac3073836abd
+  size: 68
+  path: store_sales_forecast_X_valid.csv
