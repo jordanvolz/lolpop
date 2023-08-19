@@ -104,7 +104,37 @@ class MetaflowOfflineTrainSpec(FlowSpec):
 
         self.next(self.analyze_model)
 
-    @step    
+    @step
+    def analyze_model(self):
+        #calculate feature importance
+        if not (self.lolpop.problem_type == "timeseries"): 
+            self.lolpop.model_explainer.get_feature_importance(
+                self.data_dict, self.model, self.model_version)
+
+        #compare model to baseline
+        self.lolpop.model_checker.get_baseline_comparison(
+            self.data_dict, self.model, self.model_version)
+
+        #create some eye candy
+        self.lolpop.model_visualizer.generate_viz(
+            self.data_dict, self.model._get_model(), self.model_version)
+        
+        if (self.lolpop.problem_type == "timeseries"):
+            self.lolpop.model_visualizer.cross_validation(
+                self.model._get_model(), 
+                self.model_version,
+                initial=self.model._get_config("cv_initial"),
+                period=self.model._get_config("cv_period"),
+                horizon=self.model._get_config("cv_horizon"),
+            )
+
+
+        if (self.lolpop.problem_type == "timeseries"):
+            self.next(self.retrain_model_on_all_data)
+        else: 
+            self.next(self.check_model)
+
+    @step
     def check_model(self):
         #run model checks
         model_report, file_path, checks_status = self.lolpop.model_checker.check_model(
@@ -122,25 +152,19 @@ class MetaflowOfflineTrainSpec(FlowSpec):
         if checks_status == "ERROR" or checks_status == "WARN":
             url = self.lolpop.metadata_tracker.url
             self.lolpop.notify(
-                "Issues found with model checks. Visit %s for more information." %url, checks_status)
-            
+                "Issues found with model checks. Visit %s for more information." % url, checks_status)
+
         self.next(self.check_model_bias)
 
     @step
-    def analyze_model(self):
-        #calculate feature importance
-        self.lolpop.model_explainer.get_feature_importance(
-            self.data_dict, self.model, self.model_version)
+    def check_model_bias(self):
+        #check model bias
+        bias_metrics = self.lolpop.model_bias_checker.check_model_bias(
+            self.data_dict, self.model)
+        for k, v in bias_metrics.items():
+            self.lolpop.metrics_tracker.log_metric(self.model_version, k, v)
 
-        #compare model to baseline
-        self.lolpop.model_checker.get_baseline_comparison(
-            self.data_dict, self.model, self.model_version)
-
-        #create some eye candy
-        self.lolpop.model_visualizer.generate_viz(
-            self.data_dict, self.model._get_model(), self.model_version)
-        
-        self.next(self.check_model)
+        self.next(self.compare_models)
 
     @step
     def compare_models(self):
@@ -175,14 +199,6 @@ class MetaflowOfflineTrainSpec(FlowSpec):
           
         self.next(self.retrain_model_on_all_data)
 
-    @step
-    def check_model_bias(self):
-        #check model bias
-        bias_metrics = self.lolpop.model_bias_checker.check_model_bias(self.data_dict, self.model)
-        for k, v in bias_metrics.items():
-            self.lolpop.metrics_tracker.log_metric(self.model_version, k, v)
-
-        self.next(self.compare_models)
 
     @step
     def retrain_model_on_all_data(self):

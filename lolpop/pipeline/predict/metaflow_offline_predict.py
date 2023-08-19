@@ -86,7 +86,10 @@ class MetaflowOfflinePredictSpec(FlowSpec):
 
     @step
     def start(self):
-        self.next(self.compare_data)
+        if (self.lolpop.problem_type == "timeseries"):
+            self.next(self.get_predictions)
+        else: 
+            self.next(self.compare_data)
 
     @step
     def compare_data(self):
@@ -151,7 +154,10 @@ class MetaflowOfflinePredictSpec(FlowSpec):
         self.lolpop.metadata_tracker.register_vc_resource(
             self.prediction_job, vc_info, file_type="csv")
         
-        self.next(self.analyze_prediction_drift)
+        if (self.lolpop.problem_type == "timeseries"):
+            self.next(self.save_predictions)
+        else: 
+            self.next(self.analyze_prediction_drift)
 
     @step
     def analyze_prediction_drift(self):

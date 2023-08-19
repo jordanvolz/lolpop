@@ -106,7 +106,10 @@ class MetaflowOfflineProcessSpec(FlowSpec):
         self.lolpop.metadata_tracker.register_vc_resource(
             dataset_version, vc_info, file_type="csv")
 
-        self.next(self.profile_data)
+        if (not self.lolpop.problem_type == "timeseries") or (self.source_data_name == "train_data"):
+            self.next(self.profile_data)
+        else: 
+            self.next(self.end)
 
     @step
     def profile_data(self):
@@ -142,7 +145,11 @@ class MetaflowOfflineProcessSpec(FlowSpec):
             url = self.lolpop.metadata_tracker.url
             self.lolpop.notify(
                 "Issues found with data checks. Visit %s for more information." % url, checks_status)
-        self.next(self.compare_data)
+            
+        if (self.lolpop.problem_type == "timeseries"):
+            self.next(self.end) 
+        else: 
+            self.next(self.compare_data)
 
     @step
     def compare_data(self):

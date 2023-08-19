@@ -177,6 +177,6 @@ class MetaflowClassificationRunner(BaseRunner):
             deployment = self.deploy_model(model_version)
         eval_data, eval_dataset_version = self.process_data(source="eval")
         data, prediction_job = self.predict_data(model_version,model, eval_data, eval_dataset_version)
-        self.evaluate_ground_truth(prediction_job)
+        #self.evaluate_ground_truth(prediction_job)
         self.stop()
     
