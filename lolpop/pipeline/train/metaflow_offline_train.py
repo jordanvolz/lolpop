@@ -167,7 +167,7 @@ class MetaflowOfflineTrainSpec(FlowSpec):
                 self.data_dict, self.model, prev_model, self.model_version, prev_model_version)
 
         else:
-            self.log("No previous model version found for model: %s" %
+            self.lolpop.log("No previous model version found for model: %s" %
                      self.metadata_tracker.get_resource_if(self.model_version))
             is_new_model_better = True 
 
