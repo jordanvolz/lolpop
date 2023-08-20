@@ -1,3 +1,6 @@
+import pytest 
+
+@pytest.mark.skip(reason="not a pytest test")
 def test(obj, data, *args, **kwargs):
     null_col = [] 
     for col in data.columns: 

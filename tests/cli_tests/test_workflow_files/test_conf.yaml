@@ -8,3 +8,7 @@ tests:
       - hook_file: /Users/jordanvolz/github/lolpop/tests/cli_tests/test_workflow_files/posthook_failure.py
         hook_method: test
         hook_on_failure: continue
+
+components: 
+  metadata_tracker: BaseMetadataTracker
+  resource_version_control: BaseResourceVersionControl

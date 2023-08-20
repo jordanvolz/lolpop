@@ -9,8 +9,7 @@ con.sql("CREATE or REPLACE TABLE stores_train as SELECT * FROM read_csv_auto('da
 con.sql("CREATE or REPLACE TABLE stores_test as SELECT * FROM read_csv_auto('data/test.csv')")
 con.sql("CREATE or REPLACE TABLE stores_holiday_events as SELECT * FROM read_csv_auto('data/holidays_events.csv')")
 
-con.sql("""
-create table total_store_forecast_train as 
+con.sql("""create or replace table total_store_forecast_train as 
 (select date, total_sales, type as holiday from 
 (select date, 
 sum(sales) as total_sales 
@@ -19,18 +18,18 @@ group by date)
 left join (select * from stores_holiday_events where locale='National' and type='Holiday')
 using (date)
 order by date
-)
-""")
+)"""
+        )
         
-con.sql("""create table total_store_forecast_test as 
+con.sql("""create or replace table total_store_forecast_test as 
 (select date, type as holiday from 
 (select date
 from stores_test 
 group by date) 
 left join (select * from stores_holiday_events where locale='National' and type='Holiday')
 using (date)
-order by date
-)""")
+order by date)"""
+        )
 
 print(con.sql("show tables"))
 

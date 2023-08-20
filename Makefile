@@ -2,11 +2,6 @@
 docs: 
 	typer lolpop/cli/cli.py utils docs --output docs/src/cli_reference.md --name lolpop
 
-.PHONY: tests
-tests: 
-	examples
-	pytest tests
-
 .PHONY: example_titanic
 example_titanic: 
 	kaggle competitions download -c titanic
@@ -71,15 +66,18 @@ example_grocery_sales:
 	rm store-sales-time-series-forecasting.zip 
 	echo "Data for Grocery Sales Forecasting set up successfully!"
 
-examples: 
-	example_titanic 
-	example_medical_bills 
-	example_sales_forecasting 
-	example_petfinder 
-	example_crabs 
-	example_grocery_sales
+examples: example_titanic example_medical_bills example_sales_forecasting example_petfinder example_crabs example_grocery_sales
 	
-all: 
-	docs 
-	examples 
-	tests 
+.PHONY: clean_examples
+clean_examples: 
+	rm -rf examples/classification/petfinder/.dvc examples/classification/petfinder/dvc examples/classification/petfinder/mlruns examples/classification/petfinder/.dvcignore examples/classification/petfinder/.metaflow
+	rm -rf examples/regression/crab_age/.dvc examples/regression/crab_age/dvc examples/regression/crab_age/mlruns examples/regression/crab_age/.dvcignore examples/regression/crab_age/.metaflow
+	rm -rf examples/time_series/grocery_sales/.dvc examples/time_series/grocery_sales/dvc examples/time_series/grocery_sales/mlruns examples/time_series/grocery_sales/.dvcignore examples/time_series/grocery_sales/.metaflow
+	rm -rf examples/quickstart/classification/titanic/mlruns examples/quickstart/regression/medical_bills/mlruns examples/quickstart/timeseries/sales_forecasting/mlruns
+	echo "Finished cleaning examples!"
+	
+.PHONY: tests
+tests: examples
+	pytest tests
+
+all: docs examples tests 
