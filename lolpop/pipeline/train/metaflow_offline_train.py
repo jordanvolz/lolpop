@@ -128,72 +128,76 @@ class MetaflowOfflineTrainSpec(FlowSpec):
                 horizon=self.model._get_config("cv_horizon"),
             )
 
-
-        if (self.lolpop.problem_type == "timeseries"):
-            self.next(self.retrain_model_on_all_data)
-        else: 
-            self.next(self.check_model)
+        self.next(self.check_model)
 
     @step
     def check_model(self):
-        #run model checks
-        model_report, file_path, checks_status = self.lolpop.model_checker.check_model(
-            self.data_dict, self.model)
+        #don't check model if it's a ts forecasting problem
+        if not (self.lolpop.problem_type == "timeseries"):
+            #run model checks
+            model_report, file_path, checks_status = self.lolpop.model_checker.check_model(
+                self.data_dict, self.model)
 
-        #log model report to metadata tracker
-        self.lolpop.metadata_tracker.log_checks(
-            self.model_version,
-            file_path=file_path,
-            report=model_report,
-            checker_class=self.lolpop.model_checker.name,
-            type="model"
-        )
+            #log model report to metadata tracker
+            self.lolpop.metadata_tracker.log_checks(
+                self.model_version,
+                file_path=file_path,
+                report=model_report,
+                checker_class=self.lolpop.model_checker.name,
+                type="model"
+            )
 
-        if checks_status == "ERROR" or checks_status == "WARN":
-            url = self.lolpop.metadata_tracker.url
-            self.lolpop.notify(
-                "Issues found with model checks. Visit %s for more information." % url, checks_status)
+            if checks_status == "ERROR" or checks_status == "WARN":
+                url = self.lolpop.metadata_tracker.url
+                self.lolpop.notify(
+                    "Issues found with model checks. Visit %s for more information." % url, checks_status)
 
         self.next(self.check_model_bias)
 
     @step
     def check_model_bias(self):
-        #check model bias
-        bias_metrics = self.lolpop.model_bias_checker.check_model_bias(
-            self.data_dict, self.model)
-        for k, v in bias_metrics.items():
-            self.lolpop.metrics_tracker.log_metric(self.model_version, k, v)
+        #don't check bias for ts forecasting
+        if not (self.lolpop.problem_type == "timeseries"):
+            #check model bias
+            bias_metrics = self.lolpop.model_bias_checker.check_model_bias(
+                self.data_dict, self.model)
+            for k, v in bias_metrics.items():
+                self.lolpop.metrics_tracker.log_metric(self.model_version, k, v)
 
         self.next(self.compare_models)
 
     @step
     def compare_models(self):
-        #get currently deployed model version/previous model version and winning experiment
-        prev_model_version = self.lolpop.metadata_tracker.get_currently_deployed_model_version(
-            self.model_version)
+        #don't comapre models for ts forecasting
+        if not (self.lolpop.problem_type == "timeseries"):
+            #get currently deployed model version/previous model version and winning experiment
+            prev_model_version = self.lolpop.metadata_tracker.get_currently_deployed_model_version(
+                self.model_version)
 
-        if prev_model_version is not None:
-            prev_experiment = self.lolpop.metadata_tracker.get_winning_experiment(
-                prev_model_version)
+            if prev_model_version is not None:
+                prev_experiment = self.lolpop.metadata_tracker.get_winning_experiment(
+                    prev_model_version)
 
-            #get the prev model version object from resource version control and load it into a model trainer
-            prev_model_obj = self.lolpop.resource_version_control.get_model(
-                prev_experiment)
-            prev_model = self.lolpop.metadata_tracker.load_model(
-                prev_model_obj, self.model_version, self.model)
+                #get the prev model version object from resource version control and load it into a model trainer
+                prev_model_obj = self.lolpop.resource_version_control.get_model(
+                    prev_experiment)
+                prev_model = self.lolpop.metadata_tracker.load_model(
+                    prev_model_obj, self.model_version, self.model)
 
-            #compare model to the last version
-            report, file_path = self.lolpop.model_checker.calculate_model_drift(
-                self.data_dict, self.model, prev_model)
-            self.lolpop.metadata_tracker.log_artifact(
-                self.model_version, id="model_drift_report", path=file_path, external=False)
-            is_new_model_better = self.lolpop.model_checker.compare_models(
-                self.data_dict, self.model, prev_model, self.model_version, prev_model_version)
+                #compare model to the last version
+                report, file_path = self.lolpop.model_checker.calculate_model_drift(
+                    self.data_dict, self.model, prev_model)
+                self.lolpop.metadata_tracker.log_artifact(
+                    self.model_version, id="model_drift_report", path=file_path, external=False)
+                is_new_model_better = self.lolpop.model_checker.compare_models(
+                    self.data_dict, self.model, prev_model, self.model_version, prev_model_version)
 
-        else:
-            self.lolpop.log("No previous model version found for model: %s" %
-                     self.metadata_tracker.get_resource_if(self.model_version))
-            is_new_model_better = True 
+            else:
+                self.lolpop.log("No previous model version found for model: %s" %
+                        self.metadata_tracker.get_resource_id(self.model_version))
+                is_new_model_better = True 
+        else: 
+            is_new_model_better = True     
 
         self.is_new_model_better = is_new_model_better
           
@@ -215,7 +219,7 @@ class MetaflowOfflineTrainSpec(FlowSpec):
                     winning_exp_model = self.lolpop.metadata_tracker.load_model(
                         None, self.model_version, ref_model=None)
                     model, experiment = winning_exp_model.rebuild_model(
-                        self.data, self.model_version)
+                        self.data_dict, self.model_version)
                 self.model = model 
 
         self.next(self.end)

@@ -106,76 +106,74 @@ class MetaflowOfflineProcessSpec(FlowSpec):
         self.lolpop.metadata_tracker.register_vc_resource(
             dataset_version, vc_info, file_type="csv")
 
-        if (not self.lolpop.problem_type == "timeseries") or (self.source_data_name == "train_data"):
-            self.next(self.profile_data)
-        else: 
-            self.next(self.end)
+        
+        self.next(self.profile_data)
 
     @step
     def profile_data(self):
-        #profile data
-        data_profile, file_path = self.lolpop.data_profiler.profile_data(
-            self.data)
+        if (not self.lolpop.problem_type == "timeseries") or (self.source_data_name == "train_data"):
+            #profile data
+            data_profile, file_path = self.lolpop.data_profiler.profile_data(
+                self.data)
 
-        #log profile to metadata tracker
-        self.lolpop.metadata_tracker.log_data_profile(
-            self.dataset_version,
-            file_path=file_path,
-            profile=data_profile,
-            profiler_class=self.lolpop.data_profiler.name
-        )
+            #log profile to metadata tracker
+            self.lolpop.metadata_tracker.log_data_profile(
+                self.dataset_version,
+                file_path=file_path,
+                profile=data_profile,
+                profiler_class=self.lolpop.data_profiler.name
+            )
         self.next(self.check_data)
 
     @step
     def check_data(self):
-        #run data checks
-        data_report, file_path, checks_status = self.lolpop.data_checker.check_data(
-            self.data)
+        if (not self.lolpop.problem_type == "timeseries") or (self.source_data_name == "train_data"):
+            #run data checks
+            data_report, file_path, checks_status = self.lolpop.data_checker.check_data(
+                self.data)
 
-        #log data report to metadata tracker
-        self.lolpop.metadata_tracker.log_checks(
-            self.dataset_version,
-            file_path=file_path,
-            report=data_report,
-            checker_class=self.lolpop.data_checker.name,
-            type="data"
-        )
+            #log data report to metadata tracker
+            self.lolpop.metadata_tracker.log_checks(
+                self.dataset_version,
+                file_path=file_path,
+                report=data_report,
+                checker_class=self.lolpop.data_checker.name,
+                type="data"
+            )
 
-        if checks_status == "ERROR" or checks_status == "WARN":
-            url = self.lolpop.metadata_tracker.url
-            self.lolpop.notify(
-                "Issues found with data checks. Visit %s for more information." % url, checks_status)
-            
-        if (self.lolpop.problem_type == "timeseries"):
-            self.next(self.end) 
-        else: 
-            self.next(self.compare_data)
+            if checks_status == "ERROR" or checks_status == "WARN":
+                url = self.lolpop.metadata_tracker.url
+                self.lolpop.notify(
+                    "Issues found with data checks. Visit %s for more information." % url, checks_status)
+                
+        self.next(self.compare_data)
 
     @step
     def compare_data(self):
-        #get previous dataset version & dataframe
-        prev_dataset_version = self.lolpop.metadata_tracker.get_prev_resource_version(
-            self.dataset_version)
+        if not (self.lolpop.problem_type == "timeseries"):
+            #get previous dataset version & dataframe
+            prev_dataset_version = self.lolpop.metadata_tracker.get_prev_resource_version(
+                self.dataset_version)
 
-        if prev_dataset_version is not None:
-            vc_info = self.lolpop.metadata_tracker.get_vc_info(
-                prev_dataset_version)
-            prev_data = self.lolpop.resource_version_control.get_data(
-                prev_dataset_version, vc_info)
+            if prev_dataset_version is not None:
+                vc_info = self.lolpop.metadata_tracker.get_vc_info(
+                    prev_dataset_version)
+                prev_data = self.lolpop.resource_version_control.get_data(
+                    prev_dataset_version, vc_info)
 
-            #compare current dataset version with previous dataset version
-            comparison_report, file_path = self.lolpop.data_profiler.compare_data(
-                self.data, prev_data)
+                #compare current dataset version with previous dataset version
+                comparison_report, file_path = self.lolpop.data_profiler.compare_data(
+                    self.data, prev_data)
 
-            self.lolpop.metadata_tracker.log_data_comparison(
-                self.dataset_version,
-                file_path=file_path,
-                report=comparison_report,
-                profiler_class=self.lolpop.data_profiler.name
-            )
-        else:
-            self.lolpop.log("No previous dataset version found for dataset: %s" % (
-                self.lolpop.metadata_tracker.get_resource_id(self.dataset_version)))
+                self.lolpop.metadata_tracker.log_data_comparison(
+                    self.dataset_version,
+                    file_path=file_path,
+                    report=comparison_report,
+                    profiler_class=self.lolpop.data_profiler.name
+                )
+            else:
+                self.lolpop.log("No previous dataset version found for dataset: %s" % (
+                    self.lolpop.metadata_tracker.get_resource_id(self.dataset_version)))
 
         self.next(self.end)
 
