@@ -32,7 +32,7 @@ Furthermore, the following goals were kept in mind when building lolpop:
 
 lolpop has a straightforward development workflow. We hope all find it delightful to use! 
 
-First: write your own components or use [pre-built](extensions.md) ones: 
+First: write your own components or use [pre-built](integrations.md) ones: 
 
 ```python title="catboost_model_trainer.py"
 from lolpop.comonent import BaseComponent 

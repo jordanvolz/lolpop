@@ -219,13 +219,14 @@ nav:
       - Classification: classification_quickstart.md
       - Regression: regression_quickstart.md
       - Time Series Forecasting: timeseries_forecasting_quickstart.md
-    - Classification: classification.md
-    - Regression: regression.md 
-    - Time Series Forecasting: timeseries_forecasting.md
-    - Metaflow: 
-      - Metaflow Classification: classification_metaflow.md
-      - Metaflow Regression: regression_metaflow.md
-      - Metaflow Time Series Forecasting: timeseries_metaflow.md
+    - Regular Examples: 
+      - Classification: classification.md
+      - Regression: regression.md 
+      - Time Series Forecasting: timeseries_forecasting.md
+    - Metaflow Examples: 
+      - Classification: classification_metaflow.md
+      - Regression: regression_metaflow.md
+      - Time Series Forecasting: timeseries_metaflow.md
 
 
 

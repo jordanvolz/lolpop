@@ -13,6 +13,12 @@ original_dir = os.getcwd()
 
 def test_sales_forecasting_workflow_runs_successfully():
     os.chdir(example_dir)
+
+    # always end the mlflow run. We do this in case another process errored and failed 
+    # to end the active run.
+    import mlflow 
+    mlflow.end_run()
+    
     # Provide valid arguments for the workflow command
     result = runner.invoke(app, ["workflow", "QuickstartTimeSeriesRunner",
                                  "--config-file", "quickstart.yaml",

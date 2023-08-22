@@ -13,6 +13,16 @@ original_dir = os.getcwd()
 
 def test_medical_bills_workflow_runs_successfully():
     os.chdir(example_dir)
+
+    # always end the mlflow run. We do this in case another process errored and failed
+    # to end the active run.
+    try:
+        import mlflow
+        mlflow.set_tracking_uri("./mlruns")
+        mlflow.end_run()
+    except:
+        pass
+
     # Provide valid arguments for the workflow command
     result = runner.invoke(app, ["workflow", "QuickstartRunner",
                                  "--config-file", "quickstart.yaml",

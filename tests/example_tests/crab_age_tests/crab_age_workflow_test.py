@@ -15,7 +15,16 @@ original_dir = os.getcwd()
 
 def test_crab_age_dev_workflow_runs_successfully(tmp_path):
     os.chdir(example_dir)
-    
+
+    # always end the mlflow run. We do this in case another process errored and failed 
+    # to end the active run.
+    try:
+        import mlflow
+        mlflow.set_tracking_uri("./mlruns")
+        mlflow.end_run()
+    except:
+        pass
+
     #change config to disable commits so we don't commit stuff into the main branch. 
     config = OmegaConf.load("dev.yaml")
     rvc_conf = config.get("resource_version_control", OmegaConf.create({"config": {}}))

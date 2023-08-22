@@ -75,8 +75,10 @@ def load_plugin(plugin_path, obj=None):
         sys.path.append(plugin_dir)
     #import module
     mod = None
-    if plugin_name: 
-        mod = import_module(plugin_name)
+    #there's only a module to load if we're passed a file 
+    if plugin_path.is_file(): 
+        if plugin_name: 
+            mod = import_module(plugin_name)
     #if object passed in, append plugin dir to plugin_paths config
     #this is mainly used for local data transformer component
     if obj: 

@@ -194,7 +194,7 @@ class MetaflowOfflineTrainSpec(FlowSpec):
 
             else:
                 self.lolpop.log("No previous model version found for model: %s" %
-                        self.metadata_tracker.get_resource_id(self.model_version))
+                        self.lolpop.metadata_tracker.get_resource_id(self.model_version))
                 is_new_model_better = True 
         else: 
             is_new_model_better = True     
@@ -213,11 +213,11 @@ class MetaflowOfflineTrainSpec(FlowSpec):
             if self.lolpop._get_config("retrain_all"): 
                 if hasattr(self.lolpop, "model_trainer"):
                     model, experiment = self.lolpop.model_trainer.rebuild_model(
-                        self.data, self.model_version)
+                        self.data_dict, self.model_version)
                 else:
                     #if no model_trainer is specified in config, we can rebuild using the winning_exp_model_trainer
                     winning_exp_model = self.lolpop.metadata_tracker.load_model(
-                        None, self.model_version, ref_model=None)
+                        None, self.model_version, ref_model=self.model)
                     model, experiment = winning_exp_model.rebuild_model(
                         self.data_dict, self.model_version)
                 self.model = model 

@@ -98,15 +98,16 @@ class MetaflowOfflinePredictSpec(FlowSpec):
                 self.model_version, vc_info, key="X_train")
 
             #compare current dataset version with previous dataset version
-            comparison_report, file_path = self.lolpop.data_profiler.compare_data(
-                self.data, train_df)
+            if train_df is not None and not train_df.empty:
+                comparison_report, file_path = self.lolpop.data_profiler.compare_data(
+                    self.data, train_df)
 
-            self.lolpop.metadata_tracker.log_data_comparison(
-                self.dataset_version,
-                file_path=file_path,
-                report=comparison_report,
-                profiler_class=self.lolpop.data_profiler.name
-            )
+                self.lolpop.metadata_tracker.log_data_comparison(
+                    self.dataset_version,
+                    file_path=file_path,
+                    report=comparison_report,
+                    profiler_class=self.lolpop.data_profiler.name
+                )
 
         self.next(self.get_predictions)
 
