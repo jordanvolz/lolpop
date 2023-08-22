@@ -61,6 +61,7 @@ def load_plugins(plugin_paths=[]):
 
 def load_plugin(plugin_path, obj=None): 
     #get plugin directory path and name
+    plugin_path = plugin_path.resolve() #in case absolute path is not passed in in yaml
     if plugin_path.is_dir(): 
         plugin_dir = str(plugin_path)
         plugin_name = plugin_path.name

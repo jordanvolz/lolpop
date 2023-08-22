@@ -6,6 +6,7 @@ docs:
 example_titanic: 
 	kaggle competitions download -c titanic
 	unzip -o titanic.zip -d examples/quickstart/classification/titanic
+	mkdir -p examples/quickstart/classification/titanic/mlruns/.trash
 	rm titanic.zip 
 	echo "Data for Titanic Example set up successfully!"
 
@@ -18,6 +19,7 @@ example_medical_bills:
 	echo $$(head -1 csv_aa) | cat - csv_ab > tmp
 	awk 'BEGIN{FS=OFS=","}{NF--;print}' tmp > examples/quickstart/regression/medical_bills/test.csv 
 	mv csv_aa examples/quickstart/regression/medical_bills/train.csv
+	mkdir -p examples/quickstart/regression/medical_bills/mlruns/.trash
 	rm csv_ab tmp insurance.zip examples/quickstart/regression/medical_bills/insurance.csv
 	echo "Data for Medical Bills Example set up successfully!"
 
@@ -29,6 +31,7 @@ example_sales_forecasting:
 	split -l 65 examples/quickstart/timeseries/sales_forecasting/Month_Value_1.csv csv_
 	echo $$(head -1 csv_aa) | cat - csv_ab > examples/quickstart/timeseries/sales_forecasting/test.csv 
 	mv csv_aa examples/quickstart/timeseries/sales_forecasting/train.csv
+	mkdir -p examples/quickstart/timeseries/sales_forecasting/mlruns/.trash
 	rm time-series-starter-dataset.zip csv_ab examples/quickstart/timeseries/sales_forecasting/Month_Value_1.csv
 	echo "Data for Sales Forecasting Example set up successfully!"
 
@@ -36,6 +39,7 @@ example_sales_forecasting:
 example_petfinder: 
 	kaggle competitions download -c petfinder-adoption-prediction
 	unzip -j -o petfinder-adoption-prediction.zip train/train.csv test/test.csv -d examples/classification/petfinder/data
+	mkdir -p examples/classification/petfinder/mlruns/.trash
 	mkdir -p examples/classification/petfinder/dvc
 	mkdir -p /tmp/artifacts
 	cd examples/classification/petfinder && dvc init --subdir --force && dvc remote add -d local /tmp/artifacts 
@@ -46,6 +50,7 @@ example_petfinder:
 example_crabs: 
 	kaggle competitions download -c playground-series-s3e16
 	unzip -j -o playground-series-s3e16.zip train.csv test.csv -d examples/regression/crab_age/data
+	mkdir -p examples/regression/crab_age/mlruns/.trash
 	mkdir -p examples/regression/crab_age/dvc
 	mkdir -p /tmp/artifacts
 	cd examples/regression/crab_age && dvc init --subdir --force && dvc remote add -d local /tmp/artifacts 
@@ -58,6 +63,7 @@ example_crabs:
 example_grocery_sales: 
 	kaggle competitions download -c store-sales-time-series-forecasting
 	unzip -j -o store-sales-time-series-forecasting.zip train.csv test.csv holidays_events.csv -d examples/time_series/grocery_sales/data
+	mkdir -p examples/time_series/grocery_sales/mlruns/.trash
 	mkdir -p examples/time_series/grocery_sales/dvc
 	mkdir -p /tmp/artifacts
 	cd examples/time_series/grocery_sales && dvc init --subdir --force && dvc remote add -d local /tmp/artifacts 
@@ -75,7 +81,7 @@ clean_examples:
 	rm -rf examples/time_series/grocery_sales/.dvc examples/time_series/grocery_sales/dvc examples/time_series/grocery_sales/mlruns examples/time_series/grocery_sales/.dvcignore examples/time_series/grocery_sales/.metaflow
 	rm -rf examples/quickstart/classification/titanic/mlruns examples/quickstart/regression/medical_bills/mlruns examples/quickstart/timeseries/sales_forecasting/mlruns
 	echo "Finished cleaning examples!"
-	
+
 .PHONY: tests
 tests: examples
 	pytest tests
