@@ -8,14 +8,14 @@ runner = TimeSeriesRunner(conf=config_file)
 train_data, train_dataset_version = runner.process_data()
 
 #train model
-model, model_version, deploy_model = runner.train_model(train_data)
+model_version, model, deploy_model = runner.train_model(train_data)
 if deploy_model: 
-    runner.deploy_model(model, model_version)
+    runner.deploy_model(model_version, model)
 
 #run prediction
 eval_data, eval_dataset_version = runner.process_data(source="eval")
 data, prediction_job = runner.predict_data(
-    model, model_version, eval_data, eval_dataset_version)
+    model_version, model, eval_data, eval_dataset_version)
 
 #evaluate ground truth
 #runner.evaluate_ground_truth(prediction_job)

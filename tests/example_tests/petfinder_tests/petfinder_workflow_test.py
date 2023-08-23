@@ -2,7 +2,7 @@ from typer.testing import CliRunner
 from pathlib import Path
 from omegaconf import OmegaConf
 import os
-
+from lolpop.utils import common_utils as utils
 
 from lolpop.cli.run import app
 
@@ -41,12 +41,7 @@ def test_petfinder_dev_workflow_runs_successfully(tmp_path):
                                  "--config-file", "%s" %file_path,
                                  "--build-method", "build_all"
                                  ])
-    
-    #remove all dvc files cuz we don't want to actually commit them 
-    for root, dirs, files in os.walk(example_dir):
-        for file in files:
-            if file.endswith(".dvc"):
-                os.remove(os.path.join(root, file))
+
 
     # Assert that the command exits with a 0 status code
     assert result.exit_code == 0
@@ -54,3 +49,7 @@ def test_petfinder_dev_workflow_runs_successfully(tmp_path):
     assert "Workflow completed!" in result.output
 
     os.chdir(original_dir)
+
+    os.environ["SKIP_DATA"] = "true"
+    utils.execute_cmd(["make", "clean_example_petfinder"])
+    utils.execute_cmd(["make", "example_petfinder"])
