@@ -226,7 +226,7 @@ nav:
     - Metaflow Examples: 
       - Classification: classification_metaflow.md
       - Regression: regression_metaflow.md
-      - Time Series Forecasting: timeseries_metaflow.md
+      - Time Series Forecasting: timeseries_forecasting_metaflow.md
 
 
 

@@ -206,7 +206,7 @@ def validate_conf(config, required_conf, components_objs={}):
             for val in v: 
                 #value can be of form "key|values" which specifies the value(s) allowed
                 #this is mainly used to specify the classes supported
-                #i.e. something like "MetadataTracker|ContinualMetadataTracker"
+                #i.e. something like "MetadataTracker|MLFlowMetadataTracker"
                 if "|" in val: 
                     val_arr = val.split("|")
                     val_key = val_arr[0]
