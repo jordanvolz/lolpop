@@ -19,8 +19,6 @@ class MLFlowModelRepository(BaseModelRepository):
         #set normal config
         super().__init__(components=components, *args, **kwargs)
 
-        # if we are using continual for metadata tracking then we won't have to set up connection to continual
-        # if not, then we do. If would be weird to have to do this, but just in case.
         if isinstance(components.get("metadata_tracker"), MLFlowMetadataTracker):
             self.client = self.metadata_tracker.client
             self.run = self.metadata_tracker.run
