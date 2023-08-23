@@ -125,6 +125,12 @@ clean_examples:
 		rm -rf examples/quickstart/classification/titanic/mlruns examples/quickstart/regression/medical_bills/mlruns examples/quickstart/timeseries/sales_forecasting/mlruns
 		echo "Finished cleaning examples!"
 
+
+.PHONY: update_poetry
+update_poetry: 
+	poetry cache clear --all pypi
+	poetry update 
+
 .PHONY: tests
 tests: examples
 	pytest tests
