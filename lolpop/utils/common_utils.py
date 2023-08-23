@@ -36,8 +36,10 @@ def load_config(config_keys, conf):
     return config
 
 #comits a single file to git
-def git_commit_file(file_path, repo_path=None, msg="Commiting file from lolpop", push=True, logger=None):
-    repo = Repo(repo_path)
+def git_commit_file(file_path, repo_path=None, msg="Commiting file from lolpop", push=False, path_from_root=None, logger=None):
+    repo = Repo(repo_path,search_parent_directories=True)
+    if path_from_root is not None: 
+        file_path = "%s/%s" %(path_from_root, file_path)
     repo.index.add(file_path)
     hexsha = repo.index.commit(msg).hexsha
 
@@ -58,6 +60,8 @@ def load_plugins(plugin_paths=[]):
     return plugins
 
 def load_plugin(plugin_path, obj=None): 
+    #get plugin directory path and name
+    plugin_path = plugin_path.resolve() #in case absolute path is not passed in in yaml
     if plugin_path.is_dir(): 
         plugin_dir = str(plugin_path)
         plugin_name = plugin_path.name
@@ -66,10 +70,17 @@ def load_plugin(plugin_path, obj=None):
         plugin_name = plugin_path.stem
     else: 
         raise Exception("Invalid plugin path: %s. Path is not a file nor a directory." %plugin_path)
+    #append directory to sys path
     if plugin_dir: 
         sys.path.append(plugin_dir)
-    if plugin_name: 
-        mod = import_module(plugin_name)
+    #import module
+    mod = None
+    #there's only a module to load if we're passed a file 
+    if plugin_path.is_file(): 
+        if plugin_name: 
+            mod = import_module(plugin_name)
+    #if object passed in, append plugin dir to plugin_paths config
+    #this is mainly used for local data transformer component
     if obj: 
         plugin_paths = obj._get_config("plugin_paths",[]) 
         plugin_paths.append(plugin_dir)
@@ -78,8 +89,12 @@ def load_plugin(plugin_path, obj=None):
 
 #load class object
 def load_class_obj(class_name, class_type="component", parent="lolpop"): 
-    module = import_module("%s.%s" %(parent, class_type))
-    cl = getattr(module, class_name)
+    try: 
+        module = import_module("%s.%s" %(parent, class_type))
+        cl = getattr(module, class_name)
+    except: 
+        module = import_module(parent)
+        cl = getattr(module, class_name)
     return cl
 
 def load_class(class_name, class_type="component", plugin_mods = [], self_obj=None): 
@@ -320,7 +335,11 @@ def error_handler(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            raise Exception(f"An error occurred: {e}")
+            #prevent unnecessary nesting
+            if str(e).startswith("An error occurred:"): 
+                raise e
+            else: 
+                raise Exception(f"An error occurred: {e}")
     return wrapper
 
 # decorate all public methods in a class with decorator

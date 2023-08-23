@@ -13,7 +13,9 @@ There is no required configuration.
 There is not optional configuration. 
 
 ### Default Configuration 
-There is no default configuration. 
+`LocalDataConnector` uses the following default configuration: 
+
+- `save_index`: To save the dataframe index as part of the dataset. Defaults to True. 
 
 ## Methods:
 ### get_data 

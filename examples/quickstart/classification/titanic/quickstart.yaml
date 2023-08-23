@@ -1,0 +1,67 @@
+#runner config
+pipelines: 
+  process: OfflineProcess 
+  train: OfflineTrain
+  predict: OfflinePredict
+components: 
+  metadata_tracker: MLFlowMetadataTracker
+  notifier: StdOutNotifier
+  resource_version_control: BaseResourceVersionControl
+  metrics_tracker: BaseMetricsTracker
+config: 
+  train_data: train.csv
+  eval_data: test.csv
+  prediction_data: predictions.csv
+  model_name: titanic_survival
+  model_target: Survived
+  model_index: PassengerId
+  drop_columns: [PassengerId, Name, Ticket, Cabin, SPLIT]
+  local_dir: /tmp/artifacts/
+
+#pipelines config
+process: 
+  components: 
+    data_transformer: LocalDataTransformer
+  data_transformer: 
+    config: 
+      transformer_path: process_titanic.py
+
+train: 
+  components: 
+    data_splitter: LocalDataSplitter
+    model_trainer: XGBoostModelTrainer
+  data_splitter: 
+    config: 
+      include_test: True
+      split_ratio: [0.8,0.1,0.1]
+  model_trainer: 
+    config: 
+      training_params: 
+        XGBoostModelTrainer: 
+          #objective: "binary"
+          max_depth: 8
+          alpha: 1
+          learning_rate: 1.0
+          n_estimators: 10
+          random_state: 0
+  config: 
+      metrics: ["accuracy", "f1", "precision", "recall"]
+      perf_metric: f1
+      retrain_all: True 
+
+predict: 
+  components: 
+    data_connector: LocalDataConnector
+  config: 
+    skip_prediction_explanations: True 
+
+
+
+#component config
+metadata_tracker: 
+  config: 
+    mlflow_tracking_uri: ./mlruns
+    mlflow_experiment_name: titanic_survival
+logger:
+  config: 
+    log_level: INFO

@@ -96,7 +96,7 @@ def get_tag(self, resource, key, *args, **kwargs) -> Any:
 
 
 ### log_metadata
-Logs metdata into the metadata tracker resource. 
+Logs metadata into the metadata tracker resource. 
 
 ```python
 def log_metadata(self, resource, id, data, *args, **kwargs):

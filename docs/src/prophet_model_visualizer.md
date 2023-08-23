@@ -9,7 +9,7 @@ The `ProphetModelVisualizer` class is a subclass of the `BaseModelVisualizer` cl
 
 The `ProphetModelVisualizer` class requires the following components: 
 
-- `metdata_tracker`
+- `metadata_tracker`
 
 and the following configuration:
 

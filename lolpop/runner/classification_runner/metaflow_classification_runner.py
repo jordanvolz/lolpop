@@ -146,7 +146,7 @@ class MetaflowClassificationRunner(BaseRunner):
             train_data_sorted = train_data_filtered.sort_values(by=index).reset_index(drop=True)
             prediction_data_sorted = prediction_data_filtered.sort_values(by=index).reset_index(drop=True)
             ground_truth = {"y_train": train_data_sorted[self._get_config("model_target")]}
-            predictions = {"train": prediction_data_sorted["predictions"]}
+            predictions = {"train": prediction_data_sorted["prediction"]}
           
             #get model object and calculate metrics
             model_version = self.metadata_tracker.get_prediction_job_model_version(prediction_job)
@@ -174,9 +174,9 @@ class MetaflowClassificationRunner(BaseRunner):
         data, dataset_version = self.process_data()
         model_version, model, is_new_model_better = self.train_model(data, dataset_version)
         if is_new_model_better: 
-            deployment = self.deploy_model(model_version)
+            deployment = self.deploy_model(model_version, model)
         eval_data, eval_dataset_version = self.process_data(source="eval")
         data, prediction_job = self.predict_data(model_version,model, eval_data, eval_dataset_version)
-        self.evaluate_ground_truth(prediction_job)
+        #self.evaluate_ground_truth(prediction_job)
         self.stop()
     

@@ -8,7 +8,6 @@ class BaseModelTrainer(BaseComponent):
 
     __REQUIRED_CONF__ = {
         "components" : ["metadata_tracker", "resource_version_control"], 
-        "config": ["training_params"]
     }
 
     model = None 
@@ -188,7 +187,7 @@ class BaseModelTrainer(BaseComponent):
             elif metric == "rmsle":
                 #predictions can be negative, which will break this calculation.
                 #if you're using rmsle we'll assume you intended non-negative predictions
-                for key in predictions.keys(): 
+                for key in set(["train", "valid", "test"]).intersection(predictions.keys()): 
                     predictions[key] = [max(x,0) for x in predictions[key]]
                 metrics_out["train"][metric] = sk_metrics.mean_squared_log_error(data["y_train"], predictions["train"], squared=False)
                 if valid_exists:
@@ -227,8 +226,8 @@ class BaseModelTrainer(BaseComponent):
 
         #log stuff
         self.metrics_tracker.log_metrics(experiment, metrics_val, self._get_config("perf_metric"))
-        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_id", data={"winning_experiment_id" : self.metadata_tracker.get_resource_id(experiment)})
-        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_model_trainer", data={"winning_experiment_model_trainer" : type(self).__name__})
+        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_id", data=self.metadata_tracker.get_resource_id(experiment))
+        self.metadata_tracker.log_metadata(model_version, id="winning_experiment_model_trainer", data = type(self).__name__)
 
         #save splits
         for k,v in data.items(): 

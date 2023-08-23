@@ -29,14 +29,15 @@ class OfflinePredict(BasePredict):
         train_df = self.resource_version_control.get_data(model_version, vc_info, key = "X_train")
 
         #compare current dataset version with previous dataset version
-        comparison_report, file_path = self.data_profiler.compare_data(data, train_df)
+        if train_df is not None and not train_df.empty: 
+            comparison_report, file_path = self.data_profiler.compare_data(data, train_df)
 
-        self.metadata_tracker.log_data_comparison(
-            dataset_version,
-            file_path = file_path, 
-            report = comparison_report, 
-            profiler_class = self.data_profiler.name
-            )
+            self.metadata_tracker.log_data_comparison(
+                dataset_version,
+                file_path = file_path, 
+                report = comparison_report, 
+                profiler_class = self.data_profiler.name
+                )
         
     def get_predictions(self, model, model_version, data, *args, **kwargs):
         """
@@ -61,16 +62,16 @@ class OfflinePredict(BasePredict):
         df = data.drop(self._get_config("DROP_COLUMNS", []), axis=1, errors="ignore")
 
         #make predictions
-        data["predictions"] = model.predict_df(df)
+        data["prediction"] = model.predict_df(df)
         if self.problem_type == "classification": 
-            data["predictions_proba"] = model.predict_proba_df(df, to_list=True)
+            data["prediction_proba"] = model.predict_proba_df(df, to_list=True)
 
         #get explanations
         if self.problem_type !="timeseries" and not self._get_config("skip_prediction_explanations", False):
-            data["explanations"] = self.model_explainer.get_explanations(df, model, model_version, "predictions", to_list=True)
+            data["explanations"] = self.model_explainer.get_explanations(df, model, model_version, "prediction", to_list=True)
 
         #log predictions
-        self.metrics_tracker.log_prediction_metrics(prediction_job, data["predictions"])
+        self.metrics_tracker.log_prediction_metrics(prediction_job, data["prediction"])
 
         return data, prediction_job
 
@@ -114,14 +115,15 @@ class OfflinePredict(BasePredict):
             prev_data = self.resource_version_control.get_data(prev_dataset_version, vc_info)
 
             #compare current dataset version with previous dataset version
-            comparison_report, file_path = self.data_profiler.compare_data(data, prev_data)
+            if prev_data is not None and not prev_data.empty:
+                comparison_report, file_path = self.data_profiler.compare_data(data, prev_data)
 
-            self.metadata_tracker.log_data_comparison(
-                prediction_job,
-                file_path = file_path, 
-                report = comparison_report, 
-                profiler_class = type(self.data_profiler).__name__
-                )
+                self.metadata_tracker.log_data_comparison(
+                    prediction_job,
+                    file_path = file_path, 
+                    report = comparison_report, 
+                    profiler_class = type(self.data_profiler).__name__
+                    )
         
     def check_predictions(self, data, prediction_job, *args, **kwargs):
         """

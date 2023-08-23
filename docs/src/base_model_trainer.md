@@ -24,7 +24,6 @@ A `model_trainer` is a component that essentially acts as a wrapper around a lib
 
 and the following required configuration: 
 
-- `training_params`: A dictionary of training paramters for the model. 
 - `metrics`: A list of metrics to compute.
 - `perf_metric`: The metric to use for determining which experiment contains the best model. 
 

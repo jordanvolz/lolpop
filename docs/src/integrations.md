@@ -1,5 +1,8 @@
 # Integration Overview
 
+This guide will deep dive into using lolpop's pre-built components, pipelines, and runners. Depending on your use case, you may find these robust enough to use out of the box, usable with a few tweaks, or as inspiration as you begin building your own [extensions](extensions.md). 
+
+
 ## In this Section
 
 Here's an index of built-in integrations: 

@@ -86,26 +86,28 @@ class MetaflowOfflinePredictSpec(FlowSpec):
 
     @step
     def start(self):
-        self.next(self.compare_data)
+            self.next(self.compare_data)
 
     @step
     def compare_data(self):
-        #get training dataset version and df
-        vc_info = self.lolpop.metadata_tracker.get_vc_info(
-            self.model_version, key="X_train_hexsha")
-        train_df = self.lolpop.resource_version_control.get_data(
-            self.model_version, vc_info, key="X_train")
+        if not (self.lolpop.problem_type == "timeseries"):
+            #get training dataset version and df
+            vc_info = self.lolpop.metadata_tracker.get_vc_info(
+                self.model_version, key="X_train_hexsha")
+            train_df = self.lolpop.resource_version_control.get_data(
+                self.model_version, vc_info, key="X_train")
 
-        #compare current dataset version with previous dataset version
-        comparison_report, file_path = self.lolpop.data_profiler.compare_data(
-            self.data, train_df)
+            #compare current dataset version with previous dataset version
+            if train_df is not None and not train_df.empty:
+                comparison_report, file_path = self.lolpop.data_profiler.compare_data(
+                    self.data, train_df)
 
-        self.lolpop.metadata_tracker.log_data_comparison(
-            self.dataset_version,
-            file_path=file_path,
-            report=comparison_report,
-            profiler_class=self.lolpop.data_profiler.name
-        )
+                self.lolpop.metadata_tracker.log_data_comparison(
+                    self.dataset_version,
+                    file_path=file_path,
+                    report=comparison_report,
+                    profiler_class=self.lolpop.data_profiler.name
+                )
 
         self.next(self.get_predictions)
 
@@ -123,18 +125,18 @@ class MetaflowOfflinePredictSpec(FlowSpec):
                        axis=1, errors="ignore")
 
         #make predictions
-        data["predictions"] = self.model.predict_df(df)
+        data["prediction"] = self.model.predict_df(df)
         if self.lolpop.problem_type == "classification":
-            data["predictions_proba"] = self.model.predict_proba_df(
+            data["prediction_proba"] = self.model.predict_proba_df(
                 df, to_list=True)
 
         #get explanations
         data["explanations"] = self.lolpop.model_explainer.get_explanations(
-            df, self.model, self.model_version, "predictions", to_list=True)
+            df, self.model, self.model_version, "prediction", to_list=True)
 
         #log predictions
         self.lolpop.metrics_tracker.log_prediction_metrics(
-            prediction_job, data["predictions"])
+            prediction_job, data["prediction"])
 
         self.data = data 
         self.prediction_job = prediction_job
@@ -155,49 +157,51 @@ class MetaflowOfflinePredictSpec(FlowSpec):
 
     @step
     def analyze_prediction_drift(self):
-        #get previous dataset version & dataframe
-        prev_dataset_version = self.lolpop.metadata_tracker.get_prev_resource_version(
-            self.dataset_version)
-        if prev_dataset_version is not None:
-            vc_info = self.lolpop.metadata_tracker.get_vc_info(prev_dataset_version)
-            prev_data = self.lolpop.resource_version_control.get_data(
-                prev_dataset_version, vc_info)
+        if not (self.lolpop.problem_type == "timeseries"):
+            #get previous dataset version & dataframe
+            prev_dataset_version = self.lolpop.metadata_tracker.get_prev_resource_version(
+                self.dataset_version)
+            if prev_dataset_version is not None:
+                vc_info = self.lolpop.metadata_tracker.get_vc_info(prev_dataset_version)
+                prev_data = self.lolpop.resource_version_control.get_data(
+                    prev_dataset_version, vc_info)
 
-            #compare current dataset version with previous dataset version
-            comparison_report, file_path = self.lolpop.data_profiler.compare_data(
-                self.data, prev_data)
+                #compare current dataset version with previous dataset version
+                comparison_report, file_path = self.lolpop.data_profiler.compare_data(
+                    self.data, prev_data)
 
-            self.lolpop.metadata_tracker.log_data_comparison(
-                self.prediction_job,
-                file_path=file_path,
-                report=comparison_report,
-                profiler_class=self.lolpop.data_profiler.name
-            )
+                self.lolpop.metadata_tracker.log_data_comparison(
+                    self.prediction_job,
+                    file_path=file_path,
+                    report=comparison_report,
+                    profiler_class=self.lolpop.data_profiler.name
+                )
 
         self.next(self.check_predictions)
 
     @step
     def check_predictions(self):
-        #run data checks
-        data = self.data.drop(
-            ["explanations", "predictions_proba"], axis=1, errors="ignore")
-        data_report, file_path, checks_status = self.lolpop.data_checker.check_data(
-            data)
+        if not (self.lolpop.problem_type == "timeseries"):
+            #run data checks
+            data = self.data.drop(
+                ["explanations", "prediction_proba"], axis=1, errors="ignore")
+            data_report, file_path, checks_status = self.lolpop.data_checker.check_data(
+                data)
 
-        #log data report to metadata tracker
-        self.lolpop.metadata_tracker.log_checks(
-            self.prediction_job,
-            file_path=file_path,
-            report=data_report,
-            checker_class=self.lolpop.data_checker.name,
-            type="prediction"
-        )
+            #log data report to metadata tracker
+            self.lolpop.metadata_tracker.log_checks(
+                self.prediction_job,
+                file_path=file_path,
+                report=data_report,
+                checker_class=self.lolpop.data_checker.name,
+                type="prediction"
+            )
 
-        if checks_status == "ERROR" or checks_status == "WARN":
-            url = self.lolpop.metadata_tracker.url
-            self.lolpop.notify(
-                "Issues found with data checks. Visit %s for more information." % url, checks_status)
-            
+            if checks_status == "ERROR" or checks_status == "WARN":
+                url = self.lolpop.metadata_tracker.url
+                self.lolpop.notify(
+                    "Issues found with data checks. Visit %s for more information." % url, checks_status)
+                
         self.next(self.save_predictions)
 
     @step

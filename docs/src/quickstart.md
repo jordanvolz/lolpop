@@ -6,91 +6,89 @@ Once lolpop is [installed](installation.md), we can begin building and running o
 To begin getting acquainted with the framework, lolpop comes with many examples. There are several "quickstart" examples which are designed to get users up and running as quickly as possible. These do not require any external accounts or connections in order to run, as all of the components leverage local compute resources during execution. This is a great first experience to get your feet wet and to begin to get a feel for lolpop's internals while minimizing additional setup required. 
 
 1. [Install](installation.md) lolpop. 
-```python
-pip3 install lolpop[cli,mlflow,xgboost]
-```
+  ```python
+  pip3 install lolpop[cli,mlflow,xgboost]
+  ```
 
 2. Download the titanic dataset from [Kaggle](https://www.kaggle.com/competitions/titanic/data). Unzip the file and note the location of the `test.csv` and `train.csv` files. 
 
 3. Clone the lolpop repo. 
-```bash
-git clone https://github.com/jordanvolz/lolpop
-``` 
-!!! note
-    In the future we'll likely move examples into their own repository, but for now they are coupled with the lolpop source code.
+  ```bash
+  git clone git@github.com:jordanvolz/lolpop.git
+  ```
 
 4. Navigate to the `lolpop/examples/quickstart` folder and modify `quickstart.yaml` as follows: 
 
     a. Update the files paths of `train.csv`, `test.csv` and `predictions.csv` in `config.train_data`, `config.test_data`, and `config.prediction-data`, respectively. Note that the file path in `config.prediction_data` was not provided by the Kaggle dataset. This is because this is a file that lolpop will create. 
-```yaml title="quickstart.yaml"
-...
+      ```yaml title="quickstart.yaml" hl_lines="4-6"
+      ...
 
-config: 
-  train_data: /path/to/train.csv
-  eval_data: /path/to/test.csv
-  prediction_data: /path/to/predictions.csv
+      config: 
+        train_data: /path/to/train.csv
+        eval_data: /path/to/test.csv
+        prediction_data: /path/to/predictions.csv
 
-...
-```
+      ...
+      ```
 
     b. `config.local_dir` is a local scratch location that lolpop uses to save local artifacts. This is set to `/tmp/artifacts` by default, but feel free to switch this to another location, or, alternatively, ensure that `/tmp/artifacts` does exist. 
-```yaml title="quickstart.yaml"
-config: 
-  ...
-  local_dir: /tmp/artifacts/
+      ```yaml title="quickstart.yaml" hl_lines="3"
+      config: 
+        ...
+        local_dir: /tmp/artifacts/
 
-...
-```
+      ...
+      ```
     
     c. In `process.data_transformer.transformer_path` update the value here to the location of `process_titantic.py`. In the lolpop github repo. 
-```yaml title="quickstart.yaml"
-...
+      ```yaml title="quickstart.yaml" hl_lines="8"
+      ...
 
-process: 
-  components: 
-    data_transformer: LocalDataTransformer
-  data_transformer: 
-    config: 
-      transformer_path: /path/to/lolpop/examples/quickstart/process_titanic.py
-...
-```
+      process: 
+        components: 
+          data_transformer: LocalDataTransformer
+        data_transformer: 
+          config: 
+            transformer_path: /path/to/lolpop/examples/quickstart/process_titanic.py
+      ...
+      ```
     
     d. Update `metadata_tracker.config.mlflow_tracking_uri` to point to your mlflow location. If you haven't previously used mlflow, then you can just point this to some empty directory on your filesystem.
-```yaml title="quickstart.yaml"
-...
+      ```yaml title="quickstart.yaml" hl_lines="5"
+      ...
 
-metadata_tracker: 
-  config: 
-    mlflow_tracking_uri: file:///path/to//mlruns
-    mlflow_experiment_name: titanic_survival
+      metadata_tracker: 
+        config: 
+          mlflow_tracking_uri: file:///path/to//mlruns
+          mlflow_experiment_name: titanic_survival
 
-...
-```
+      ...
+      ```
 
 
-6. CD into `lolpop/examples/quickstart/` and run the workflow:
-```bash
-cd lolpop/examples/quickstart
+5. CD into `lolpop/examples/quickstart/` and run the workflow:
+  ```bash
+  cd lolpop/examples/quickstart
 
-python3 run.py 
-```
+  python3 run.py 
+  ```
 Your console will begin logging output of your workflow, you'll see lines like this: 
-```bash
-2023/06/21 15:16:31.727982 [INFO] <QuickstartRunner> ::: Loaded class StdOutLogger into component logger
-2023/06/21 15:16:31.805406 [INFO] <MLFlowMetadataTracker> ::: Using MLFlow in experiment titanic_survival with run id: dd79d0724cda42b79fcf19f3ad0e28ca
-2023/06/21 15:16:31.805668 [INFO] <QuickstartRunner> ::: Loaded class MLFlowMetadataTracker into component metadata_tracker
-2023/06/21 15:16:31.813281 [INFO] <QuickstartRunner> ::: Loaded class StdOutNotifier into component notifier
-```
+  ```bash
+  2023/06/21 15:16:31.727982 [INFO] <QuickstartRunner> ::: Loaded class StdOutLogger into component logger
+  2023/06/21 15:16:31.805406 [INFO] <MLFlowMetadataTracker> ::: Using MLFlow in experiment titanic_survival with run id: dd79d0724cda42b79fcf19f3ad0e28ca
+  2023/06/21 15:16:31.805668 [INFO] <QuickstartRunner> ::: Loaded class MLFlowMetadataTracker into component metadata_tracker
+  2023/06/21 15:16:31.813281 [INFO] <QuickstartRunner> ::: Loaded class StdOutNotifier into component notifier
+  ```
 And it should run pretty quickly and you'll see something like: 
-```bash
-2023/06/21 15:16:32.517021 [DEBUG] <OfflinePredict> ::: Finished execution of get_predictions. Completed in 0.30754699999999957 seconds.
-2023/06/21 15:16:32.517180 [DEBUG] <QuickstartRunner> ::: Finished execution of predict_data. Completed in 0.49444599999999994 seconds.
-2023/06/21 15:16:32.517330 [DEBUG] <QuickstartRunner> ::: Starting execution of stop
-2023/06/21 15:16:32.517553 [DEBUG] <MLFlowMetadataTracker> ::: Starting execution of stop
-2023/06/21 15:16:32.525008 [DEBUG] <MLFlowMetadataTracker> ::: Finished execution of stop. Completed in 0.07348200000000205 seconds.
-2023/06/21 15:16:32.525219 [DEBUG] <QuickstartRunner> ::: Finished execution of stop. Completed in 0.07735699999999923 seconds.
-exiting...
-```
+  ```bash
+  2023/06/21 15:16:32.517021 [DEBUG] <OfflinePredict> ::: Finished execution of get_predictions. Completed in 0.30754699999999957 seconds.
+  2023/06/21 15:16:32.517180 [DEBUG] <QuickstartRunner> ::: Finished execution of predict_data. Completed in 0.49444599999999994 seconds.
+  2023/06/21 15:16:32.517330 [DEBUG] <QuickstartRunner> ::: Starting execution of stop
+  2023/06/21 15:16:32.517553 [DEBUG] <MLFlowMetadataTracker> ::: Starting execution of stop
+  2023/06/21 15:16:32.525008 [DEBUG] <MLFlowMetadataTracker> ::: Finished execution of stop. Completed in 0.07348200000000205 seconds.
+  2023/06/21 15:16:32.525219 [DEBUG] <QuickstartRunner> ::: Finished execution of stop. Completed in 0.07735699999999923 seconds.
+  exiting...
+  ```
 
 ## Understanding the workflow
 

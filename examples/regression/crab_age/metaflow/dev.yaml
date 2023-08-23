@@ -1,0 +1,117 @@
+#runner config
+pipelines: 
+  process: MetaflowOfflineProcess 
+  train: MetaflowOfflineTrain
+  deploy: MetaflowOfflineDeploy
+  predict: MetaflowOfflinePredict
+components: 
+  metadata_tracker: MLFlowMetadataTracker
+  metrics_tracker: MLFlowMetricsTracker
+  resource_version_control: dvcVersionControl
+  notifier: StdOutNotifier
+config: 
+  train_data: crab_train
+  eval_data: crab_test
+  prediction_data: crab_predictions
+  model_name: crab_age
+  model_target: Age
+  model_index: id
+  drop_columns: [id]
+  local_dir: /tmp/artifacts/
+
+#pipelines config
+process: 
+  components: 
+    data_transformer: LocalDataTransformer
+    data_profiler: EvidentlyAIDataProfiler
+    data_checker: DeepchecksDataChecker
+  data_transformer: 
+    config: 
+      transformer_path: process_crab_data.py
+      data_connector: DuckDBDataConnector
+      data_connector_config: 
+        duckdb_path: duckdb/duck.db
+train: 
+  components: 
+    data_splitter: LocalDataSplitter
+    hyperparameter_tuner: OptunaHyperparameterTuner
+    model_checker: EvidentlyAIModelChecker
+    model_explainer: AlibiModelExplainer
+    model_visualizer: YellowbrickModelVisualizer
+    model_bias_checker: AIFairnessModelBiasChecker
+  data_splitter: 
+    config: 
+      include_test: True
+      split_ratio: [0.8,0.1,0.1]
+  hyperparameter_tuner: 
+    config: 
+      param_type: fixed
+      training_params: 
+        XGBoostModelTrainer: 
+          objective: ["reg:squarederror"]
+          max_depth: [4,8]
+          alpha: [0,1,5,10]
+          learning_rate: [0.5,1.0]
+          n_estimators: [10]
+          random_state: [0]
+  model_checker: 
+    config: 
+      baseline_method: value
+      baseline_value: avg
+  model_explainer: 
+    config: 
+      explainer_class: TreeShap
+      skip_explainer_plots: False
+  model_bias_checker: 
+    config: 
+        #the features that you want to check bias on
+        protected_attribute_names : ["Weight", "Diameter", "Sex"] 
+        # the values of the target variable that are considered good/favorable
+        favorable_classes : ['lambda x: x >=1']
+        # the values of the protected_attribute_names that you believe may be privileged. 
+        # Same order as above and each column can take a list of values
+        # this should be something like [[1],[1],[1]] 
+        privileged_classes:  ['lambda x: x >= 30','lambda x: x>= 0.8',[1,2]]
+        # list of groups to consider privilege/unprivilege. 
+        # Each "group" is a dict of values of protected_attributes
+        # 'AND' logic is applied between members of a dict, and 'OR' between dicts in the list
+        #GENDER=1 AND VACCINATED=1 AND STERILIZED=1
+        privileged_groups :   [{"Sex" : 0}] 
+        #GENDER=0 OR VACCINATED=0 OR STERILIZED=0
+        unprivileged_groups : [{"Sex" : 1}] 
+  config: 
+      metrics: ["rmse", "mae", "smape", "r2", "rmsle"]
+      perf_metric: rmse
+      retrain_all: True 
+
+deploy: 
+  components: 
+    model_repository: MLFlowModelRepository
+    model_deployer: SeldonModelDeployer
+
+predict: 
+  components: 
+    data_profiler: $process.components.data_profiler
+    model_explainer: $train.components.model_explainer
+    data_checker: $process.components.data_checker
+    data_connector: DuckDBDataConnector
+  data_connector: 
+    config:
+      duckdb_path: duckdb/duck.db
+  model_explainer: 
+    config: 
+      explainer_class: $train.model_explainer.config.explainer_class
+      skip_explainer_plots: True
+
+#component config
+metadata_tracker: 
+  config: 
+    mlflow_tracking_uri: ./mlruns
+    mlflow_experiment_name: crab_age
+metrics_tracker: 
+  config: 
+    mlflow_tracking_uri: ./mlruns
+    mlflow_experiment_name: crab_age
+logger:
+  config: 
+    log_level: INFO

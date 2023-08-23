@@ -158,7 +158,7 @@ class ClassificationRunner(BaseRunner):
         self.predict.analyze_prediction_drift(dataset_version, prediction_job, data)
 
         #run prediction checks
-        self.predict.check_predictions(data.drop(["explanations", "predictions_proba"],axis=1, errors="ignore"), prediction_job)
+        self.predict.check_predictions(data.drop(["explanations", "prediction_proba"],axis=1, errors="ignore"), prediction_job)
 
         #run save predictions
         self.predict.save_predictions(data, self._get_config("prediction_data"))
@@ -173,7 +173,7 @@ class ClassificationRunner(BaseRunner):
             prediction_job (object): Default is None. The version of the prediction job.
         """
         #if prediction job isn't known, get the most recent job
-        if prediction_job == None: 
+        if prediction_job is None: 
             model = self.metadata_tracker.get_resource(self._get_config("model_name"), type="model")
             prediction_job = self.metadata_tracker.get_latest_model_resource(model, type="prediction_job")
         
@@ -196,7 +196,7 @@ class ClassificationRunner(BaseRunner):
             train_data_sorted = train_data_filtered.sort_values(by=index).reset_index(drop=True)
             prediction_data_sorted = prediction_data_filtered.sort_values(by=index).reset_index(drop=True)
             ground_truth = {"y_train": train_data_sorted[self._get_config("model_target")]}
-            predictions = {"train": prediction_data_sorted["predictions"]}
+            predictions = {"train": prediction_data_sorted["prediction"]}
           
             #get model object and calculate metrics
             model_version = self.metadata_tracker.get_prediction_job_model_version(prediction_job)
@@ -224,9 +224,9 @@ class ClassificationRunner(BaseRunner):
         data, dataset_version = self.process_data()
         model_version, model, is_new_model_better = self.train_model(data, dataset_version)
         if is_new_model_better: 
-            deployment = self.deploy_model(model_version)
+            deployment = self.deploy_model(model_version, model)
         eval_data, eval_dataset_version = self.process_data(source="eval")
         data, prediction_job = self.predict_data(model_version,model, eval_data, eval_dataset_version)
-        self.evaluate_ground_truth(prediction_job)
+        #self.evaluate_ground_truth(prediction_job)
         self.stop()
     

@@ -116,7 +116,7 @@ class DuckDBDataConnector(BaseDataConnector):
                 if not table_exists: 
                     con.sql("CREATE TABLE %s as SELECT * from data" %table_name)
                 else: 
-                    con.sql("INSERT INTO %s as SELECT * from data" % table_name)
+                    con.sql("INSERT INTO %s SELECT * from data" % table_name)
 
 
     def __map_pandas_col_type_to_duckdb_type(self, col_type):

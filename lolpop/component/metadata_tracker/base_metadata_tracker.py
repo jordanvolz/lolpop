@@ -83,5 +83,5 @@ class BaseMetadataTracker(BaseComponent):
     def stop(self, *args, **kwargs): 
         pass
     
-    def load_model(self, model_obj, model_version, ref_model, pipeline_config={}, *args, **kwargs) -> Any
+    def load_model(self, model_obj, model_version, ref_model, pipeline_config={}, *args, **kwargs) -> Any:
         pass

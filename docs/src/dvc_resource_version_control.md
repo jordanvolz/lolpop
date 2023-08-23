@@ -16,7 +16,10 @@ The `dvcVersionControl` class is a subclass of `BaseResourceVersionControl` and 
 
 - `dvc_remote`: the dvc remote to use, defaults to `local`
 - `dvc_dir`: the directory corresponding to the dvc directory, defaults to `dvc/`
-- `local_dir`: a local directory 
+- `local_dir`: a local directory
+- `disable_git_commit`: Disable all git commits in the workflow. This is meant to be used only in development/test settings. Defaults to False.
+- `disable_git_push`:  Disable all git pushes in the workflow. This is meant ot be used only in development/test settings. Defaults to False. 
+- `git_path_to_dvc_dir`: The path to the dvc directory relative to the git repository. This is needed if you execute `dvc init --subdir` such that the dvc repo and the git repo are not at the same level. This is mainly intended to be used for testing purposes. Defaults to `None`.  
 
 !!! Note
     The `dvcVersionControl` component assumes that the lolpop workflow is running from a git repository and that a subfolder is used to designate the dvc artifacts. User should configure which folder to use for the `dvc_dir` and the `dvc_remote` to use. If no dvc_remote is configured, lolpop will attempt to use dvc in local mode, which saves objects to a directory in your local file system. By default this wil be configured to be `local_dir`/dvc
