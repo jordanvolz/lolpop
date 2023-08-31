@@ -21,8 +21,16 @@ class BaseHyperparameterTuner(BaseComponent):
         #load model trainer and build model
         model_cl = utils.load_class(algo)
         dependent_components = {"logger" : self.logger, "notifier" : self.notifier,  "metadata_tracker" :self.metadata_tracker, "metrics_tracker": self.metrics_tracker, "resource_version_control": self.resource_version_control}
+        if hasattr(self, "feature_transformer"): #pass the feature_transformer if it's defined at the pipeline level 
+            dependent_components["feature_transformer"] = self.feature_transformer
         model = model_cl(conf=trainer_config, pipeline_conf=self.pipeline_conf, runner_conf=self.runner_conf, 
                          parent_process = self.name, problem_type = self.problem_type, params=params, components=dependent_components) 
+
+        #use feature transform, if provided
+        if hasattr(model, "feature_transformer"): 
+            data = model.feature_transformer.fit_transform(data)
+
+        #now fit model 
         model_obj = model.fit(data)
 
         return model, experiment 

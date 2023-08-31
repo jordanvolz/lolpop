@@ -1,4 +1,6 @@
 from lolpop.component.base_component import BaseComponent
+from lolpop.utils import common_utils as utils 
+
 from sklearn import metrics as sk_metrics
 import pandas as pd 
 import numpy as np 
@@ -17,9 +19,22 @@ class BaseModelTrainer(BaseComponent):
     def __init__(self, params=None, *args, **kwargs): 
         #set normal config
         super().__init__(params=params, *args, **kwargs)
-        if params is None or params == {}: #if params aren't passed in, try to retrieve from config
+        #if params aren't passed in, try to retrieve from config
+        if params is None or params == {}: 
             params = self._get_config("training_params", {})
         self.params = params
+
+        #load transformer if it has one
+        transformer_class = self._get_config("transformer_class")
+        if transformer_class is not None: 
+            transformer_config = self.get_config("transformer_config")
+            transformer_cl = utils.load_class(transformer_class)
+            dependent_components = {"logger": self.logger, "notifier": self.notifier,  
+                                    "metadata_tracker": self.metadata_tracker,
+                                    "resource_version_control": self.resource_version_control}
+            self.feature_transformer = transformer_cl(conf=transformer_config, pipeline_conf=self.pipeline_conf, runner_conf=self.runner_conf,
+                         parent_process=self.name, problem_type=self.problem_type, components=dependent_components)
+        
 
     def fit(self, data, *args, **kwargs) -> Any: 
         pass 

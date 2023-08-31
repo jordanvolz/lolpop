@@ -69,9 +69,9 @@ class dvcVersionControl(BaseResourceVersionControl):
         #set up paths
         dvc_path = self.dvc_dir
         if key: 
-            dvc_file = "%s_%s.csv" %(id, key)
+            dvc_file = "data/%s_%s.csv" %(id, key)
         else: 
-            dvc_file = "%s.csv" %(id)
+            dvc_file = "data/%s.csv" %(id)
         file_path = dvc_path + dvc_file
         
         #dump dataframe to dvc path
@@ -115,9 +115,9 @@ class dvcVersionControl(BaseResourceVersionControl):
         if hexsha is not None and hexsha != 'None': 
             id = self.metadata_tracker.get_resource_id(dataset_version)
             if key:
-                dvc_file = "%s_%s.csv" % (id, key)
+                dvc_file = "data/%s_%s.csv" % (id, key)
             else:
-                dvc_file = "%s.csv" % (id)
+                dvc_file = "data/%s.csv" % (id)
 
             file_path = self.dvc_dir + dvc_file 
             if self._get_config("git_path_to_dvc_dir") is not None: 
@@ -204,5 +204,81 @@ class dvcVersionControl(BaseResourceVersionControl):
             _, _ = utils.execute_cmd(["dvc", "get", self.git_url, file_path,  "--rev", hexsha, "-o", dvc_file], self)
             model = joblib.load(dvc_file)
         return model
+
+    def version_feature_transormer(self, experiment, transformer, transformer_class=None, key=None, *args, **kwargs):
+        """
+        Version the input feature transformer using dvc (Data Version Control) and output 
+        information about the versioned transformer including versioning id and URI.
+        
+        Args: 
+        experiment: str, unique ID of the experiment.
+        transformer: object, the transform to version.
+        transform_class: string, the feature transform class
+        key: str, optional, default:None, a unique identifier for the transform version 
+        
+        Returns:
+        dictionary containing transform versioning information including the URI and hexsha.
+        
+        """
+        id = self.metadata_tracker.get_resource_id(experiment)
+        model_version_id = self.metadata_tracker.get_parent_id(experiment, type="experiment")
+        if key:
+            id = "%s_%s" % (id, key)
+
+        # set up directories and dump model
+        dvc_path = self.dvc_dir
+        transformer_dir = dvc_path + "transformers/%s/%s" % (model_version_id, transformer_class)
+        os.makedirs(transformer_dir, exist_ok=True)
+        transformer_file = "transformers/%s/%s/%s" % (model_version_id, transformer_class, id)
+        transformer_path = dvc_path + transformer_file
+        joblib.dump(transformer, transformer_path)
+
+        #now commit to dvc
+        _, _ = utils.execute_cmd(["dvc", "add", transformer_path], self)
+        _, _ = utils.execute_cmd(["dvc", "commit", transformer_path], self)
+        hexsha = None
+        if not self._get_config("disable_git_commit"):
+            git_push = not self._get_config("disable_git_push")
+            hexsha = utils.git_commit_file("%s.dvc" % transformer_path,
+                                           msg="Committing dvc file",
+                                           push=git_push,
+                                           path_from_root=self._get_config("git_path_to_dvc_dir"),
+                                           logger=self)
+        _, _ = utils.execute_cmd(["dvc", "push", "--remote", self.dvc_remote], self)
+        URI, _ = utils.execute_cmd(["dvc", "get", os.getcwd(), transformer_path, "--show-url"], self)
+
+        return {"uri": URI, "hexsha": hexsha}
+
+    def get_feature_transformer(self, experiment, key=None, *args, **kwargs):
+        """
+        Get the versioned feature transformer using versioning information.
+
+        Args:
+        experiment: str, unique ID of the experiment.
+        key: str, optional, default: None, a unique identifier for the model version.
+
+        Returns:
+        the versioned model.
+
+        """
+        id = self.metadata_tracker.get_resource_id(experiment)
+        if key:
+            id = "%s_%s" % (id, key)
+        model_version_id = self.metadata_tracker.get_parent_id(experiment, type="experiment")
+        transformer_class = self.metadata_tracker.get_metadata(experiment, id="feature_transformer")
+        hexsha = self.metadata_tracker.get_vc_info(experiment, key="hexsha").get("hexsha")
+        transformer = None
+        if hexsha is not None and hexsha != 'None':
+            dvc_file = "transformers/%s/%s/%s" % (model_version_id, transformer_class, id)
+            file_path = self.dvc_dir + dvc_file
+            if self._get_config("git_path_to_dvc_dir") is not None:
+                file_path = str(Path(self._get_config("git_path_to_dvc_dir")) / file_path)
+            #if path exists, remove it before downloading.
+            if os.path.exists(dvc_file):
+                os.remove(dvc_file)
+            _, _ = utils.execute_cmd(
+                ["dvc", "get", self.git_url, file_path,  "--rev", hexsha, "-o", dvc_file], self)
+            transformer = joblib.load(dvc_file)
+        return transformer
 
     

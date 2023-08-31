@@ -30,22 +30,28 @@ class BaseComponent:
 
         #resolve variables
         config = utils.resolve_conf_variables(config)
-        # copy config into the default config
-        omega_conf = utils.copy_config_into(OmegaConf.create(config), self.__DEFAULT_CONF__)
-        # set config. This ensures that we pick up any default config as well
+
+        
+        # set config
+        omega_conf = OmegaConf.create(config)
         valid_conf = omega_conf.copy()
         # update config.config with runner and pipeline config.
         # Needs to be done in this order to keep config precedence
         OmegaConf.update(valid_conf, "config",
                          utils.copy_config_into(valid_conf.get("config", {}),
-                                                utils.copy_config_into(pipeline_conf, runner_conf)
+                                                utils.copy_config_into(pipeline_conf, 
+                                                                       utils.copy_config_into(runner_conf, self.__DEFAULT_CONF__)
+                                                                      )   
                                                 )
                         )
+
 
         #Now we validate config to make sure the component has everything it needs
         if not skip_config_validation: 
             self._validate_conf(valid_conf, components)
-        self.config = omega_conf.get("config", {})
+            
+        # This ensures that we pick up any default config as well
+        self.config = utils.copy_config_into(omega_conf.get("config", {}), self.__DEFAULT_CONF__)
 
         #handle default components: logger, notifier, metadata_tracker
         components = utils.set_up_default_components(self, valid_conf, self.runner_conf,
