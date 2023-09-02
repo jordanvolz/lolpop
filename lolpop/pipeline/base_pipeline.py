@@ -34,14 +34,18 @@ class BasePipeline:
         #resolve any variables
         conf = utils.resolve_conf_variables(conf)
         #merge into default conf
-        conf = utils.copy_config_into(OmegaConf.create(conf), self.__DEFAULT_CONF__)
+        conf = OmegaConf.create(conf)
         #merge pipeline conf into runner conf
         valid_conf = conf.copy()
-        OmegaConf.update(valid_conf, "config", utils.copy_config_into(valid_conf.get("config", {}), runner_conf))
+        OmegaConf.update(valid_conf, "config", 
+                         utils.copy_config_into(valid_conf.get("config", {}), 
+                                                utils.copy_config_into(runner_conf, self.__DEFAULT_CONF__.get("config",{}))
+                                                )
+                        )
         #validate configuration
         if not skip_config_validation:
             valid_conf = self._validate_conf(valid_conf, components)
-        self.config = conf.get("config", {})
+        self.config = utils.copy_config_into(conf, self.__DEFAULT_CONF__).get("config",{})
 
         #handle default components: logger, notifier, metadata_tracker
         components = utils.set_up_default_components(self, valid_conf, self.runner_conf,

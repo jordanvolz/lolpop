@@ -40,7 +40,7 @@ class BaseComponent:
         OmegaConf.update(valid_conf, "config",
                          utils.copy_config_into(valid_conf.get("config", {}),
                                                 utils.copy_config_into(pipeline_conf, 
-                                                                       utils.copy_config_into(runner_conf, self.__DEFAULT_CONF__)
+                                                                       utils.copy_config_into(runner_conf, self.__DEFAULT_CONF__.get("config",{}))
                                                                       )   
                                                 )
                         )
@@ -49,9 +49,9 @@ class BaseComponent:
         #Now we validate config to make sure the component has everything it needs
         if not skip_config_validation: 
             self._validate_conf(valid_conf, components)
-            
+
         # This ensures that we pick up any default config as well
-        self.config = utils.copy_config_into(omega_conf.get("config", {}), self.__DEFAULT_CONF__)
+        self.config = utils.copy_config_into(omega_conf.get("config", {}), self.__DEFAULT_CONF__.get("config",{}))
 
         #handle default components: logger, notifier, metadata_tracker
         components = utils.set_up_default_components(self, valid_conf, self.runner_conf,

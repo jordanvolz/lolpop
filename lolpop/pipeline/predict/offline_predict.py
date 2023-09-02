@@ -62,9 +62,9 @@ class OfflinePredict(BasePredict):
         df = data.drop(self._get_config("DROP_COLUMNS", []), axis=1, errors="ignore")
 
         #make predictions
-        data["prediction"] = model.predict_df(df)
+        data["prediction"] = model.transform_and_predict_df(df)
         if self.problem_type == "classification": 
-            data["prediction_proba"] = model.predict_proba_df(df, to_list=True)
+            data["prediction_proba"] = model.transform_and_predict_proba_df(df, to_list=True)
 
         #get explanations
         if self.problem_type !="timeseries" and not self._get_config("skip_prediction_explanations", False):

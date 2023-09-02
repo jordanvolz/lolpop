@@ -40,9 +40,9 @@ class LocalHyperparameterTuner(BaseHyperparameterTuner):
                 #train model 
                 model, experiment = self.build_model(data, model_version, algo, params)
                 #save model
-                self.save_model(model, experiment, params, algo)
+                self.save_model(model, experiment)
                 #make predictions
-                predictions = model.predict(data)
+                predictions = model.transform_and_predict(data)
                 #calculate metrics
                 metrics_val = model.calculate_metrics(data, predictions, metrics)
                 #log metrics

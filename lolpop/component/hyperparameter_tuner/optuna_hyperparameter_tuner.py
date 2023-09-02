@@ -132,7 +132,7 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
         #build model
         model, experiment = self.build_model(data, model_version, algo, model_params, trainer_config)
         #make predictions
-        predictions = model.predict(data)
+        predictions = model.transform_and_predict(data)
         #calculate metrics
         metrics_val = model.calculate_metrics(data, predictions, metrics)
         perf_metric_value = metrics_val["valid"][perf_metric]
@@ -251,8 +251,9 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
         self.metadata_tracker.log_metadata(experiment, id="optuna_trial_number", data=trial.number)
         self.metadata_tracker.update_resource(experiment, {"start_time": trial.datetime_start, "end_time":datetime.utcnow()})
         
+        #moved this to build_model
         #save model
-        self.save_model(model, experiment, model_params, algo)
+        #self.save_model(model, experiment)
 
         return experiment
 
