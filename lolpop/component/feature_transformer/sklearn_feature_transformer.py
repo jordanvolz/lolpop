@@ -7,13 +7,11 @@ from sklearn.compose import ColumnTransformer
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class sklearnFeatureTransformer(BaseFeatureTransformer):
-    __REQUIRED_CONF__ = {"components": ["resource_version_control", "metadata_tracker"],
-                         "config": ["transformers"]
-
+    __REQUIRED_CONF__ = {"config": ["transformers"]
                          }
 
     __DEFAULT_CONF__ = {
-        "config": {"column_transformer_kwargs": {}}
+        "config": {"column_transformer_kwargs": {"remainder": "passthrough"}}
     }
 
     def __init__(self, *args, **kwargs):
@@ -35,8 +33,8 @@ class sklearnFeatureTransformer(BaseFeatureTransformer):
             transformer_array.append((name, transformer, columns))
         
         #now we can call ColumnTranformer on the transformer_array 
-        self.transformer = ColumnTransformer(transformers=transformer_array)
         self.params = self._get_config("column_transformer_kwargs")
+        self.transformer = ColumnTransformer(transformers=transformer_array, **self.params)
 
 
     def fit(self, data, *args, **kwargs):
@@ -58,9 +56,7 @@ class sklearnFeatureTransformer(BaseFeatureTransformer):
         if not hasattr(self, "transformer"):
             raise Exception(
                 "No feature transformer found. Unable to fit transformer.")
-        if kwargs is not None: 
-            self.params.update(kwargs)
-        self.transformer = self.transformer.fit(data, **self.params)
+        self.transformer = self.transformer.fit(data, **kwargs)
 
         return self.transformer
 
@@ -111,26 +107,6 @@ class sklearnFeatureTransformer(BaseFeatureTransformer):
         data_out = self.transformer.fit_transform(data, **kwargs)
 
         return data_out
-
-    def save(self, experiment, *args, **kwargs):
-        """
-        Save the feature transformer to a version control system.
-
-        Args:
-            experiment: The experiment object or identifier.
-            *args: Positional arguments to be passed to the `version_feature_transformer` method.
-            **kwargs: Keyword arguments to be passed to the `version_feature_transformer` method.
-
-        """
-        transformer = self.name
-        vc_info = self.resource_version_control.version_feature_transformer(
-            experiment, self.transformer, algo=transformer)
-        experiment_metadata = {
-            "feature_transformer_fit_params": self.params,
-            "feature_transformer": transformer
-        }
-        self.metadata_tracker.register_vc_resource(
-            experiment, vc_info, additional_metadata=experiment_metadata)
 
     def _get_transformer(self, transformer_class, *args, **kwargs): 
         """

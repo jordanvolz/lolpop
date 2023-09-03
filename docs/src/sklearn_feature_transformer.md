@@ -1,16 +1,11 @@
 # sklearnFeatureTransformer
 
-This class is a subclass of `BaseFeatureTransformer` and is used for transforming input data using scikit-learn transformers. It provides methods for fitting and transforming the data, as well as saving the transformed data to a version control system.
+This class is a subclass of `BaseFeatureTransformer` and is used for transforming input data using scikit-learn transformers. It provides methods for fitting and transforming the data.
 
 ## Configuration
 ### Required Configuration
 
-`sklearnFeatureTransformer` contains the following required components: 
-
-- `resource_version_control`
-- `metadata_tracker`
-
-and the following required configuration: 
+`sklearnFeatureTransformer` contains the following required configuration: 
 
 - `transformers`: A list of transformers to run. Each transformer is a dictionary with the following entries: 
     - `transformer`: The `sklearn.preprocessing` class to use as the transformer. Required. 
@@ -20,13 +15,15 @@ and the following required configuration:
 
 ### Optional Configuration 
 
-`sklearnFeatureTransformer` contains the following optional configuration: 
+`sklearnFeatureTransformer` contains no optional configuration. 
 
-- `column_transformer_kwargs`: A dictionary of keyword arguments to pass into the `ColumnTransformer` class. 
+
 
 ### Default Configuration 
 
-There is no default configuration for `sklearnFeatureTransformer`.
+ `sklearnFeatureTransformer` contains the following default configuration:
+
+- `column_transformer_kwargs`: A dictionary of keyword arguments to pass into the `ColumnTransformer` class. By default, this contains `{'remainder': 'passthrough'}`, which explicitly instructs the `ColumnTransformer` to pass through any columns in the dataset untransformed that are not mentioned in the `transformers` dictionary. If you override this, note that the default behavior for `ColumnTransformer` is to drop these columns. 
 
 ## Attributes
 
@@ -87,18 +84,6 @@ def fit_transform(self, data, *args, **kwargs)
 **Returns**:
 
 - `numpy.ndarray` or `scipy.sparse matrix`: The transformed data.
-
-#### save 
-
-This method saves the feature transformer to a version control system.
-
-```python 
-save(self, experiment, *args, **kwargs)
-```
-
-**Arguments**:
-
-- `experiment`: The experiment object or identifier.
 
 #### _get_transformer 
 This method gets the scikit-learn transformer object based on the given class name.
