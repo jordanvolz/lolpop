@@ -22,6 +22,7 @@ def test_petfinder_metaflow_workflow_runs_successfully(tmp_path):
         import mlflow
         mlflow.set_tracking_uri("./mlruns")
         mlflow.end_run()
+        mlflow.end_run()
     except:
         pass
 

@@ -37,12 +37,13 @@ class FeatureEngineFeatureTransformer(BaseFeatureTransformer):
         self.transformer = Pipeline(transformer_array, **self.params)
 
 
-    def fit(self, data, *args, **kwargs):
+    def fit(self, X_data, y_data=None, *args, **kwargs):
         """
         Fit the feature transformer to the data.
 
         Args:
-            data (array-like): The input data to fit the transformer to.
+            X_data (object): The input data to fit the transformer to.
+            y_data (object): The target data.
             *args: Positional arguments to be passed to the `fit` method.
             **kwargs: Keyword arguments to be passed to the `fit` method.
 
@@ -56,7 +57,7 @@ class FeatureEngineFeatureTransformer(BaseFeatureTransformer):
         if not hasattr(self, "transformer"):
             raise Exception(
                 "No feature transformer found. Unable to fit transformer.")
-        self.transformer = self.transformer.fit(data, **kwargs)
+        self.transformer = self.transformer.fit(X_data, y_data, **kwargs)
 
         return self.transformer
 
@@ -84,12 +85,13 @@ class FeatureEngineFeatureTransformer(BaseFeatureTransformer):
 
         return data_out
     
-    def fit_transform(self, data, *args, **kwargs): 
+    def fit_transform(self, X_data, y_data=None, *args, **kwargs): 
         """
         Fit the feature transformer to the data and transform it.
 
         Args:
-            data: The input data to fit the transformer to and transform.
+            X_data: The input data to fit the transformer to and transform.
+            y_data: The target data. 
             *args: Positional arguments to be passed to the `fit_transform` method.
             **kwargs: Keyword arguments to be passed to the `fit_transform` method.
 
@@ -104,7 +106,7 @@ class FeatureEngineFeatureTransformer(BaseFeatureTransformer):
             raise Exception(
                 "No feature transformer found. Unable to transform features.")
 
-        data_out = self.transformer.fit_transform(data, **kwargs)
+        data_out = self.transformer.fit_transform(X_data, y_data, **kwargs)
 
         return data_out
 
@@ -227,8 +229,6 @@ class FeatureEngineFeatureTransformer(BaseFeatureTransformer):
             "MatchCategories",
             "MatchVariables",
         ]
-
-        print(transformer_class)
 
         transformer = None 
 

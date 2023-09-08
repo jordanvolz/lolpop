@@ -47,7 +47,7 @@ class AIFairnessModelBiasChecker(BaseModelBiasChecker):
             metrics_out["bldm_smoothed_edf"] = bldm.smoothed_empirical_differential_fairness() #
 
             ds_preds = ds.copy()
-            ds_preds.labels = model.trasform_and_predict(data).get("train")
+            ds_preds.labels = model.transform_and_predict(data).get("train")
 
             #get fairness metric from classificationmetric. This checks fairness in predictions
             cm = ClassificationMetric(ds, ds_preds, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)

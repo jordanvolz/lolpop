@@ -129,7 +129,7 @@ nav:
         - Snowflake: snowflake_data_transformer.md
       - Feature Transformers: 
         - BaseFeatureTransformer: base_feature_transformer.md
-        - Feature Engien: feature_engine_feature_transformer.md
+        - Feature Engine: feature_engine_feature_transformer.md
         - Local: local_feature_transformer.md
         - scikit-learn: sklearn_feature_transformer.md
       - Generative AI Chatbots: 

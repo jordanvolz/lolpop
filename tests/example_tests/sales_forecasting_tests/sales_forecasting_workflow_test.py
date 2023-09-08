@@ -16,8 +16,13 @@ def test_sales_forecasting_workflow_runs_successfully():
 
     # always end the mlflow run. We do this in case another process errored and failed 
     # to end the active run.
-    import mlflow 
-    mlflow.end_run()
+    try: 
+        import mlflow 
+        mlflow.set_tracking_uri("./mlruns")
+        mlflow.end_run()
+        mlflow.end_run()
+    except: 
+        pass 
     
     # Provide valid arguments for the workflow command
     result = runner.invoke(app, ["workflow", "QuickstartTimeSeriesRunner",

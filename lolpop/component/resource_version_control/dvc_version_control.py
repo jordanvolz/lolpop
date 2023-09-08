@@ -68,6 +68,8 @@ class dvcVersionControl(BaseResourceVersionControl):
 
         #set up paths
         dvc_path = self.dvc_dir
+        data_dir = "%s/data" %dvc_path 
+        os.makedirs(data_dir, exist_ok=True)
         if key: 
             dvc_file = "data/%s_%s.csv" %(id, key)
         else: 
@@ -205,7 +207,7 @@ class dvcVersionControl(BaseResourceVersionControl):
             model = joblib.load(dvc_file)
         return model
 
-    def version_feature_transormer(self, experiment, transformer, transformer_class=None, key=None, *args, **kwargs):
+    def version_feature_transformer(self, experiment, transformer, transformer_class=None, key=None, *args, **kwargs):
         """
         Version the input feature transformer using dvc (Data Version Control) and output 
         information about the versioned transformer including versioning id and URI.

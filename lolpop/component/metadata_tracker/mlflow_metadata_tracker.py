@@ -1,11 +1,11 @@
 from lolpop.component.metadata_tracker.base_metadata_tracker import BaseMetadataTracker
 from lolpop.utils import common_utils as utils
 from lolpop.utils import mlflow_utils
-#import your libraries here
+
 import mlflow
 from mlflow.tracking import MlflowClient as client
 from pathlib import Path
-
+import json 
 
 
 @utils.decorate_all_methods([utils.error_handler, 
@@ -433,4 +433,25 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         #if you passed in a model_obj, we assume you have a pre-trained model object you wish to use
         if model_obj is not None:
             model._set_model(model_obj)
+
+        #now set feature transformer
+        winning_exp_id = self.get_metadata(model_version, "winning_experiment_id")
+        winning_experiment = self.get_resource(winning_exp_id, type="experiment")
+        #Note: this relies on resource_version_control. The above does not.
+        # Using RVC is a lot easier, but assumes more setup from the user.
+        # Alternatively you could rebuild this via the ft parms & refitting on the original data
+        # but ... getting the original data would also require RVC. 
+        transformer_obj = self.resource_version_control.get_feature_transformer(winning_experiment)
+        if transformer_obj is not None:
+            transformer_class = self.get_metadata(model_version, "winning_experiment_feature_transformer")
+            transformer_config = json.loads(self.get_metadata(model_version, "winning_experiment_feature_transformer_config") or {})
+            transformer_cl = utils.load_class(transformer_class)
+            transformer = transformer_cl(conf=transformer_config, 
+                                         pipeline_conf=pipeline_conf, 
+                                         runner_conf=self.runner_conf, 
+                                         parent_process=parent_process,
+                                         problem_type=self.problem_type, 
+                                         components=dependent_components)
+            setattr(model, "feature_transformer", transformer)
+            model._set_transformer(transformer_obj)
         return model

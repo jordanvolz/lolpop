@@ -51,55 +51,76 @@ class BaseModelTrainer(BaseComponent):
     def get_artifacts(self, id, *args, **kwargs) -> dict[str, Any]:
         pass
 
+    def transform_and_fit(self, data_dict, *args, **kwargs) -> Any: 
+        #fit feature transformer
+        self.fit_data(data_dict["X_train"], data_dict["y_train"])
 
-    def transform_and_fit(self, data, *args, **kwargs) -> Any: 
-        transformed_data = data 
-        transformed_data["X_train"] = self.fit_transform_data(data["X_train"], data["y_train"])
-        return self.fit(transformed_data, *args, **kwargs)
+        #transform features 
+        transformed_data_dict = self._transform_dict(data_dict)
+
+        #finally, fit model
+        return self.fit(transformed_data_dict, *args, **kwargs)
     
     def transform_and_predict(self, data, *args, **kwargs) -> Any: 
-        transformed_data = data 
-        #data is a dict of train/vali/test so we need to transform all X_ datasets
-        for key in data.keys(): 
-            if key.startswith("X_"): 
-                transformed_data[key] = self.transform_data(data[key])
+        #transform data 
+        transformed_data = self._transform_dict(data)
+        
+        #finally, call predict on transformed data         
         return self.predict(transformed_data, *args, **kwargs)
     
     def transform_and_predict_df(self, data, *args, **kwargs) -> Any: 
+        #transform dataframe
         transformed_data = self.transform_data(data)
+
+        #get predictions
         return self.predict_df(transformed_data, *args, **kwargs)
 
-    def transform_and_predict_proba(self, data, *args, **kwargs) -> Any: 
+    def transform_and_predict_proba_df(self, data, *args, **kwargs) -> Any: 
+        #transform dataframe
         transformed_data = self.transform_data(data)
-        return self.predict_proba(transformed_data, *args, **kwargs)
+
+        #get prediction probabilities
+        return self.predict_proba_df(transformed_data, *args, **kwargs)
 
     def fit_transform_data(self, X_data, y_data, *args, **kwargs) -> Any:
-        
+        #fit data 
         self.fit_data(X_data, y_data)
-        data_out = self.transform_data(X_data)
 
+        #transform data 
+        data_out = self.transform_data(X_data)
         return data_out
         
     def fit_data(self, X_data, y_data=None, *args, **kwargs) -> Any:
 
         if hasattr(self, "feature_transformer"):
             self.log(
-                "Running feature transformer on data for trainer %s." % self.name)
+                "Fitting feature transformer on data for trainer %s." % self.name)
             self.feature_transformer.fit(X_data, y_data)
+            return self.feature_transformer
         else:
             self.log("No feature transformer found for trainer %s." %
                      self.name)
+            return None 
 
-        return self.feature_transformer
+    def _transform_dict(self, data, *args, **kwargs) -> dict[Any]: 
+        data_dict = data.copy() 
+
+        #data is a dict of train/vali/test so we need to transform all X_ datasets
+        for key in data_dict.keys():
+            if key.startswith("X_"):
+                data_dict[key] = self.transform_data(data_dict[key])
+
+        return data_dict
 
     def transform_data(self, data, *args, **kwargs) -> Any: 
-        data_out = data 
+        data_out = data.copy() 
 
         if hasattr(self, "feature_transformer"):
             self.log("Running feature transformer on data for trainer %s." %self.name)
-            data_out = self.feature_transformer.transform(data)
+            data_out = self.feature_transformer.transform(data_out)
         else: 
             self.log("No feature transformer found for trainer %s." %self.name)
+
         return data_out
 
 

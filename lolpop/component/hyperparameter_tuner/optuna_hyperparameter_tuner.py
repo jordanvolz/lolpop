@@ -83,13 +83,18 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
         winning_exp_id = self._get_winning_experiment(exp_list, reverse=reverse)
         winning_exp = self.metadata_tracker.get_resource(winning_exp_id, parent=model_version, type="experiment")
         winning_exp_model_trainer = self.metadata_tracker.get_metadata(winning_exp, id="model_trainer")
+        winning_exp_feature_transformer = self.metadata_tracker.get_metadata(winning_exp, id="feature_transformer")
         best_model = model_list.get(winning_exp_id)
 
         #log important stuff to model version
         self.metrics_tracker.copy_metrics(winning_exp, model_version)
         self.metadata_tracker.log_metadata(model_version, id="winning_experiment_id", data=winning_exp_id)
         self.metadata_tracker.log_metadata(model_version, id="winning_experiment_model_trainer", data=winning_exp_model_trainer)
-      
+        if winning_exp_feature_transformer is not None:
+            self.metadata_tracker.log_metadata(model_version, id="winning_experiment_feature_transformer", data=winning_exp_feature_transformer)
+            winning_exp_feature_transformer_config = self.metadata_tracker.get_metadata(winning_exp, id="feature_transformer_config")
+            self.metadata_tracker.log_metadata(model_version, id="winning_experiment_feature_transformer_config", data=winning_exp_feature_transformer_config)
+ 
         return best_model
 
     def _optuna_objective(self, trial, param_type, data, model_version, algo, params, trainer_config, metrics, perf_metric, experiment_list, model_list): 

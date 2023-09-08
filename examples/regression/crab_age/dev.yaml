@@ -34,11 +34,19 @@ process:
 train: 
   components: 
     data_splitter: LocalDataSplitter
+    feature_transformer: FeatureEngineFeatureTransformer
     hyperparameter_tuner: OptunaHyperparameterTuner
     model_checker: EvidentlyAIModelChecker
     model_explainer: AlibiModelExplainer
     model_visualizer: YellowbrickModelVisualizer
     model_bias_checker: AIFairnessModelBiasChecker
+  feature_transformer:
+    config:
+      transformers:
+        - transformer: "OneHotEncoder"
+          transformer_columns: ["Sex"]
+        - transformer: "LogCpTransformer"
+          transformer_columns: ["Length", "Diameter", "Height", "Weight", "Shucked Weight", "Viscera Weight", "Shell Weight"]
   data_splitter: 
     config: 
       include_test: True
@@ -54,6 +62,7 @@ train:
           learning_rate: [0.5,1.0]
           n_estimators: [10]
           random_state: [0]
+          enable_categorical: [True] 
   model_checker: 
     config: 
       baseline_method: value
@@ -61,7 +70,7 @@ train:
   model_explainer: 
     config: 
       explainer_class: TreeShap
-      skip_explainer_plots: False
+      skip_explainer_plots: True
   model_bias_checker: 
     config: 
         #the features that you want to check bias on

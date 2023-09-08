@@ -14,3 +14,9 @@ class BaseResourceVersionControl(BaseComponent):
     
     def get_model(self, experiment, *args, **kwargs) -> Any : 
         pass
+
+    def version_feature_transformer(self, experiment, transformer, *args, **kwargs) -> dict[str, Any]: 
+        pass 
+
+    def get_feature_transformer(self, experiment, model, *args, **kwargs) -> Any: 
+        pass 

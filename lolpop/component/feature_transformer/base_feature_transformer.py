@@ -24,12 +24,12 @@ class BaseFeatureTransformer(BaseComponent):
         Returns:
             None.
         """
-        transformer = self.name
+        transformer_class = self.name
         vc_info = self.resource_version_control.version_feature_transformer(
-            experiment, self.transformer, algo=transformer)
+            experiment, self.transformer, transformer_class=transformer_class)
         experiment_metadata = {
-            "feature_transformer_fit_params": self.params,
-            "feature_transformer": transformer
+            "feature_transformer_config": self.config,
+            "feature_transformer": transformer_class
         }
         self.metadata_tracker.register_vc_resource(
             experiment, vc_info, additional_metadata=experiment_metadata)

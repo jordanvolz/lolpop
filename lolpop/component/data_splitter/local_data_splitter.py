@@ -44,7 +44,8 @@ class LocalDataSplitter(BaseDataSplitter):
                 split_classes = self._get_config("SPLIT_CLASSES", {}),  
                 split_ratio = self._get_config("SPLIT_RATIO", [0.8, 0.2]), 
                 sample_num = self._get_config("SAMPLE_NUM", 100000), 
-                use_startified = self._get_config("USE_STRATIFIED", False),
+                use_stratified = self._get_config("USE_STRATIFIED", False),
+                categorical_columns=self._get_config("CATEGORICAL_COLUMNS", []),
                 include_test = self._get_config("INCLUDE_TEST", False),
                 )
         for key in data_out.keys():
@@ -92,7 +93,7 @@ class LocalDataSplitter(BaseDataSplitter):
         return data_out 
 
 
-    def _split_data(self, data, target,  split_column=None, split_classes={},  split_ratio=[0.8,0.2], sample_num=100000, use_startified=False, include_test=False, reset_index=True): 
+    def _split_data(self, data, target,  split_column=None, split_classes={},  split_ratio=[0.8,0.2], sample_num=100000, use_stratified=False, categorical_columns=[], include_test=False, reset_index=True): 
         """ Function to split data. 
             Supports random splitting, manual splitting, and stratified. 
             Can also include test set. 
@@ -109,9 +110,11 @@ class LocalDataSplitter(BaseDataSplitter):
               should also add up to 1!  Not used if a manual split is specified. Defaults to [0.8,0.2].
             sample_num (int, optional): The number of rows to include in your dataset. This is the total 
               number across train, valid, and test sets. Defaults to 100000.
-            use_startified (bool, optional): Whether or not to used stratified sampling. When doing classifications problems, 
+            use_stratified (bool, optional): Whether or not to used stratified sampling. When doing classifications problems, 
               some frameworks will error out when classes with no cardinality do not appear in one of the datasets. Statified sampling
               ensures that at least one member of each class will appear in each dataset. Defaults to False.
+            categorical_columns (bool, optional): A list of categorical columns to for 
+              grouping use when use_stratified=True. 
             include_test (bool, optional): If a holdout dataset should be created. Defaults to False.
 
         Returns:
@@ -136,8 +139,8 @@ class LocalDataSplitter(BaseDataSplitter):
             data_out = self._build_split_dfs(train, valid, target, split_column, test)
 
         else: #random sample
-            if use_startified: 
-                strat_df = data.groupby(target, group_keys=False).apply(lambda x: x.sample(min(len(x), 2)))
+            if use_stratified: 
+                strat_df = data.groupby(categorical_columns, group_keys=False).apply(lambda x: x.sample(min(len(x), 2)))
             if data.shape[0] > sample_num: 
                 data = data.sample(sample_num)
 
@@ -149,7 +152,7 @@ class LocalDataSplitter(BaseDataSplitter):
                 valid = temp_valid.sample(frac=(split_ratio[1]/(split_ratio[1]+split_ratio[2])))
                 test = temp_valid.drop(valid.index)
             
-            if use_startified: 
+            if use_stratified: 
                 train = train.merge(strat_df, how="outer")
                 valid = valid.merge(strat_df, how="outer")
                 if include_test:

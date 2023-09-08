@@ -32,6 +32,7 @@ process:
 train: 
   components: 
     data_splitter: LocalDataSplitter
+    feature_transformer: sklearnFeatureTransformer
     hyperparameter_tuner: OptunaHyperparameterTuner
     model_checker: EvidentlyAIModelChecker
     model_explainer: AlibiModelExplainer
@@ -41,6 +42,15 @@ train:
     config: 
       include_test: True
       split_ratio: [0.8,0.1,0.1]
+  feature_transformer: 
+    config: 
+      transformers: 
+        - transformer: "OrdinalEncoder"
+          transformer_columns: ["Type", "Breed1", "Breed2", "Gender", "Color1", "Color2", "Color3",
+                        "MaturitySize", "FurLength", "Vaccinated", "Dewormed", "Sterilized", "Health", "State"]
+          transformer_kwargs: {"handle_unknown": "use_encoded_value", "unknown_value": -1}
+        - transformer: "MinMaxScaler"
+          transformer_columns: ["Fee"]
   hyperparameter_tuner: 
     config: 
       param_type: fixed

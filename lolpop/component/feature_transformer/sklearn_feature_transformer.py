@@ -4,6 +4,8 @@ from lolpop.utils import common_utils as utils
 from sklearn import preprocessing
 from sklearn.compose import ColumnTransformer
 
+import numpy as np 
+import pandas as pd 
 
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class sklearnFeatureTransformer(BaseFeatureTransformer):
@@ -11,7 +13,7 @@ class sklearnFeatureTransformer(BaseFeatureTransformer):
                          }
 
     __DEFAULT_CONF__ = {
-        "config": {"column_transformer_kwargs": {"remainder": "passthrough"}}
+        "config": {"column_transformer_kwargs": {"remainder": "passthrough", "verbose_feature_names_out": False}}
     }
 
     def __init__(self, *args, **kwargs):
@@ -37,12 +39,13 @@ class sklearnFeatureTransformer(BaseFeatureTransformer):
         self.transformer = ColumnTransformer(transformers=transformer_array, **self.params)
 
 
-    def fit(self, data, *args, **kwargs):
+    def fit(self, X_data, y_data=None, *args, **kwargs):
         """
         Fit the feature transformer to the data.
 
         Args:
-            data: The input data to fit the transformer to.
+            X_data: The input data to fit the transformer to.
+            y_data: The label data. 
             *args: Positional arguments to be passed to the `fit` method.
             **kwargs: Keyword arguments to be passed to the `fit` method.
 
@@ -56,7 +59,7 @@ class sklearnFeatureTransformer(BaseFeatureTransformer):
         if not hasattr(self, "transformer"):
             raise Exception(
                 "No feature transformer found. Unable to fit transformer.")
-        self.transformer = self.transformer.fit(data, **kwargs)
+        self.transformer = self.transformer.fit(X_data, y_data, **kwargs)
 
         return self.transformer
 
@@ -80,16 +83,25 @@ class sklearnFeatureTransformer(BaseFeatureTransformer):
             raise Exception(
                 "No feature transformer found. Unable to transform features.")
 
-        data_out = self.transformer.transform(data, **kwargs)
+        #transform data
+        transform_out = self.transformer.transform(data, **kwargs)
+
+        #make sure outpt is array-like
+        if not isinstance(transform_out, np.ndarray): 
+            transform_out = transform_out.toarray() 
+
+        #convert to DF w/ correct column names
+        data_out = pd.DataFrame(transform_out, columns=self.transformer.get_feature_names_out())
 
         return data_out
     
-    def fit_transform(self, data, *args, **kwargs): 
+    def fit_transform(self, X_data, y_data=None, *args, **kwargs): 
         """
         Fit the feature transformer to the data and transform it.
 
         Args:
-            data: The input data to fit the transformer to and transform.
+            X_data: The input data to fit the transformer to and transform.
+            y_data: The label data. 
             *args: Positional arguments to be passed to the `fit_transform` method.
             **kwargs: Keyword arguments to be passed to the `fit_transform` method.
 
@@ -104,7 +116,7 @@ class sklearnFeatureTransformer(BaseFeatureTransformer):
             raise Exception(
                 "No feature transformer found. Unable to transform features.")
 
-        data_out = self.transformer.fit_transform(data, **kwargs)
+        data_out = self.transformer.fit_transform(X_data, y_data, **kwargs)
 
         return data_out
 
