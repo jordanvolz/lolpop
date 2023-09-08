@@ -444,7 +444,9 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         transformer_obj = self.resource_version_control.get_feature_transformer(winning_experiment)
         if transformer_obj is not None:
             transformer_class = self.get_metadata(model_version, "winning_experiment_feature_transformer")
-            transformer_config = json.loads(self.get_metadata(model_version, "winning_experiment_feature_transformer_config") or {})
+            transformer_config = self.get_metadata(model_version, "winning_experiment_feature_transformer_config")
+            if transformer_config is not None: 
+                transformer_config = {"config": json.loads(transformer_config.replace("\'", "\""))}
             transformer_cl = utils.load_class(transformer_class)
             transformer = transformer_cl(conf=transformer_config, 
                                          pipeline_conf=pipeline_conf, 

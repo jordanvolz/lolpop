@@ -12,6 +12,9 @@ class BaseFeatureTransformer(BaseComponent):
     def transform(self, data, *args, **kwargs) -> Any:
         pass
 
+    def fit_transform(self, data, *args, **kwargs) -> Any: 
+        pass 
+
     def save(self, experiment, *args, **kwargs):
         """
         Saves the feature transformer and associated metadata using the resource version control.

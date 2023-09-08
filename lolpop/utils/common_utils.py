@@ -253,6 +253,8 @@ def get_conf(conf_obj):
         conf = OmegaConf.create(conf_obj)
     elif isinstance(conf_obj, dictconfig.DictConfig):
         conf = conf_obj
+    elif conf_obj is None: 
+        conf = {}
     else: 
         raise Exception("Invalid configuration. Configuration must be a file or a a dict.")
     
