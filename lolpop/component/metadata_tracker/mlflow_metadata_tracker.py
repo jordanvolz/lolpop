@@ -434,26 +434,31 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         if model_obj is not None:
             model._set_model(model_obj)
 
-        #now set feature transformer
-        winning_exp_id = self.get_metadata(model_version, "winning_experiment_id")
-        winning_experiment = self.get_resource(winning_exp_id, type="experiment")
-        #Note: this relies on resource_version_control. The above does not.
-        # Using RVC is a lot easier, but assumes more setup from the user.
-        # Alternatively you could rebuild this via the ft parms & refitting on the original data
-        # but ... getting the original data would also require RVC. 
-        transformer_obj = self.resource_version_control.get_feature_transformer(winning_experiment)
-        if transformer_obj is not None:
-            transformer_class = self.get_metadata(model_version, "winning_experiment_feature_transformer")
-            transformer_config = self.get_metadata(model_version, "winning_experiment_feature_transformer_config")
-            if transformer_config is not None: 
-                transformer_config = {"config": json.loads(transformer_config.replace("\'", "\""))}
+        #now set feature transformer        
+        transformer_class = self.get_metadata(model_version, "winning_experiment_feature_transformer")
+        transformer_config = self.get_metadata(model_version, "winning_experiment_feature_transformer_config")
+
+        #build transformer class and set object in model 
+        if transformer_class is not None: 
+            if transformer_config is not None and isinstance(transformer_config, str):
+                transformer_config = utils.parse_dict_string(transformer_config)
+        
             transformer_cl = utils.load_class(transformer_class)
-            transformer = transformer_cl(conf=transformer_config, 
-                                         pipeline_conf=pipeline_conf, 
-                                         runner_conf=self.runner_conf, 
-                                         parent_process=parent_process,
-                                         problem_type=self.problem_type, 
-                                         components=dependent_components)
+            transformer = transformer_cl(conf={"config": transformer_config},
+                                            pipeline_conf=pipeline_conf,
+                                            runner_conf=self.runner_conf,
+                                            parent_process=parent_process,
+                                            problem_type=self.problem_type,
+                                            components=dependent_components)
             setattr(model, "feature_transformer", transformer)
-            model._set_transformer(transformer_obj)
+
+            #try to fetch transformer object and set it
+            winning_exp_id = self.get_metadata(model_version, "winning_experiment_id")
+            winning_experiment = self.get_resource(winning_exp_id, type="experiment")
+            transformer_obj = self.resource_version_control.get_feature_transformer(winning_experiment)
+
+            if transformer_obj is not None:
+                transformer._set_transformer(transformer_obj)
+                model._set_transformer(transformer)
+
         return model

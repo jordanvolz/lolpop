@@ -125,14 +125,15 @@ class MetaflowOfflinePredictSpec(FlowSpec):
                        axis=1, errors="ignore")
 
         #make predictions
-        data["prediction"] = self.model.transform_and_predict_df(df)
+        transformed_data = self.model.transform_data(df)
+        data["prediction"] = self.model.predict_df(transformed_data)
         if self.lolpop.problem_type == "classification":
-            data["prediction_proba"] = self.model.transform_and_predict_proba_df(
-                df, to_list=True)
+            data["prediction_proba"] = self.model.predict_proba_df(
+                transformed_data, to_list=True)
 
         #get explanations
         data["explanations"] = self.lolpop.model_explainer.get_explanations(
-            df, self.model, self.model_version, "prediction", to_list=True)
+            transformed_data, self.model, self.model_version, "prediction", to_list=True)
 
         #log predictions
         self.lolpop.metrics_tracker.log_prediction_metrics(

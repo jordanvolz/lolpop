@@ -61,7 +61,7 @@ class LocalHyperparameterTuner(BaseHyperparameterTuner):
         winning_exp_id = self._get_winning_experiment(exp_list, reverse=utils.get_metric_direction(perf_metric))
         winning_exp = self.metadata_tracker.get_resource(winning_exp_id, parent=model_version, type="experiment")
         winning_exp_model_trainer = self.metadata_tracker.get_metadata(winning_exp, id="model_trainer")
-        winning_exp_feature_transformer = self.metadata_tracker.get_metadata(winning_exp, id="feature_transformer")
+        winning_exp_feature_transformer = self.metadata_tracker.get_metadata(winning_exp, id="feature_transformer_class")
         best_model = model_list.get(winning_exp_id)
 
         #log important stuff to model version

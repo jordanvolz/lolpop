@@ -16,7 +16,7 @@ config:
   model_name: crab_age
   model_target: Age
   model_index: id
-  drop_columns: [id]
+  drop_columns: [id, SPLIT]
   local_dir: /tmp/artifacts/
 
 #pipelines config
@@ -62,7 +62,6 @@ train:
           learning_rate: [0.5,1.0]
           n_estimators: [10]
           random_state: [0]
-          enable_categorical: [True] 
   model_checker: 
     config: 
       baseline_method: value

@@ -32,11 +32,17 @@ class BaseFeatureTransformer(BaseComponent):
             experiment, self.transformer, transformer_class=transformer_class)
         experiment_metadata = {
             "feature_transformer_config": self.config,
-            "feature_transformer": transformer_class
+            "feature_transformer_class": transformer_class
         }
         self.metadata_tracker.register_vc_resource(
-            experiment, vc_info, additional_metadata=experiment_metadata)
+            experiment, vc_info, key="feature_transformer", additional_metadata=experiment_metadata)
 
     def load(self, source, *args, **kwargs) -> Any:
         pass
+
+    def _get_transformer(self) -> Any: 
+        return self.transformer
+    
+    def _set_transformer(self, transformer): 
+        self.transformer = transformer
 

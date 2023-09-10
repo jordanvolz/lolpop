@@ -3,9 +3,8 @@ import numpy as np
 
 
 def transform(data, **kwargs):
-    CATEGORY_COLUMNS = ["Sex"]
-
-    #ensure type is categorical for downstream encoding
-    data[CATEGORY_COLUMNS] = data[CATEGORY_COLUMNS].astype("category")
+    rng = np.random.default_rng()
+    data["SPLIT"] = rng.choice(["TRAIN", "VALID"], p=[
+                            0.8, 0.2], size=len(data))
 
     return data

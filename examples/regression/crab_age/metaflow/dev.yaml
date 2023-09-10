@@ -16,7 +16,7 @@ config:
   model_name: crab_age
   model_target: Age
   model_index: id
-  drop_columns: [id]
+  drop_columns: [id, SPLIT]
   local_dir: /tmp/artifacts/
 
 #pipelines config
@@ -44,7 +44,7 @@ train:
     config: 
       include_test: True
       split_ratio: [0.8,0.1,0.1]
-   feature_transformer:
+  feature_transformer:
     config:
       transformers:
         - transformer: "OneHotEncoder"

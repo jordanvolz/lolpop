@@ -162,7 +162,7 @@ class BaseModelTrainer(BaseComponent):
     def _get_transformer(self, *args, **kwargs) -> Any: 
         return self.feature_transformer
     
-    def _set_transformer(self, transformer, *args, **kwargs) -> Any: 
+    def _set_transformer(self, transformer, *args, **kwargs): 
         self.feature_transformer = transformer
 
     def calculate_metrics(self, data, predictions, metrics, *args, **kwargs) -> dict[str, float]: 

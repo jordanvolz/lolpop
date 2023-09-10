@@ -267,10 +267,10 @@ class dvcVersionControl(BaseResourceVersionControl):
         if key:
             id = "%s_%s" % (id, key)
         model_version_id = self.metadata_tracker.get_parent_id(experiment, type="experiment")
-        transformer_class = self.metadata_tracker.get_metadata(experiment, id="feature_transformer")
-        hexsha = self.metadata_tracker.get_vc_info(experiment, key="hexsha").get("hexsha")
+        transformer_class = self.metadata_tracker.get_metadata(experiment, id="feature_transformer_class")
+        hexsha = self.metadata_tracker.get_vc_info(experiment, key="feature_transformer_hexsha").get("hexsha")
         transformer = None
-        if hexsha is not None and hexsha != 'None':
+        if hexsha is not None and hexsha != 'None' and transformer_class is not None:
             dvc_file = "transformers/%s/%s/%s" % (model_version_id, transformer_class, id)
             file_path = self.dvc_dir + dvc_file
             if self._get_config("git_path_to_dvc_dir") is not None:
