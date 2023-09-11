@@ -39,7 +39,7 @@ lolpop has a relatively flat conceptual model which contains three main resource
 
 Components, pipelines, and runners have many common traits. In this documentation we use the term **integration** when referring to the set of components, pipelines, and runners. 
 
-There is also a natural heiarrchy between components, pipelines, and runners: 
+There is also a natural hierarchy between components, pipelines, and runners: 
 
 1. Runners can have children pipelines and components.
 2. Pipelines can have children components.
