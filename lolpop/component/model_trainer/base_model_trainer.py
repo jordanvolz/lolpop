@@ -1,4 +1,6 @@
 from lolpop.component.base_component import BaseComponent
+from lolpop.utils import common_utils as utils 
+
 from sklearn import metrics as sk_metrics
 import pandas as pd 
 import numpy as np 
@@ -17,16 +19,111 @@ class BaseModelTrainer(BaseComponent):
     def __init__(self, params=None, *args, **kwargs): 
         #set normal config
         super().__init__(params=params, *args, **kwargs)
-        if params is None or params == {}: #if params aren't passed in, try to retrieve from config
+        #if params aren't passed in, try to retrieve from config
+        if params is None or params == {}: 
             params = self._get_config("training_params", {})
         self.params = params
+
+        #load transformer if it has one
+        transformer_class = self._get_config("transformer_class")
+        if transformer_class is not None: 
+            transformer_config = self.get_config("transformer_config")
+            transformer_cl = utils.load_class(transformer_class)
+            dependent_components = {"logger": self.logger, "notifier": self.notifier,  
+                                    "metadata_tracker": self.metadata_tracker,
+                                    "resource_version_control": self.resource_version_control}
+            self.feature_transformer = transformer_cl(conf=transformer_config, pipeline_conf=self.pipeline_conf, runner_conf=self.runner_conf,
+                         parent_process=self.name, problem_type=self.problem_type, components=dependent_components)
+        
 
     def fit(self, data, *args, **kwargs) -> Any: 
         pass 
 
-    def predict(self, data, *args, **kwargs) -> Any: 
+    def predict(self, data, *args, **kwargs) -> Any:
         pass
+
+    def predict_df(self, df, *args, **kwargs) -> Any:
+        pass
+
+    def predict_proba_df(self, df, *args, **kwargs) -> Any:
+        pass
+
+    def get_artifacts(self, id, *args, **kwargs) -> dict[str, Any]:
+        pass
+
+    def transform_and_fit(self, data_dict, *args, **kwargs) -> Any: 
+        #fit feature transformer
+        self.fit_data(data_dict["X_train"], data_dict["y_train"])
+
+        #transform features 
+        transformed_data_dict = self._transform_dict(data_dict)
+
+        #finally, fit model
+        return self.fit(transformed_data_dict, *args, **kwargs)
     
+    def transform_and_predict(self, data, *args, **kwargs) -> Any: 
+        #transform data 
+        transformed_data = self._transform_dict(data)
+        
+        #finally, call predict on transformed data         
+        return self.predict(transformed_data, *args, **kwargs)
+    
+    def transform_and_predict_df(self, data, *args, **kwargs) -> Any: 
+        #transform dataframe
+        transformed_data = self.transform_data(data)
+
+        #get predictions
+        return self.predict_df(transformed_data, *args, **kwargs)
+
+    def transform_and_predict_proba_df(self, data, *args, **kwargs) -> Any: 
+        #transform dataframe
+        transformed_data = self.transform_data(data)
+
+        #get prediction probabilities
+        return self.predict_proba_df(transformed_data, *args, **kwargs)
+
+    def fit_transform_data(self, X_data, y_data, *args, **kwargs) -> Any:
+        #fit data 
+        self.fit_data(X_data, y_data)
+
+        #transform data 
+        data_out = self.transform_data(X_data)
+        return data_out
+        
+    def fit_data(self, X_data, y_data=None, *args, **kwargs) -> Any:
+
+        if hasattr(self, "feature_transformer"):
+            self.log(
+                "Fitting feature transformer on data for trainer %s." % self.name)
+            self.feature_transformer.fit(X_data, y_data)
+            return self.feature_transformer
+        else:
+            self.log("No feature transformer found for trainer %s." %
+                     self.name)
+            return None 
+
+    def _transform_dict(self, data, *args, **kwargs) -> dict[Any]: 
+        data_dict = data.copy() 
+
+        #data is a dict of train/vali/test so we need to transform all X_ datasets
+        for key in data_dict.keys():
+            if key.startswith("X_"):
+                data_dict[key] = self.transform_data(data_dict[key])
+
+        return data_dict
+
+    def transform_data(self, data, *args, **kwargs) -> Any: 
+        data_out = data.copy() 
+
+        if hasattr(self, "feature_transformer"):
+            self.log("Running feature transformer on data for trainer %s." %self.name)
+            data_out = self.feature_transformer.transform(data_out)
+        else: 
+            self.log("No feature transformer found for trainer %s." %self.name)
+
+        return data_out
+
+
     def save(self, experiment, *args, **kwargs): 
         """Save the model.
 
@@ -41,14 +138,16 @@ class BaseModelTrainer(BaseComponent):
         }
         self.metadata_tracker.register_vc_resource(experiment, vc_info, additional_metadata = experiment_metadata)
 
+        if hasattr(self, "feature_transformer"): 
+            self.feature_transformer.save(experiment)
 
-    def predict_df(self, df, *args, **kwargs) -> Any:
-        pass 
+        experiment_id = self.metadata_tracker.get_resource_id(experiment, type="experiment")
+        model_artifacts = self.get_artifacts(experiment_id) or {}
+        for k, v in model_artifacts.items():
+            self.metadata_tracker.log_artifact(experiment, k, v)
 
-    def predict_proba_df(self, df, *args, **kwargs) -> Any: 
-        pass 
-
-    def get_artifacts(self, id, *args, **kwargs) -> dict[str,Any]:
+    def load(self, *args, **kwargs) -> Any: 
+        #load feature transformer
         pass 
 
     def _get_model(self, *args, **kwargs) -> Any:
@@ -59,6 +158,12 @@ class BaseModelTrainer(BaseComponent):
         self.model = model 
     #def _get_predictions(self): 
     #    return self.predictions
+
+    def _get_transformer(self, *args, **kwargs) -> Any: 
+        return self.feature_transformer
+    
+    def _set_transformer(self, transformer, *args, **kwargs): 
+        self.feature_transformer = transformer
 
     def calculate_metrics(self, data, predictions, metrics, *args, **kwargs) -> dict[str, float]: 
         """Calculates metrics on the trained model. 
@@ -211,15 +316,14 @@ class BaseModelTrainer(BaseComponent):
             exp: experiment where the model was trained
         """
         #fit model
-
-        model_obj = self.fit(data)
+        model_obj = self.transform_and_fit(data)
 
         #create experiment and save model 
         experiment = self.metadata_tracker.create_resource(id=None, type="experiment", parent=model_version)
         self.save(experiment)
 
         #get predictions
-        predictions = self.predict(data)
+        predictions = self.transform_and_predict(data)
 
         #calculate metrics
         metrics_val = self.calculate_metrics(data, predictions, self._get_config("metrics"))

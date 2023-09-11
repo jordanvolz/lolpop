@@ -34,7 +34,7 @@ class BaseModelChecker(BaseComponent):
         #We should just save them and pass in instead of calculating again
         baseline_method = self._get_config("baseline_method")
         baseline_value = self._get_config("baseline_value")
-        test_predictions = model.predict(data)
+        test_predictions = model.transform_and_predict(data)
         baseline_predictions = self._get_baseline_predictions(data, baseline_method, baseline_value)
 
         #TODO: model metrics are being recalculated here, should save and load
@@ -265,8 +265,8 @@ class BaseModelChecker(BaseComponent):
             bool: Is the new model better? True or False
             float: difference between metric values
         """
-        current_predictions = model.predict(data)
-        deployed_predictions = deployed_model.predict(data)
+        current_predictions = model.transform_and_predict(data)
+        deployed_predictions = deployed_model.transform_and_predict(data)
 
         current_metrics = model.calculate_metrics(data, current_predictions, [perf_metric])
         deployed_metrics = deployed_model.calculate_metrics(data, deployed_predictions, [perf_metric])

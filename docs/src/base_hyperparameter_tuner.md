@@ -77,15 +77,13 @@ def build_model(self, data, model_version, algo, params, trainer_config={}, *arg
 Version controls and saves the model object and any associated artifacts to the `resource_version_control` system and `metadata_tracker`.
 
 ```python
-def save_model(self, model, experiment, params, algo, *args, **kwargs)
+def save_model(self, model, experiment *args, **kwargs)
 ```
 
 **Arguments**: 
 
 - `model` (object): The model object created during this experiment. 
 - `experiment` (experiment): The `metadata_tracker` experiment created for this experiment.  
-- `params` (dict): The training parameters used in the experiment
-- `algo` (str): The algorithm used in this experiment. 
 
 
 ### _build_training_grid

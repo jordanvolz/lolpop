@@ -52,20 +52,23 @@ class XGBoostModelTrainer(BaseModelTrainer):
 
         """
         predictions = {}
-
-        predictions["train"] = self.model.predict(data["X_train"])
+        
+        data_train = self._order_features(data["X_train"])
+        predictions["train"] = self.model.predict(data_train)
         if self.problem_type == "classification": 
-            predictions["train_proba"] = self.model.predict_proba(data["X_train"])
+            predictions["train_proba"] = self.model.predict_proba(data_train)
 
         if data.get("X_valid") is not None: 
-            predictions["valid"] = self.model.predict(data["X_valid"])
+            data_valid = self._order_features(data["X_valid"])
+            predictions["valid"] = self.model.predict(data_valid)
             if self.problem_type == "classification": 
-                predictions["valid_proba"] = self.model.predict_proba(data["X_valid"])
+                predictions["valid_proba"] = self.model.predict_proba(data_valid)
 
         if data.get("X_test") is not None: 
-            predictions["test"] = self.model.predict(data["X_test"])
+            data_test = self._order_features(data["X_test"])
+            predictions["test"] = self.model.predict(data_test)
             if self.problem_type == "classification": 
-                predictions["test_proba"] = self.model.predict_proba(data["X_test"])
+                predictions["test_proba"] = self.model.predict_proba(data_test)
 
         #self.predictions = predictions
 
@@ -82,7 +85,7 @@ class XGBoostModelTrainer(BaseModelTrainer):
             numpy array: Predicted output.
 
         """
-        return self.model.predict(df)
+        return self.model.predict(self._order_features(df))
 
     def predict_proba_df(self,df, to_list=False, *args, **kwargs): 
         """Performs prediction probabilities estimation of the model on a pandas DataFrame.
@@ -99,3 +102,24 @@ class XGBoostModelTrainer(BaseModelTrainer):
         if to_list: 
             predictions = predictions.tolist()
         return predictions
+    
+    def _get_feature_names(self, *args, **kwargs):
+        """Returns a list of feature names. Mainly used to determine the correct order 
+        for passing in feature columns when making predictions
+        """ 
+        return self.model.feature_names_in_
+    
+    def _order_features(self, data, *args, **kwargs):
+        """Orders the features in the provided data
+
+        Args:
+            data (object): Data object containing features. 
+
+        Returns:
+            data_out: Data object with the correct order of features
+        """
+        data_out = data
+        feature_names = self._get_feature_names()
+        if feature_names is not None:
+            data_out = data[feature_names]
+        return data_out

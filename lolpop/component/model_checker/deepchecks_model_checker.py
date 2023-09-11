@@ -74,8 +74,8 @@ class DeepchecksModelChecker(BaseModelChecker):
 
         df_current = data["X_test"].copy() 
         df_deployed = df_current.copy()
-        df_current["prediction"] = current_model.predict_df(df_current)
-        df_deployed["prediction"] = deployed_model.predict_df(df_deployed)
+        df_current["prediction"] = current_model.transform_and_predict_df(df_current)
+        df_deployed["prediction"] = deployed_model.transform_and_predict_df(df_deployed)
 
         ds_current = Dataset(df_current, label = "prediction", index_name=model_index, cat_features=model_cat_features, datetime_name=model_time_index)
         ds_deployed = Dataset(df_deployed, label = "prediction", index_name=model_index, cat_features=model_cat_features, datetime_name=model_time_index)

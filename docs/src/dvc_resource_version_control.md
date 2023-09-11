@@ -100,6 +100,42 @@ def get_model(self, experiment, key=None, args, kwargs)
 The versioned model.
 
 
+### version_feature_transformer
+
+  Version the input feature transformer using dvc (Data Version Control) and output information about the versioned transformer including versioning id and URI. 
+
+```python
+def version_feature_transformer(self, experiment, transformer,  transformer_class=None, key=None, *args, **kwargs)
+```
+
+**Arguments**: 
+
+- `experiment` (object): The experiment to version into
+- `transformer` (object): The feature transformer to version
+- `transformer_class` (str): The name of the feature class. Defaults to None. 
+- `key` (str): String to append to the experiment id which is used for the file name of the transformer object. Defaults to None. 
+
+**Returns**: 
+
+- A dictionary containing model versioning information including the URI and hexsha.
+
+### get_feature_transformer
+
+Get the versioned feature transformer using versioning information.  
+
+```python
+def get_feature_transformer(self, experiment, key=None *args, **kwargs) -> Any
+```
+
+**Arguments**: 
+
+- `experiment` (object): The experiment to retrieve the feature_transformer from
+- `key` (str): String to append to the experiment id which is used for the file name of the transformer object. Defaults to None. 
+
+**Returns**: 
+
+- `feature_transformer`: The feature transformer object from the experiment. 
+
 ## Usage 
 
 ```python

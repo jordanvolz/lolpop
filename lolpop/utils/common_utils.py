@@ -1,6 +1,7 @@
 import subprocess 
 import os 
 import sys
+import json 
 from importlib import import_module, util as import_util 
 from git import Repo
 from omegaconf import OmegaConf, dictconfig
@@ -253,6 +254,8 @@ def get_conf(conf_obj):
         conf = OmegaConf.create(conf_obj)
     elif isinstance(conf_obj, dictconfig.DictConfig):
         conf = conf_obj
+    elif conf_obj is None: 
+        conf = {}
     else: 
         raise Exception("Invalid configuration. Configuration must be a file or a a dict.")
     
@@ -635,3 +638,6 @@ def set_up_default_components(obj, conf, runner_conf,
             setattr(obj, "metadata_tracker", components["metadata_tracker"])
 
     return components
+
+def parse_dict_string(dict_string): 
+    return json.loads(dict_string.replace("\'", "\"").replace("False", "false").replace("True", "true"))

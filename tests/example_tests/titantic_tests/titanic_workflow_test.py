@@ -18,6 +18,7 @@ def test_titanic_workflow_runs_successfully():
         import mlflow
         mlflow.set_tracking_uri("./mlruns")
         mlflow.end_run()
+        mlflow.end_run()
     except:
         pass
     

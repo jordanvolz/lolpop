@@ -106,10 +106,13 @@ class MetaflowOfflineTrainSpec(FlowSpec):
 
     @step
     def analyze_model(self):
+
+        transformed_data = self.model._transform_dict(self.data_dict)
+
         #calculate feature importance
         if not (self.lolpop.problem_type == "timeseries"): 
             self.lolpop.model_explainer.get_feature_importance(
-                self.data_dict, self.model, self.model_version)
+                transformed_data, self.model, self.model_version)
 
         #compare model to baseline
         self.lolpop.model_checker.get_baseline_comparison(
@@ -117,7 +120,7 @@ class MetaflowOfflineTrainSpec(FlowSpec):
 
         #create some eye candy
         self.lolpop.model_visualizer.generate_viz(
-            self.data_dict, self.model._get_model(), self.model_version)
+            transformed_data, self.model._get_model(), self.model_version)
         
         if (self.lolpop.problem_type == "timeseries"):
             self.lolpop.model_visualizer.cross_validation(

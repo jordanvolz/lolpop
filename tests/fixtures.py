@@ -31,7 +31,7 @@ def create_rows_faker(num=1):
                "job": fake.job(),
                "date_time": fake.date_time(),
                "some_bool" :fake.boolean(),
-               "some_float": fake.pybool(),
+               "some_float": fake.pyfloat(),
                "some_int": fake.pyint(), 
                "some_string":fake.pystr(),
                } for x in range(num)]

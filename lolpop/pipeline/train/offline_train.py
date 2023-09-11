@@ -98,14 +98,19 @@ class OfflineTrain(BaseTrain):
             **kwargs: Optional keyword arguments to pass to the model explainer, baseline comparison, and 
                       model visualizer.
         """
+        transformed_data = model._transform_dict(data_dict)
+
         #calculate feature importance
-        self.model_explainer.get_feature_importance(data_dict, model, model_version)
+        self.model_explainer.get_feature_importance(
+            transformed_data, model, model_version)
          
         #compare model to baseline
-        self.model_checker.get_baseline_comparison(data_dict, model, model_version)
+        self.model_checker.get_baseline_comparison(
+            data_dict, model, model_version)
 
         #create some eye candy
-        self.model_visualizer.generate_viz(data_dict, model._get_model(), model_version)
+        self.model_visualizer.generate_viz(
+            transformed_data, model._get_model(), model_version)
 
 
     def compare_models(self, data_dict, model, model_version, *args, **kwargs): 

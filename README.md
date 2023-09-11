@@ -1,6 +1,9 @@
 # lolpop
 A software engineering framework to jump start your Machine Learning projects
 
+![Meet Larry, the lolpop dragon.](docs/src/assets/lolpop.png)
+
+Full documentation can be accessed [here](https://lolpop.readthedocs.io). 
 ## Installing 
 
 You can install lolpop from PyPI using `pip`: 
@@ -13,7 +16,7 @@ If you're working in dev mode, you can clone this repo and install lolpop by `cd
 
 ```bash
 poetry install 
-``` 
+```
 
 Welcome to lolpop!
 
@@ -127,7 +130,7 @@ runner = MyRunner(conf=config_file)
 model = runner.train.train_model(data)
 
 ... 
-``` 
+```
 
 or via the lolpop cli: 
 

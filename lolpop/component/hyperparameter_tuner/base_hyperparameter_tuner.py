@@ -21,26 +21,22 @@ class BaseHyperparameterTuner(BaseComponent):
         #load model trainer and build model
         model_cl = utils.load_class(algo)
         dependent_components = {"logger" : self.logger, "notifier" : self.notifier,  "metadata_tracker" :self.metadata_tracker, "metrics_tracker": self.metrics_tracker, "resource_version_control": self.resource_version_control}
+        if hasattr(self, "feature_transformer"): #pass the feature_transformer if it's defined at the pipeline level 
+            dependent_components["feature_transformer"] = self.feature_transformer
         model = model_cl(conf=trainer_config, pipeline_conf=self.pipeline_conf, runner_conf=self.runner_conf, 
                          parent_process = self.name, problem_type = self.problem_type, params=params, components=dependent_components) 
-        model_obj = model.fit(data)
+
+        #now fit model 
+        model_obj = model.transform_and_fit(data)
+        
+        #save model 
+        model.save(experiment)
 
         return model, experiment 
 
-    def save_model(self, model, experiment, params, algo, *args, **kwargs):
-        model_obj = model._get_model()
+    def save_model(self, model, experiment, *args, **kwargs):
         #save model
-        vc_info = self.resource_version_control.version_model(experiment, model_obj, algo=algo)
-        experiment_metadata = {
-            "training_params" : params,
-            "model_trainer" : algo, 
-        }
-        self.metadata_tracker.register_vc_resource(experiment, vc_info, additional_metadata = experiment_metadata)
-
-        experiment_id = self.metadata_tracker.get_resource_id(experiment, type="experiment")
-        model_artifacts = model.get_artifacts(experiment_id) or {}
-        for k,v in model_artifacts.items(): 
-            self.metadata_tracker.log_artifact(experiment, k, v)
+        model.save(experiment)
 
     #builds a grid of all possible parameter combinations gives a params item with a list of values for each param
     def _build_training_grid(self, params) -> dict[str, Any]: 

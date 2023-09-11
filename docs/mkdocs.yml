@@ -7,6 +7,7 @@ edit_url: docs/src/
 repo_name: lolpop
 theme: 
   name: material
+  logo: assets/lolpop.png
   features: 
     - navigation.instant
     - navigation.tracking
@@ -126,6 +127,11 @@ nav:
         - Postgres: postgres_data_transformer.md
         - Redshift: redshift_data_transformer.md 
         - Snowflake: snowflake_data_transformer.md
+      - Feature Transformers: 
+        - BaseFeatureTransformer: base_feature_transformer.md
+        - Feature Engine: feature_engine_feature_transformer.md
+        - Local: local_feature_transformer.md
+        - scikit-learn: sklearn_feature_transformer.md
       - Generative AI Chatbots: 
         - BaseGenAIChatbot: base_genai_chatbot.md
         - OpenAI: openai_chatbot.md 

@@ -84,3 +84,37 @@ def get_model(self, experiment, *args, **kwargs) -> Any
 **Returns**: 
 
 - `model`: The model object from the experiment. 
+
+
+### version_feature_transformer
+
+Versions a feature transformer.   
+
+```python
+def version_feature_transformer(self, experiment, transformer, *args, **kwargs) -> dict[str, Any]
+```
+
+**Arguments**: 
+
+- `experiment` (object): The experiment being verisoned
+- `transformer` (object): The feature transformer to version
+
+**Returns**: 
+
+- `dict`: Attributes returned from the resource version control system, such as a commit hash. The returned information should be able to be used to retrieve the object in the future and may very likely be logged in the `metadata_tracker`
+
+### get_feature_transformer
+
+Returns a feature transformer object from an experiment.   
+
+```python
+def get_feature_transformer(self, experiment, *args, **kwargs) -> Any
+```
+
+**Arguments**: 
+
+- `experiment` (object): The experiment to retrieve the feature_transformer from
+
+**Returns**: 
+
+- `feature_transformer`: The feature transformer object from the experiment. 

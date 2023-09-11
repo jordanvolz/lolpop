@@ -127,7 +127,8 @@ class MLFlowMetricsTracker(BaseMetricsTracker):
         self.metadata_tracker.log_metadata(
             to_resource, 
             "training_params", 
-            json.loads(self.metadata_tracker.get_metadata(from_resource, "training_params").replace("\'","\"")))
+            utils.parse_dict_string(self.metadata_tracker.get_metadata(from_resource, "training_params"))
+        )
 
     def log_prediction_metrics(self, prediction_job, predictions, *args, **kwargs):
         """

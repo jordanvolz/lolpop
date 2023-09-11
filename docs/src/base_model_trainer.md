@@ -8,6 +8,7 @@ A `model_trainer` is a component that essentially acts as a wrapper around a lib
 `BaseModelTrainer` contains the following default attributes: 
 
 - `model`: The trained model object. This should get set in the `fit` function. 
+- `feature_transformer`: The feature transformer used to transform data before passing it to the model. This is optional. The `feature_transformer` can be set specifically for each `ModelTrainer` class used in a workflow, or at the `pipeline` level which will be used as the default for all `ModelTrainer` classes if not overridden. 
 - `mlflow_module`: The name of the MLFlow submodule which contains the proper `log_model` method for this trainer. This is only needed if you intend to use MLFlow as your model repository
 - `params`: The training parameters for the trained model. 
 
@@ -215,10 +216,173 @@ def rebuild_model(self, data, model_version, *args, **kwargs) -> tuple[Any, Any]
 
 **Arguments**: 
 
-- `data` (object): dictionary of training/test/valiadation data. 
+- `data` (object): dictionary of training/test/validation data. 
 - `model_version` (object): model version object
 
 **Returns**: 
 
 - `model`: the trained model
 - `exp`: experiment where the model was trained
+
+
+### transform_and_fit
+
+Transforms data using a feature transform and then fits the model to the transformed data. 
+
+```python
+ def transform_and_fit(self, data_dict, *args, **kwargs)
+ ```
+
+**Arguments**: 
+
+- `data` (object): dictionary of training/test/validation data. 
+
+**Returns**: 
+
+- `model`: the trained model
+
+
+### transform_and_predict
+
+Transforms data using a feature transform and then creates predictions from the transformed data. 
+
+```python
+ def transform_and_predict(self, data, *args, **kwargs)
+ ```
+
+**Arguments**: 
+
+- `data` (object): dictionary of training/test/validation data. 
+
+**Returns**: 
+
+- `predictions`: the predictions
+
+### transform_and_predict_df
+
+Transforms a single dataframe using a feature transform and then creates predictions from the transformed dataframe. 
+
+```python
+ def transform_and_predict_df(self, data, *args, **kwargs)
+ ```
+
+**Arguments**: 
+
+- `data` (object): dataframe 
+
+**Returns**: 
+
+- `predictions`: the predictions
+
+### transform_and_predict_proba_df
+
+Transforms a single dataframe using a feature transform and then creates class predictions predictions from the transformed dataframe. 
+
+```python
+def transform_and_predict_proba_df(self, data, *args, **kwargs)
+ ```
+
+**Arguments**: 
+
+- `data` (object): dataframe 
+
+**Returns**: 
+
+- `predictions`: the predictions
+
+
+### fit_transform_data
+
+Fits feature transformer to data and then transforms that data using the fitted transformer. 
+
+```python
+def fit_transform_data(self, X_data, y_data, *args, **kwargs)
+ ```
+
+**Arguments**: 
+
+- `X_data` (object): Feature data to fit & transform 
+- `y_data` (object): Label data.
+
+**Returns**: 
+
+- `transformed_data`: the transformed data
+
+
+### fit_data
+
+Fits feature transformer to data
+
+```python
+def fit_data(self, X_data, y_data *args, **kwargs)
+ ```
+
+**Arguments**: 
+
+- `X_data` (object): Feature data to fit & transform 
+- `y_data` (object): Label data.
+
+**Returns**: 
+
+- `feature_transformer`: the fitted feature transformer
+
+
+### transform_data
+
+Transforms a single dataframe using a feature transform.
+
+```python
+def transform_data(self, data, *args, **kwargs)
+ ```
+
+**Arguments**: 
+
+- `data` (object): dataframe 
+
+**Returns**: 
+
+- `transformed_data`: the transformed_data
+
+### _transform_dict
+
+Transforms a dictionary of train/test/validation data sets. 
+
+```python
+def transform_data(self, data_dict, *args, **kwargs)
+ ```
+
+**Arguments**: 
+
+- `data_dict` (dictionary): dictionary of train/test/validation data sts.  
+
+**Returns**: 
+
+- `transformed_data_dict`: returns the same dictionary, now with transformed data 
+
+### _get_transformer
+
+Returns the model's feature transformer
+
+```python
+def _get_transformer_(self)
+ ```
+
+**Returns**: 
+
+- `self.feature_transformer`: the model's feature transformer
+
+### _set_transformer
+
+Sets the model's feature transformer
+
+```python
+def _set_transformer_(self, transformer)
+ ```
+
+**Arguments**: 
+
+- `transformer` (object): The feature transformer to set for the model trainer. 
+
+**Returns**: 
+
+- None
