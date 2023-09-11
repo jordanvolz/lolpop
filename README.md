@@ -39,7 +39,7 @@ Furthermore, the following goals were kept in mind when building lolpop:
 
 1. **Modularity is a first-class design concept**. Design a system where parts can easily be interchanged as needed. 
 2. **The system is endlessly extensible**. If you want to code, you can code. Provide a simple process to extend functionality in the system. 
-3. **Layers of abstraction provide accessibility**. Layers of abstraction allow users to build workflows without getting lots in implementation details. Users can likewise turn gnarly code into something that others can simply leverage in their own workflows (even without code!).
+3. **Layers of abstraction provide accessibility**. Layers of abstraction allow users to build workflows without getting lost in implementation details. Users can likewise turn gnarly code into something that others can simply leverage in their own workflows (even without code!).
 3. **Provide a declarative experience**. Moving from development workflows to production/automated workflows can often be clumsy in ML. Having a well-trodden path for a declarative experience smooths out the difficulty here. 
 4. **Make writing and executing tests on workflows easy**. Things often go off the rails. Design a system that expects failures and makes it easy to test and catch problem before they get into production.
 5. **Provide a logical implementation on CI/CD or ML Delivery platform**. Make it easy to be "environment aware" and straightforward integrations into production tooling.  
