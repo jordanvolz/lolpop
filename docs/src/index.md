@@ -18,16 +18,16 @@ A good system design will contain:  
 
 Furthermore, the following goals were kept in mind when building lolpop: 
 
-1. **Modularity is a first class design concept**. Design a system where parts can easily be interchanged as needed. 
+1. **Modularity is a first-class design concept**. Design a system where parts can easily be interchanged as needed. 
 2. **The system is endlessly extensible**. If you want to code, you can code. Provide a simple process to extend functionality in the system. 
-3. **Layers of abstraction provide accessibility**. Layers of abstraction allow users to build workflows without getting lots in implementation details. Users can likewise turn gnarly code into something that others can simply  
+3. **Layers of abstraction provide accessibility**. Layers of abstraction allow users to build workflows without getting lost in implementation details. Users can likewise turn gnarly code into something that others can simply leverage in their own workflows (even without code!).
 4. **Provide a declarative experience**. Moving from development workflows to production/automated workflows can often be clumsy in ML. Having a well-trodden path for a declarative experience smooths out the difficulty here. 
-5. **Make writing and executing tests on workflows easy**. Things often go off the rails. Design a system that expects failures and makes it easy to test and catch problem before they get into production.
+5. **Make writing and executing tests on workflows easy**. Things often go off the rails. Design a system that expects failures and makes it easy to test and catch problems before they get into production.
 6. **Provide a logical implementation on CI/CD or ML Delivery platform**. Make it easy to be "environment aware" and straightforward integrations into production tooling.  
 7. **Enable smart defaults for use case acceleration**. Provide standard components to begin building workflows and allow developers to set recommended defaults for when others want to use their work.  
 8. **Make switching fees minimal**. Switching fees prevent teams from doing what is best for them and leadership often balks forcing change. We wanted to make it easy to switch to new tech, and also easy to bring existing workloads into lolpop. Bringing in an existing workload should be a lightweight refactoring exercise.
 9. **Open source**. Forever and ever. 
-10. **Be unopinionated about most everything else**. Being opinionated forces users to adopt less flexible systems. We want to be as flexible as possible within these guiding principles. 
+10. **Be unopinionated about almost everything else**. Being opinionated forces users to adopt less flexible systems. We want to be as flexible as possible within these guiding principles. 
 
 ## Key Concepts
 
