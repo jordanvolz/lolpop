@@ -94,7 +94,7 @@ class CatboostModelTrainer(BaseComponent):
 Components can then be leveraged in pipeline and runner workflows. Instead of referring to specific component classes, these workflows are designed to use generic component types, as shown below. 
 
 ```python title="my_training_pipeline.py"
-from lolop.pipeline import BasePipeline
+from lolpop.pipeline import BasePipeline
 
 class MyTrainingPipeline(BasePipeline): 
     ... 

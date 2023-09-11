@@ -19,16 +19,23 @@ This guide will walk us through a quick example of predicting future sales using
 2. Now let's install the packages we'll need for this example: 
 
     ```bash 
-    pip3 install 'lolop[cli,mlflow,timeseries]'
+    pip3 install 'lolpop[cli,mlflow,timeseries]'
     ```
 
 3. Now let's clone the `lolpop` repository to get the files we need for our example. 
 
-    ```bash
-    cd ~/Downloads 
-    git clone git@github.com:jordanvolz/lolpop.git
-    cd lolpop/examples/quickstart/timeseries/sales_forecasting
-    ```
+    === "HTTPS"
+        ```bash
+        cd ~/Downloads 
+        git clone https://github.com/jordanvolz/lolpop.git
+        cd lolpop/examples/quickstart/timeseries/sales_forecasting
+        ```
+    === "SSH"
+        ```bash
+        cd ~/Downloads 
+        git clone git@github.com:jordanvolz/lolpop.git
+        cd lolpop/examples/quickstart/timeseries/sales_forecasting
+        ```
 
 4. Now we'll download the data for the example from Kaggle. If you already use kaggle from the command line you can simply execute the following: 
 

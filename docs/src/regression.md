@@ -19,20 +19,30 @@ This guide will walk us through a quick example of predicting the age of crabs g
 2. Now let's install the packages we'll need for this example: 
 
     ```bash 
-    pip3 install 'lolop[cli,mlflow,duckdb,xgboost,dvc,evidently,deepchecks,optuna,yellowbrick,aif360,alibi]'
+    pip3 install 'lolpop[cli,mlflow,duckdb,xgboost,dvc,evidently,deepchecks,optuna,yellowbrick,aif360,alibi]'
     ```
 
 3. This example will version data with dvc. In order to use it, we'll need a git repo to use with dvc. For the purposes of this guide, we'll create a git repository in our provider of choice named `lolpop_crab_age_example`. You'll then want to clone this repo locally via something like: 
 
-    ```bash 
-    git clone git@github.com:<git_user>/lolpop_crab_age_example.git
-    ```
+    === "HTTPS"
+        ```bash 
+        git clone https://github.com/<git_user>/lolpop_crab_age_example.git
+        ```
+    === "SSH"
+        ```bash 
+        git clone git@github.com:<git_user>/lolpop_crab_age_example.git
+        ```
 
     Now let's clone the `lolpop` repository to get the files we need for our example. 
 
-    ```bash
-    git clone git@github.com:jordanvolz/lolpop.git
-    ```
+    === "HTTPS"
+        ```bash
+        git clone https://github.com/jordanvolz/lolpop.git
+        ```
+    === "SSH"
+        ```bash
+        git clone git@github.com:jordanvolz/lolpop.git
+        ```
 
     And then we'll move the crab_age example files into our new repository: 
 
@@ -59,6 +69,9 @@ This guide will walk us through a quick example of predicting the age of crabs g
     unzip -j -o playground-series-s3e16.zip train.csv test.csv -d data
 
     ```
+    !!! Note
+        You'll need to accept the terms of the kaggle contest to be able to download the data. If you've not already done that, you may wish to just manually download the data from the link below. 
+
     Or, manually download the data from the following [link](https://www.kaggle.com/competitions/playground-series-s3e16/data) and unzip it. You should now have a `train.csv` and `test.csv` file in the `lolpop_crab_age_example/data` directory. 
 
 5. In this example we'll also use duckdb as our main data source. To do this, we'll want to ingest our data into duckdb. You can do this via the following command: 

@@ -19,7 +19,7 @@ This guide will walk us through a quick example of forecasting the sales in a gr
 2. Now let's install the packages we'll need for this example: 
 
     ```bash 
-    pip3 install 'lolop[cli,mlflow,duckdb,timeseries,dvc,optuna]'
+    pip3 install 'lolpop[cli,mlflow,duckdb,timeseries,dvc,optuna]'
     pip3 install tslumen
     ```
     !!! Note 
@@ -27,15 +27,25 @@ This guide will walk us through a quick example of forecasting the sales in a gr
 
 3. This example will version data with dvc. In order to use it, we'll need a git repo to use with dvc. For the purposes of this guide, we'll create a git repository in our provider of choice named `lolpop_grocery_sales_example`. You'll then want to clone this repo locally via something like: 
 
-    ```bash 
-    git clone git@github.com:<git_user>/lolpop_grocery_sales_example.git
-    ```
+    === "HTTPS"
+        ```bash 
+        git clone https://github.com/<git_user>/lolpop_grocery_sales_example.git
+        ```
+    === "SSH"
+        ```bash 
+        git clone git@github.com:<git_user>/lolpop_grocery_sales_example.git
+        ```
 
     Now let's clone the `lolpop` repository to get the files we need for our example. 
 
-    ```bash
-    git clone git@github.com:jordanvolz/lolpop.git
-    ```
+    === "HTTPS"
+        ```bash
+        git clone https://github.com/jordanvolz/lolpop.git
+        ```
+    === "SSH"
+        ```bash
+        git clone git@github.com:jordanvolz/lolpop.git
+        ```
 
     And then we'll move the grocery_sales example files into our new repository: 
 
@@ -62,6 +72,9 @@ This guide will walk us through a quick example of forecasting the sales in a gr
     unzip -j -o store-sales-time-series-forecasting.zip train.csv test.csv holidays_events.csv -d data
 
     ```
+    !!! Note
+        You'll need to accept the terms of the kaggle contest to be able to download the data. If you've not already done that, you may wish to just manually download the data from the link below. 
+
     Or, manually download the data from the following [link](https://www.kaggle.com/competitions/store-sales-time-series-forecasting/data) and unzip it. You should now have `train.csv`, `test.csv`, and `holidays_events.csv` files in the `lolpop_grocery_sales_example/data` directory. 
 
 5. In this example we'll also use duckdb as our main data source. To do this, we'll want to ingest our data into duckdb. You can do this via the following command: 
