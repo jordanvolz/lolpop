@@ -39,7 +39,7 @@ lolpop has a relatively flat conceptual model which contains three main resource
 
 Components, pipelines, and runners have many common traits. In this documentation we use the term **integration** when referring to the set of components, pipelines, and runners. 
 
-There is also a natural heiarchy between components, pipelines, and runners: 
+There is also a natural heiarrchy between components, pipelines, and runners: 
 
 1. Runners can have children pipelines and components.
 2. Pipelines can have children components.
@@ -75,7 +75,7 @@ class CatboostModelTrainer(BaseComponent):
 Components can then be leveraged in pipeline and runner workflows. Instead of referring to specific component classes, these workflows are designed to use generic component types, as shown below. 
 
 ```python title="my_training_pipeline.py"
-from lolop.pipeline import BasePipeline
+from lolpop.pipeline import BasePipeline
 
 class MyTrainingPipeline(BasePipeline): 
     ... 

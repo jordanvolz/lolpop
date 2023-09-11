@@ -21,16 +21,23 @@ Buckle up, throw on Gavin Bryars' [iconic soundtrack](https://philipjeck.bandcam
 2. Now let's install the packages we'll need for this example: 
 
     ```bash 
-    pip3 install 'lolop[cli,mlflow,xgboost]'
+    pip3 install 'lolpop[cli,mlflow,xgboost]'
     ```
 
 3. Now let's clone the `lolpop` repository to get the files we need for our example. 
 
-    ```bash
-    cd ~/Downloads 
-    git clone git@github.com:jordanvolz/lolpop.git
-    cd lolpop/examples/quickstart/classification/titanic
-    ```
+    === "HTTPS"
+        ```bash
+        cd ~/Downloads 
+        git clone https://github.com/jordanvolz/lolpop.git
+        cd lolpop/examples/quickstart/classification/titanic
+        ```
+    === "SSH"
+        ```bash
+        cd ~/Downloads 
+        git clone git@github.com:jordanvolz/lolpop.git
+        cd lolpop/examples/quickstart/classification/titanic
+        ```
 
 4. Now we'll download the data for the example from Kaggle. If you already use kaggle from the command line you can simply execute the following: 
 
@@ -38,7 +45,10 @@ Buckle up, throw on Gavin Bryars' [iconic soundtrack](https://philipjeck.bandcam
     kaggle competitions download -c titanic
     unzip titanic.zip
     ```
-    Or, Manually download the data from the following [link](https://www.kaggle.com/competitions/titanic/data) and unzip it. You should now have a `train.csv` and `test.csv` file in the `lolpop/examples/quickstart/classification/titanic` directory. 
+    !!! Note
+        You'll need to accept the terms of the kaggle contest to be able to download the data. If you've not already done that, you may wish to just manually download the data from the link below. 
+
+    Or, manually download the data from the following [link](https://www.kaggle.com/competitions/titanic/data) and unzip it. You should now have a `train.csv` and `test.csv` file in the `lolpop/examples/quickstart/classification/titanic` directory. 
 
 ## Running the Workflow 
 
