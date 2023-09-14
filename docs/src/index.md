@@ -82,7 +82,7 @@ class MyTrainingPipeline(BasePipeline):
 
     def train_model(self, data, *args, **kwargs): 
 
-        model = self.model_trainer.train_model(data)
+        model = self.model_trainer.fit(data)
 
         return model    
     
