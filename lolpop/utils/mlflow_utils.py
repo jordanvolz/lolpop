@@ -65,7 +65,7 @@ def get_run(client, run_id):
 # are executing complex workflows, mlflow won't know what the active run is if it's being spun up in anothe process
 # this was discovered when testing mlflow w/ metaflow pipelines, but it's a good thing to safeguard against in general
 def check_active_mlflow_run(mlflowlib):
-    def check_decorator(func):
+    def check_decorator(func, obj):
         @wraps(func)
         def wrapper(obj, *args, **kwargs):
             if mlflowlib.active_run() is None:

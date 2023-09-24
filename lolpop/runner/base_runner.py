@@ -19,11 +19,12 @@ class BaseRunner:
                  skip_config_validation=False, *args, **kwargs):
         #handle configuration 
         self.name = type(self).__name__
+        self.integration_type = "runner"
         try: 
             self.type = self.__module__.split(".")[-2]
         except: #using some kind of custom class
             self.type = self.__module__
-        self.integration_type = self.__module__.split(".")[-1]
+
         conf = utils.get_conf(conf)
         conf = utils.resolve_conf_variables(conf)
         conf = utils.copy_config_into(conf, self.__DEFAULT_CONF__) 
@@ -41,30 +42,17 @@ class BaseRunner:
         plugin_mods = utils.get_plugin_mods(self, plugin_paths, file_path)
         self.plugin_mods = plugin_mods
 
-        #config defines all pipelines in `pipelines`
-        #format is 
-        ## pipelines: 
-        ##   <pipeline>: <class> 
-        ## components: 
-        ##    <component>: <class>
-        # then you need to also have a directory pipeline/component with all pipelines/components defined in subdirectories
-        # later on in your yaml you need to specify configuration for the pipline via 
-        ## <pipeline>: 
-        ##    <key>: <value>
-        # components can be defined at the runner or pipeline level and this determines the component scope.  
-        # components defined at the runner level are passed down to all pipelines and components, 
-        # so that they are globally acessible, whereas a component defined at the pipeline level are only accessible
-        # in that pipeline and components defined at that pipeline. 
-        # componenets in the right scope should know about each other but pipelines act independently (for now, at least)
-
         #handle default components: logger, notifier, metadata_tracker
         runner_components = {}
         runner_components = utils.set_up_default_components(self, conf, self.config,
                                                             plugin_mods=plugin_mods, 
                                                             skip_config_validation=skip_config_validation,
-                                                            components = runner_components)
+                                                            components = runner_components, 
+                                                            )
 
-        print
+        #handle decorators:
+        decorators = utils.set_up_decorators(self, conf, plugin_mods=plugin_mods, components=runner_components)
+        #utils.apply_decorators(self, decorators)
 
         #build all other components
         for component in conf.get("components",{}).keys(): 
@@ -72,7 +60,8 @@ class BaseRunner:
             if component != "logger" and component !="metadata_tracker" and component !="notifier": 
                 obj = utils.register_component_class(self, conf, component, runner_conf=self.config, parent_process=self.name,
                                                      problem_type=self.problem_type, dependent_components=runner_components, 
-                                                     plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
+                                                     plugin_mods=plugin_mods, decorators=decorators, 
+                                                     skip_config_validation=skip_config_validation)
                 if obj is not None: 
                     self.log("Loaded class %s into component %s" %(type(getattr(self, component)).__name__, component))
                     runner_components[component] = obj
@@ -88,7 +77,8 @@ class BaseRunner:
         for pipeline in conf.get("pipelines",{}).keys(): 
             utils.register_pipeline_class(self, conf, pipeline, runner_conf=self.config, parent_process=self.name,
                                           problem_type=self.problem_type, dependent_components=runner_components, 
-                                          plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
+                                          plugin_mods=plugin_mods, decorators=decorators, 
+                                          skip_config_validation=skip_config_validation)
             self.log("Loaded class %s into pipeline %s" %(type(getattr(self, pipeline)).__name__, pipeline))
 
     def _validate_conf(self, conf):

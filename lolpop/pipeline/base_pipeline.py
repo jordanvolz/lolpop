@@ -17,14 +17,14 @@ class BasePipeline:
 
     def __init__(self, conf={}, runner_conf={}, parent_process="runner", problem_type=None, 
                  pipeline_type="base_pipeline", components={}, plugin_mods=[], plugin_paths=[], 
-                 skip_config_validation=False, *args, **kwargs):
+                 skip_config_validation=False, decorators=[], *args, **kwargs):
         #set basic properties like configs
         self.name = type(self).__name__
+        self.integration_type = "pipeline"
         try: 
             self.type = self.__module__.split(".")[-2]
         except: #using custom class
             self.type = self.__module__
-        self.integration_type = self.__module__.split(".")[-1]
         conf = utils.get_conf(conf)
         self.parent_process = parent_process
         self.pipeline_type = pipeline_type
@@ -51,7 +51,12 @@ class BasePipeline:
         components = utils.set_up_default_components(self, valid_conf, self.runner_conf,
                                                             plugin_mods=plugin_mods,
                                                             skip_config_validation=skip_config_validation,
-                                                            components=components)
+                                                            components=components, 
+                                                            )
+        
+        #handle decorators for pipeline
+        decorators = decorators + utils.set_up_decorators(self, valid_conf, plugin_mods=plugin_mods, components=components)
+        #utils.apply_decorators(self, decorators)
 
         #set up reference to each component that is passed in from runner. 
         for component in components.keys(): 
@@ -78,7 +83,8 @@ class BasePipeline:
                 obj = utils.register_component_class(self, conf, component, pipeline_conf = pipeline_conf, 
                                                      runner_conf = runner_conf, parent_process=self.name, 
                                                      problem_type = self.problem_type, dependent_components=components, 
-                                                     plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
+                                                     plugin_mods=plugin_mods, decorators=decorators, 
+                                                     skip_config_validation=skip_config_validation)
                 if obj is not None: 
                     self.log("Loaded class %s into component %s" %(type(getattr(self, component)).__name__, component))
                     pipeline_components[component] = obj
