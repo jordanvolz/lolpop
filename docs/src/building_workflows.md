@@ -156,7 +156,7 @@ Although components and pipelines do not need to directly be accessed in code, y
     ```
 === "Pipeline" 
     ```python
-    from lolpop.pipline import SomePipeline
+    from lolpop.pipeline import SomePipeline
 
     some_config = {...}
 
@@ -164,7 +164,7 @@ Although components and pipelines do not need to directly be accessed in code, y
     ```
 === "Runner" 
     ```python
-    from lolpop.pipeline import SomeRunner
+    from lolpop.runner import SomeRunner
 
     some_config = {...}
 

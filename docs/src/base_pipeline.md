@@ -12,7 +12,7 @@ In production workflows, pipelines should be built automatically runners, and us
 
 4. `problem_type` (str): The ML problem type. I.E. `regression`, `classification`, etc. This is typically set at the runner level and passed down to all components. 
 
-5. `pipeline_type` (str): The kind of pipline. I.E. `training`, `prediction`, etc. 
+5. `pipeline_type` (str): The kind of pipeline. I.E. `training`, `prediction`, etc. 
 
 6. `components` (dict): Global components. This will be registered as attributes to the pipeline so that they can directly be accessed from within the pipeline.  
 

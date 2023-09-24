@@ -21,7 +21,7 @@ $ lolpop [OPTIONS] COMMAND [ARGS]...
 * `help`: Show CLI usage help.
 * `list-extras`: list available extra packages
 * `run`: Run workflows with lolpop.
-* `create`: Create new runners, piplines, and components.
+* `create`: Create new runners, pipelines, and components.
 * `datagen`: Generate synthetic data from existing data.
 * `seed`: Upload local data into your data platform.
 * `test`: Test lolpop runners, pipelines, and...
@@ -110,7 +110,7 @@ $ lolpop run workflow [OPTIONS] RUNNER_CLASS
 
 ## `lolpop create`
 
-Create new runners, piplines, and components.
+Create new runners, pipelines, and components.
 
 **Usage**:
 
