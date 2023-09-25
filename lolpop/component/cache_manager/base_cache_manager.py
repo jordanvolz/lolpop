@@ -33,11 +33,12 @@ class BaseCacheManager(BaseComponent):
             if (not obj._get_config("skip_cache", False)) and (obj.integration_type in cache_integration_types):
                 try:
                     skip_func = True
-                    i=0
                     # first check args and kwargs to see if there is any difference
                     # between what is provided and what is in the cache
-                    for arg in args: 
+                    i = 1  
+                    for arg in args[1:]:  # start at 1 to skip self
                         cache_obj = self.retrieve(f"{base_key}__arg_{str(i)}")
+        
                         if not self.equals(cache_obj, arg): 
                             skip_func=False
                             obj.log("Cached object not equivalent for argument %s" %i, level="DEBUG")
@@ -81,8 +82,8 @@ class BaseCacheManager(BaseComponent):
                         #Note: we should only cache new input values after the function successfully runs,
                         # otherwise you will skip it on the next iteration. 
 
-                        i = 0
-                        for arg in args: 
+                        i = 1
+                        for arg in args[1:]: 
                             self.cache(f"{base_key}__arg_{str(i)}", arg)
                             i+=1
 

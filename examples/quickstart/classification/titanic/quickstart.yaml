@@ -17,6 +17,9 @@ config:
   model_index: PassengerId
   drop_columns: [PassengerId, Name, Ticket, Cabin, SPLIT]
   local_dir: /tmp/artifacts/
+decorators: 
+  cache: LocalCacheManager
+
 
 #pipelines config
 process: 
@@ -64,4 +67,4 @@ metadata_tracker:
     mlflow_experiment_name: titanic_survival
 logger:
   config: 
-    log_level: INFO
+    log_level: DEBUG
