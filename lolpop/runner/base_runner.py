@@ -52,7 +52,6 @@ class BaseRunner:
 
         #handle decorators:
         decorators = utils.set_up_decorators(self, conf, plugin_mods=plugin_mods, components=runner_components)
-        #utils.apply_decorators(self, decorators)
 
         #build all other components
         for component in conf.get("components",{}).keys(): 

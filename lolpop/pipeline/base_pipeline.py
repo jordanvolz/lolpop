@@ -56,7 +56,6 @@ class BasePipeline:
         
         #handle decorators for pipeline
         decorators = decorators + utils.set_up_decorators(self, valid_conf, plugin_mods=plugin_mods, components=components)
-        #utils.apply_decorators(self, decorators)
 
         #set up reference to each component that is passed in from runner. 
         for component in components.keys(): 

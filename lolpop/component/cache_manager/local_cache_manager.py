@@ -27,6 +27,7 @@ class LocalCacheManager(BaseCacheManager):
             value = getsource(value)
         joblib.dump(value,file)
         self.log("Wrote file %s to cache." %file, level="DEBUG")
+        return file 
 
     def retrieve(self, key, *args, **kwargs): 
         out = None

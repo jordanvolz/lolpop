@@ -57,10 +57,6 @@ class BaseComponent:
         components = utils.set_up_default_components(self, valid_conf, self.runner_conf,
                                                      skip_config_validation=skip_config_validation,
                                                      components=components)
-        
-        #handle decorators for component
-        #decorators = decorators + utils.set_up_decorators(self, valid_conf, components=components)
-        #utils.apply_decorators(self, decorators)
 
         #if the config looks good, then we can set all our components 
         for component in components.keys(): 

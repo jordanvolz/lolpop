@@ -13,7 +13,7 @@ class BaseCacheManager(BaseComponent):
         }
     }
 
-    def cache(self, key, value, *args, **kwargs):
+    def cache(self, key, value, *args, **kwargs) -> str:
         pass
 
     def retrieve(self, key, *args, **kwargs) -> Any: 
@@ -29,8 +29,13 @@ class BaseCacheManager(BaseComponent):
             base_key = self._stringify_input(obj, func, args, kwargs)
             class_name=obj.name
             cache_integration_types = self._get_config("cache_integration_types", ["component"])
+            cache_integration_classes = self._get_config("cache_integration_classes", [])
+            if cache_integration_classes is not None: 
+                apply_cache = class_name in cache_integration_classes
+            else: 
+                apply_cache = obj.integration_type in cache_integration_types
             obj.log("Checking cache for %s" %base_key, level="DEBUG")
-            if (not obj._get_config("skip_cache", False)) and (obj.integration_type in cache_integration_types):
+            if (not obj._get_config("skip_cache", False)) and (apply_cache):
                 try:
                     skip_func = True
                     # first check args and kwargs to see if there is any difference
