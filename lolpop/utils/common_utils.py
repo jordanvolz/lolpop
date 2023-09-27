@@ -388,12 +388,18 @@ def apply_decorators(cls, decorators, config={}, integration_type="component"):
     #apply decorators
     decorator_list = []
     config=config.get("config",{})
-    if (not config.get("skip_cache", False)): 
-        for decorator in decorators:
-            if integration_type in decorator._get_config("cache_integration_types", ["component"]):
-                decorator_method = getattr(decorator,decorator._get_config("decorator_method"))
-                decorator_list.append(decorator_method)
-                cls = decorate_all_methods(decorator_list)(cls)
+    for decorator in decorators:
+        integration_types = decorator._get_config("integration_types", ["component"])
+        integration_classes = decorator._get_config("integration_classes", [])
+        #apply a decorator if cls is in integration_classes or it's part of the integration_types
+        if integration_classes is not None and len(integration_classes) > 0:
+            apply_decorator = cls.__name__ in integration_classes
+        else: 
+            apply_decorator = integration_type in integration_types
+        if apply_decorator:
+            decorator_method = getattr(decorator,decorator._get_config("decorator_method"))
+            decorator_list.append(decorator_method)
+            cls = decorate_all_methods(decorator_list)(cls)
     
     return cls
 

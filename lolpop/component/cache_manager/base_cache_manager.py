@@ -9,7 +9,7 @@ class BaseCacheManager(BaseComponent):
     __DEFAULT_CONF__ = {
         "config": {
             "decorator_method": "cache_decorator", 
-            "cache_integration_types" : ["component"]
+            "integration_types" : ["component"]
         }
     }
 
@@ -28,9 +28,9 @@ class BaseCacheManager(BaseComponent):
             obj = args[0] #object should always be first argument
             base_key = self._stringify_input(obj, func, args, kwargs)
             class_name=obj.name
-            cache_integration_types = self._get_config("cache_integration_types", ["component"])
-            cache_integration_classes = self._get_config("cache_integration_classes", [])
-            if cache_integration_classes is not None: 
+            cache_integration_types = self._get_config("integration_types", ["component"])
+            cache_integration_classes = self._get_config("integration_classes", [])
+            if cache_integration_classes is not None and len(cache_integration_classes) > 0: 
                 apply_cache = class_name in cache_integration_classes
             else: 
                 apply_cache = obj.integration_type in cache_integration_types
@@ -113,11 +113,12 @@ class BaseCacheManager(BaseComponent):
                     else:
                         raise Exception(f"An error occurred: {e}")
             else: #component has a skip_cache flag, so we'll just short circuit
+                obj.log("Cache criteria not met for %s. Running method as normal" % base_key, level="DEBUG")
                 return func(*args, **kwargs)
         return wrapper
 
     #hacky attempt to make inputs map to a unique value
-    def _stringify_input(self, obj, func, args, kwargs): 
+    def _stringify_input(self, obj, func, args, kwargs) -> str: 
         base = f"{obj.name}_{func.__name__}"
         output = base 
         for arg in args: 
