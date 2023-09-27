@@ -219,7 +219,7 @@ The dictionary structure follows along with the `yaml` structure shown above. In
             "key": "value",
             ...
         }
-        "pipline_type" : {
+        "pipeline_type" : {
             <pipeline_configuration>
         }
         "compoennt_type": {

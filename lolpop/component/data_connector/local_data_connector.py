@@ -28,7 +28,7 @@ class LocalDataConnector(BaseDataConnector):
         elif file_type == "orc":
             data = pd.read_orc(source_path, engine="pyarrow", **kwargs)
         else: 
-            self.log("Unsupported file type provided: %s" %source_path)
+            raise Exception("Unsupported file type provided: %s" %source_path)
         self.log("Successfully loaded data from %s into DataFrame." %source_path)
 
         return data 

@@ -14,14 +14,14 @@ class BaseComponent:
     suppress_notifier = False 
 
     def __init__(self, conf={}, pipeline_conf={}, runner_conf={}, parent_process=None, problem_type = None, 
-                 components = {}, skip_config_validation=False, *args, **kwargs):
+                 components = {}, decorators=[], skip_config_validation=False, *args, **kwargs):
         #set basic properties, like name and configs
         self.name = type(self).__name__
+        self.integration_type = "component"
         try: 
             self.type = self.__module__.split(".")[-2]
         except: 
             self.type = self.__module__
-        self.integration_type = self.__module__.split(".")[-1]
         config = utils.get_conf(conf)
         self.pipeline_conf = pipeline_conf
         self.runner_conf = runner_conf

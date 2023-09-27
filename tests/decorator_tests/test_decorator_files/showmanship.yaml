@@ -18,7 +18,7 @@ config:
   drop_columns: [PassengerId, Name, Ticket, Cabin, SPLIT]
   local_dir: /tmp/artifacts/
 decorators: 
-  cache: LocalCacheManager
+  cache: LocalPizzazzManager
 
 
 #pipelines config

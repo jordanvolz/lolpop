@@ -37,5 +37,5 @@ class MetaflowPipelineWrapper(BaseWrapper):
                 status = "successful"
             else: 
                 status = "unsuccessful"
-            self.log("Metaflow pipline %s completed. Status is %s" %(flow.latest_run.pathspec,status))
+            self.log("Metaflow pipeline %s completed. Status is %s" %(flow.latest_run.pathspec,status))
         

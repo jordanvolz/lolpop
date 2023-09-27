@@ -4,13 +4,12 @@ import sys
 import json 
 from importlib import import_module, util as import_util 
 from git import Repo
-from omegaconf import OmegaConf, dictconfig
-from datetime import datetime
+from omegaconf import OmegaConf, dictconfig, listconfig
 from functools import wraps 
 import pandas as pd 
 from pathlib import Path 
 import time
-
+from inspect import getsource
 #
 ##should decide if these things go into the common_utils class or just the abstract classes. 
 #
@@ -145,12 +144,15 @@ def load_module_from_file(file_path):
 #register component class as an attribute of the provided object
 def register_component_class(self_obj, conf, component_type, default_class_name=None, 
                              pipeline_conf = {}, runner_conf = {}, parent_process = "runner", 
-                             problem_type = None, dependent_components = {}, plugin_mods=[], *args, **kwargs): 
+                             problem_type = None, dependent_components = {}, plugin_mods=[], 
+                             decorators=None, *args, **kwargs): 
     obj = None
     component_class_name = conf.get("components",{}).get(component_type, default_class_name)
     if component_class_name is not None:
         cl = load_class(component_class_name) 
         if cl is not None: 
+            if decorators is not None: 
+                cl = apply_decorators(cl, decorators, config=conf.get(component_type, {}))
             obj = cl(conf=conf.get(component_type, {}), pipeline_conf=pipeline_conf, runner_conf=runner_conf,
                      parent_process=parent_process, problem_type=problem_type, components=dependent_components, *args, **kwargs)
             setattr(self_obj, component_type, obj)
@@ -159,14 +161,17 @@ def register_component_class(self_obj, conf, component_type, default_class_name=
 #registers pipeline as an attribute of the provided object
 def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=None, runner_conf = {}, 
                             parent_process = "runner", problem_type = None, dependent_components = {}, 
-                            plugin_mods=[], *args, **kwargs): 
+                            plugin_mods=[], decorators=None, *args, **kwargs): 
     obj = None 
     pipeline_class_name = conf.get("pipelines",{}).get(pipeline_type, default_class_name)
     if pipeline_class_name is not None: 
         cl = load_class(pipeline_class_name, class_type="pipeline")
         if cl is not None: 
+            if decorators is not None: 
+                cl = apply_decorators(cl, decorators, config=conf.get(pipeline_type,{}), integration_type="pipeline")
             obj = cl(conf=conf.get(pipeline_type, {}), runner_conf=runner_conf, parent_process=parent_process,
-                     problem_type=problem_type, components=dependent_components, plugin_mods=plugin_mods, *args, **kwargs)
+                     problem_type=problem_type, components=dependent_components, 
+                     plugin_mods=plugin_mods, decorators=decorators, *args, **kwargs)
             setattr(self_obj, pipeline_type, obj)
     return obj
 
@@ -310,15 +315,15 @@ def get_all_plugin_paths(obj):
 
 #wraps logging calls around function execution
 def log_execution(level="DEBUG", start_msg = None, end_msg = None, timeit=True):
-    def log_decorator(func):
+    def log_decorator(func, obj):
         @wraps(func)
         def wrapper(obj, *args, **kwargs):
             start = start_msg
             end = end_msg
             if not start: 
-                start = "Starting execution of %s" %(func.__name__)
+                start = "Starting execution of %s.%s" %(obj.__module__, func.__name__)
             if not end: 
-                end = "Finished execution of %s" %(func.__name__)
+                end = "Finished execution of %s.%s" %(obj.__module__, func.__name__)
             obj.log(start, level)
             obj.log("args: %s, kwargs: %s" %(args, kwargs), "TRACE")
             start_time = time.process_time()
@@ -332,17 +337,17 @@ def log_execution(level="DEBUG", start_msg = None, end_msg = None, timeit=True):
     return log_decorator
 
 #wraps function around error handling
-def error_handler(func):
+def error_handler(func, obj):
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception as e:
             #prevent unnecessary nesting
-            if str(e).startswith("An error occurred:"): 
+            if str(e).startswith("An error occurred"): 
                 raise e
             else: 
-                raise Exception(f"An error occurred: {e}")
+                raise Exception(f"An error occurred while executing {obj.__module__}.{func.__name__}: {e}")
     return wrapper
 
 # decorate all public methods in a class with decorator
@@ -359,10 +364,44 @@ def decorate_all_methods(decorators):
             if callable(getattr(cls, attr)) and not attr.startswith("_") and attr !="log" and attr !="notify":
                 func = getattr(cls,attr)
                 for decorator in decorator_list[::-1]: 
-                    func = decorator(func)
+                    func = decorator(func, cls)
                 setattr(cls, attr, func)
         return cls
     return decorate
+
+#sets up decorators in provided configuration
+def set_up_decorators(obj, conf, plugin_mods=None, bind_decorators=True, components={}): 
+    #set up all decorator classes 
+    decorators = []
+    decorators_conf = conf.get("decorators",{})
+    for decorator_type, decorator in decorators_conf.items(): 
+        decorator_cl = load_class(decorator, plugin_mods=plugin_mods,self_obj=obj)
+        decorator_conf = conf.get(decorator_type,{"config":{}})
+        decorator_obj = decorator_cl(conf=decorator_conf,components=components)
+        if bind_decorators: 
+            setattr(obj, decorator_type, decorator_obj)
+        decorators.append(decorator_obj)
+
+    return decorators
+
+def apply_decorators(cls, decorators, config={}, integration_type="component"): 
+    #apply decorators
+    decorator_list = []
+    config=config.get("config",{})
+    for decorator in decorators:
+        integration_types = decorator._get_config("integration_types", ["component"])
+        integration_classes = decorator._get_config("integration_classes", [])
+        #apply a decorator if cls is in integration_classes or it's part of the integration_types
+        if integration_classes is not None and len(integration_classes) > 0:
+            apply_decorator = cls.__name__ in integration_classes
+        else: 
+            apply_decorator = integration_type in integration_types
+        if apply_decorator:
+            decorator_method = getattr(decorator,decorator._get_config("decorator_method"))
+            decorator_list.append(decorator_method)
+            cls = decorate_all_methods(decorator_list)(cls)
+    
+    return cls
 
 #compares two dataframes and tries to convert columns so that match types if they don't otherwise
 def compare_data_schemas(obj, data, prev_data):
@@ -584,7 +623,8 @@ def test_plan_decorator(obj, logger, recorder, prehooks, posthooks, level="DEBUG
 def set_up_default_components(obj, conf, runner_conf,
                               plugin_mods=[],
                               skip_config_validation=False,
-                              components={}):
+                              components={}, 
+                              decorators=[]):
     
     #these are the defaults, so if you're explicitly building one, skip this to avoid
     #recursion error 
@@ -626,7 +666,8 @@ def set_up_default_components(obj, conf, runner_conf,
         if "metadata_tracker" not in components.keys() and obj.type !="metadata_tracker": #you were passed a metadata_tracker from somewhere else, skip
             meta_obj = register_component_class(obj, conf, "metadata_tracker", runner_conf=runner_conf, parent_process=obj.name,
                                                         problem_type=obj.problem_type, dependent_components=components,
-                                                        plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
+                                                        plugin_mods=plugin_mods, decorators=decorators, 
+                                                        skip_config_validation=skip_config_validation)
             if meta_obj is not None:
                 components["metadata_tracker"] = meta_obj
                 obj.log("Loaded class %s into component %s" %
@@ -641,3 +682,68 @@ def set_up_default_components(obj, conf, runner_conf,
 
 def parse_dict_string(dict_string): 
     return json.loads(dict_string.replace("\'", "\"").replace("False", "false").replace("True", "true"))
+
+def convert_arg_to_string(arg):
+    basic_types = (str, bool, int, float, complex) 
+    sequence_types = (list, tuple, range, set, listconfig.ListConfig)
+    dict_types = (dict, dictconfig.DictConfig)
+
+    if isinstance(arg, basic_types): 
+        out = str(arg)
+    elif isinstance(arg, sequence_types): 
+        out = "" 
+        for i in arg:
+            out = f"{out}_{convert_arg_to_string(i)}"
+        out = out[1:] 
+    elif isinstance(arg, dict_types): 
+        out = "" 
+        for k,v in arg.items(): 
+            out = f"{out}_{k}-{convert_arg_to_string(v)}"
+    elif arg is None: 
+        out = "None"
+    else: 
+        try: 
+            out = arg.__module__
+        except: 
+            out = "obj"
+    
+    return out
+
+def compare_objects(objA, objB): 
+    basic_types = (str, bool, int, float, complex) 
+    sequence_types = (list, tuple, range, set, listconfig.ListConfig)
+    dict_types = (dict, dictconfig.DictConfig)
+
+    if objA is not None and objB is not None:
+        if callable(objA):
+            objA = getsource(objA)
+        if callable(objB):
+            objB = getsource(objB)
+
+        if isinstance(objA, type(objB)):
+            if isinstance(objA, basic_types): 
+                return objA == objB 
+            elif isinstance(objA, sequence_types): 
+                return all([compare_objects(A,B) for A,B in zip(objA, objB)])
+            elif isinstance(objA, dict_types): 
+                return all([compare_objects(objA.get(i,None),objB.get(i,None)) for i in set(objA.keys()).union(objB.keys())])
+            else: 
+                if hasattr(objA, "equals"):
+                    return objA.equals(objB)
+                elif hasattr(objA, "equal"): 
+                    return objA.equal(objB)
+                else: 
+                    try: 
+                        return all(list(objA == objB)) 
+                    except: 
+                        return False
+        else:
+            return False
+
+    elif objA is None and objB is None: 
+        return True 
+    else: 
+        return False 
+
+
+

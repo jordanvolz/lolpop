@@ -17,7 +17,7 @@ This class is a subclass of `BaseFeatureTransformer` and is used for transformin
 
 `FeatureTransformerFeatureTransformer` contains the following optional configuration: 
 
-- `pipeline_kwargs`: A dictionary of keyword arguments to pass into the `sklearn.pipline.Pipeline` object that is used to pipeline together the `feature_engine` transformations. 
+- `pipeline_kwargs`: A dictionary of keyword arguments to pass into the `sklearn.pipeline.Pipeline` object that is used to pipeline together the `feature_engine` transformations. 
 
 
 ### Default Configuration 

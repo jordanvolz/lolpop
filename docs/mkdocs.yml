@@ -75,6 +75,7 @@ nav:
         - Writing Tests: writing_extension_tests.md
         - Generating Documentation: writing_extension_documentation.md
         - Extending the CLI: extending_cli.md
+        - Custom Decorators: using_custom_decorators.md
     - CLI: 
       - Overview: cli.md
       - User Guide: cli_guide.md
@@ -89,6 +90,9 @@ nav:
     - Components: 
       #- Overview: components.md
       - BaseComponent: base_component.md
+      - Cache Manager: 
+        - BaseCacheManager: base_cache_manager.md
+        - LocalCacheManager: local_cache_manager.md
       - Data Checkers: 
         - BaseDataChecker: base_data_checker.md
         - Deepchecks: deepchecks_data_checker.md

@@ -49,8 +49,7 @@ class OfflineTrain(BaseTrain):
         #if we are using hyperparameter tuner, use that, otherwise just use the model trainer provided
         if hasattr(self, "hyperparameter_tuner"): 
             model = self.hyperparameter_tuner.run_experiment(data, model_version)
-        else: 
-            #TODO: this needs a better entry point. build_model doesn't actually log stuff
+        else:
             model, _  = self.model_trainer.build_model(data, model_version)
 
         return model, model_version

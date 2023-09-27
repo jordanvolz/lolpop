@@ -16,7 +16,7 @@ class NaturalOrderGroup(TyperGroup):
     def list_commands(self, ctx):
         return self.commands.keys()
     
-app = typer.Typer(cls = NaturalOrderGroup, help="Create new runners, piplines, and components.")
+app = typer.Typer(cls = NaturalOrderGroup, help="Create new runners, pipelines, and components.")
 
 LOLPOP_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 #PARENT_DIR = os.path.dirname(LOLPOP_DIR)
