@@ -157,7 +157,7 @@ If you're interested in building out your own workflows, it's a good idea to loo
 
 ## Why lolpop?
 
-We've long felt that the ML ecosystem lacked a tool to act as the glue between all the various things that one needs to do in order to successfully execute a production use case. lolpop is an attempt to bridge that gap -- to be that glue. For more information regarding the inspiration behind lolpop, please read our launch [blog](https://medium.com/@jordan_volz/introducing-lolpop). 
+We've long felt that the ML ecosystem lacked a tool to act as the glue between all the various things that one needs to do in order to successfully execute a production use case. lolpop is an attempt to bridge that gap -- to be that glue. For more information regarding the inspiration behind lolpop, please read our launch [blog](https://medium.com/@jordan_volz/introducing-lolpop-c78581d6ee1f). 
 
 ## What is lolpop *not*? 
 Sometimes it's helpful to understand what a tool is not in order to fully understand what it is. The description *'software engineering framework for machine learning workflows'* can be a little obtuse, so it might be helpful to understand the following: 
