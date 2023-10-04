@@ -13,7 +13,7 @@ class BaseComponent:
     suppress_logger = False
     suppress_notifier = False 
 
-    def __init__(self, conf={}, pipeline_conf={}, runner_conf={}, parent_process=None, problem_type = None, 
+    def __init__(self, conf={}, pipeline_conf={}, runner_conf={}, parent_integration_type="component", problem_type=None,
                  components = {}, decorators=[], skip_config_validation=False, *args, **kwargs):
         #set basic properties, like name and configs
         self.name = type(self).__name__
@@ -25,7 +25,9 @@ class BaseComponent:
         config = utils.get_conf(conf)
         self.pipeline_conf = pipeline_conf
         self.runner_conf = runner_conf
-        self.parent_process = parent_process
+        # default parent_integration_type to comonent because runner/pipeline should properly set this
+        # so this is only not set if the component is being built w/i another component
+        self.parent_integration_type = parent_integration_type
         self.problem_type = problem_type
 
         #resolve variables

@@ -417,18 +417,18 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         #it would be nice if you could reconstruct a model trainer class only w/ a model version object
         if ref_model is not None:
             config = ref_model.config
-            parent_process = ref_model.parent_process
+            parent_integration_type = ref_model.parent_integration_type
             params = ref_model.params
             pipeline_conf = ref_model.pipeline_conf
         else:
             config = {}
-            parent_process = self.parent_process
+            parent_integration_type = self.integration_type
             params = {}
             pipeline_conf = {}
         if len(pipeline_config) > 0:
             pipeline_conf = pipeline_config 
         
-        model = model_cl(conf=config, pipeline_conf=pipeline_conf, runner_conf=self.runner_conf, parent_process=parent_process,
+        model = model_cl(conf=config, pipeline_conf=pipeline_conf, runner_conf=self.runner_conf, parent_integration_type=parent_integration_type,
                          problem_type=self.problem_type, params=params, components=dependent_components)
         #if you passed in a model_obj, we assume you have a pre-trained model object you wish to use
         if model_obj is not None:
@@ -447,7 +447,7 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
             transformer = transformer_cl(conf={"config": transformer_config},
                                             pipeline_conf=pipeline_conf,
                                             runner_conf=self.runner_conf,
-                                            parent_process=parent_process,
+                                            parent_integration_type=self.integration_type,
                                             problem_type=self.problem_type,
                                             components=dependent_components)
             setattr(model, "feature_transformer", transformer)

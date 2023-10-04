@@ -10,9 +10,9 @@ import pandas as pd
 from pathlib import Path 
 import time
 from inspect import getsource
-#
-##should decide if these things go into the common_utils class or just the abstract classes. 
-#
+import types
+from inspect import isclass
+
 
 #shell command wrapper
 def execute_cmd(cmd, logger=None):
@@ -143,7 +143,7 @@ def load_module_from_file(file_path):
 
 #register component class as an attribute of the provided object
 def register_component_class(self_obj, conf, component_type, default_class_name=None, 
-                             pipeline_conf = {}, runner_conf = {}, parent_process = "runner", 
+                             pipeline_conf={}, runner_conf={}, parent_integration_type="runner",
                              problem_type = None, dependent_components = {}, plugin_mods=[], 
                              decorators=None, *args, **kwargs): 
     obj = None
@@ -152,15 +152,16 @@ def register_component_class(self_obj, conf, component_type, default_class_name=
         cl = load_class(component_class_name) 
         if cl is not None: 
             if decorators is not None: 
-                cl = apply_decorators(cl, decorators, config=conf.get(component_type, {}))
+                cl = apply_decorators(cl, decorators)
             obj = cl(conf=conf.get(component_type, {}), pipeline_conf=pipeline_conf, runner_conf=runner_conf,
-                     parent_process=parent_process, problem_type=problem_type, components=dependent_components, *args, **kwargs)
+                     parent_integration_type=self_obj.integration_type, problem_type=problem_type, 
+                     components=dependent_components, plugin_mods=plugin_mods, *args, **kwargs)
             setattr(self_obj, component_type, obj)
     return obj 
 
 #registers pipeline as an attribute of the provided object
 def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=None, runner_conf = {}, 
-                            parent_process = "runner", problem_type = None, dependent_components = {}, 
+                            parent_integration_type="runner", problem_type=None, dependent_components={},
                             plugin_mods=[], decorators=None, *args, **kwargs): 
     obj = None 
     pipeline_class_name = conf.get("pipelines",{}).get(pipeline_type, default_class_name)
@@ -168,8 +169,8 @@ def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=No
         cl = load_class(pipeline_class_name, class_type="pipeline")
         if cl is not None: 
             if decorators is not None: 
-                cl = apply_decorators(cl, decorators, config=conf.get(pipeline_type,{}), integration_type="pipeline")
-            obj = cl(conf=conf.get(pipeline_type, {}), runner_conf=runner_conf, parent_process=parent_process,
+                cl = apply_decorators(cl, decorators, integration_type="pipeline")
+            obj = cl(conf=conf.get(pipeline_type, {}), runner_conf=runner_conf, parent_integration_type=self_obj.integration_type,
                      problem_type=problem_type, components=dependent_components, 
                      plugin_mods=plugin_mods, decorators=decorators, *args, **kwargs)
             setattr(self_obj, pipeline_type, obj)
@@ -355,18 +356,30 @@ def error_handler(func, obj):
 # decorators can be a single decorator or list of decorators that will be applied in reverse order
 # i.e. the first decorator in the list would be the topmost decorator if listed out
 # (this seems like the intuitive thing to do)
+# Update: modified to also support being applied to a class instance.
+# Reason being that we can apply this to a runner instance. This allows us to dynamically 
+# decorate a runner, even though the decoration doesn't happen until after object instantiation
 def decorate_all_methods(decorators):
-    def decorate(cls):
+    def decorate(obj):
         decorator_list = decorators
         if not isinstance(decorator_list, list):
             decorator_list=[decorator_list]
-        for attr in dir(cls):
-            if callable(getattr(cls, attr)) and not attr.startswith("_") and attr !="log" and attr !="notify":
+        for attr in dir(obj):
+            # we can decorate a class or an instance (in the case of a runner, which will already
+            # have been instantiated when we try to decorate it). In the latter case we need to 
+            # handle it a little differenlty
+            cls=obj
+            if not isclass(cls): 
+                cls=type(obj)
+            if callable(getattr(obj, attr)) and not attr.startswith("_") and attr !="log" and attr !="notify":
                 func = getattr(cls,attr)
                 for decorator in decorator_list[::-1]: 
                     func = decorator(func, cls)
-                setattr(cls, attr, func)
-        return cls
+                if isclass(obj): 
+                    setattr(obj, attr, func)
+                else: #if it's an instance then we need to turn the function back into a bound method
+                    setattr(obj, attr, types.MethodType(func, obj))
+        return obj
     return decorate
 
 #sets up decorators in provided configuration
@@ -384,10 +397,9 @@ def set_up_decorators(obj, conf, plugin_mods=None, bind_decorators=True, compone
 
     return decorators
 
-def apply_decorators(cls, decorators, config={}, integration_type="component"): 
+def apply_decorators(cls, decorators, integration_type="component"): 
     #apply decorators
     decorator_list = []
-    config=config.get("config",{})
     for decorator in decorators:
         integration_types = decorator._get_config("integration_types", ["component"])
         integration_classes = decorator._get_config("integration_classes", [])
@@ -402,6 +414,20 @@ def apply_decorators(cls, decorators, config={}, integration_type="component"):
             cls = decorate_all_methods(decorator_list)(cls)
     
     return cls
+
+def wrap_runner_functions(obj, decorators):
+        decorator_list = decorators
+        if not isinstance(decorator_list, list):
+            decorator_list=[decorator_list]
+        for attr in dir(obj):
+            if callable(getattr(obj, attr)) and not attr.startswith("_") and attr !="log" and attr !="notify":
+                func = getattr(type(obj),attr)
+                for decorator in decorator_list[::-1]: 
+                    decorator_method = getattr(decorator, decorator._get_config("decorator_method"))
+                    func = decorator_method(func, type(obj))
+                setattr(obj, attr, types.MethodType(func, obj))
+        return obj
+    
 
 #compares two dataframes and tries to convert columns so that match types if they don't otherwise
 def compare_data_schemas(obj, data, prev_data):
@@ -634,7 +660,7 @@ def set_up_default_components(obj, conf, runner_conf,
         #__init__ function
         if "logger" not in components.keys(): #you were passed a logger from somewhere else, skip
             logger_obj = register_component_class(obj, conf, "logger", default_class_name="StdOutLogger",
-                                                runner_conf=runner_conf, parent_process = obj.name, 
+                                                  runner_conf=runner_conf, parent_integration_type=obj.integration_type,
                                                 plugin_mods=plugin_mods, skip_config_validation=skip_config_validation,
                                                 )
             if logger_obj is not None:
@@ -647,7 +673,7 @@ def set_up_default_components(obj, conf, runner_conf,
 
         if "notifier" not in components.keys():#you were passed a notifier from somewhere else, skip
             notifier_obj = register_component_class(obj, conf, "notifier", default_class_name = "StdOutNotifier", 
-                                                runner_conf=runner_conf, parent_process=obj.name,
+                                                    runner_conf=runner_conf, parent_integration_type=obj.integration_type,
                                                 problem_type=obj.problem_type, dependent_components=components,
                                                 plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
             if notifier_obj is not None:
@@ -664,7 +690,7 @@ def set_up_default_components(obj, conf, runner_conf,
         #it's unclear why you might not want to use a metadata tracker,
         #but we sould consider this use case in the future
         if "metadata_tracker" not in components.keys() and obj.type !="metadata_tracker": #you were passed a metadata_tracker from somewhere else, skip
-            meta_obj = register_component_class(obj, conf, "metadata_tracker", runner_conf=runner_conf, parent_process=obj.name,
+            meta_obj = register_component_class(obj, conf, "metadata_tracker", runner_conf=runner_conf, parent_integration_type=obj.integration_type,
                                                         problem_type=obj.problem_type, dependent_components=components,
                                                         plugin_mods=plugin_mods, decorators=decorators, 
                                                         skip_config_validation=skip_config_validation)

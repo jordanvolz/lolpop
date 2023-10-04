@@ -23,7 +23,7 @@ class dbtDataTransformer(BaseDataTransformer):
         if data_connector is not None:
             config = get_dw_config_from_profile(self.dbt_config)
             obj = utils.register_component_class(self, config, "data_connector", data_connector, self.pipeline_conf, self.runner_conf,
-                                           parent_process=self.parent_process, problem_type=self.problem_type, dependent_components=components)
+                                                 parent_integration_type=self.integration_type, problem_type=self.problem_type, dependent_components=components)
 
     def transform(self, source_table_name, *args, **kwargs):
         """Runs dbt workflow, specifid by dbt configuration provided. 

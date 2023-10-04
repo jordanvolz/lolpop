@@ -17,7 +17,8 @@ config:
   model_index: PassengerId
   drop_columns: [PassengerId, Name, Ticket, Cabin, SPLIT]
   local_dir: /tmp/artifacts/
-
+decorators: 
+  orchestrator: PrefectOrchestrator
 
 #pipelines config
 process: 
@@ -66,3 +67,8 @@ metadata_tracker:
 logger:
   config: 
     log_level: INFO
+orchestrator: 
+  config: 
+    prefect_profile: cloud
+    prefect_flow_integration: [runner, pipeline]
+    prefect_task_integration: [component]

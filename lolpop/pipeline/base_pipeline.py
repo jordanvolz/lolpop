@@ -15,7 +15,7 @@ class BasePipeline:
     suppress_logger = False
     suppress_notifier = False
 
-    def __init__(self, conf={}, runner_conf={}, parent_process="runner", problem_type=None, 
+    def __init__(self, conf={}, runner_conf={}, parent_integration_type="runner", problem_type=None,
                  pipeline_type="base_pipeline", components={}, plugin_mods=[], plugin_paths=[], 
                  skip_config_validation=False, decorators=[], *args, **kwargs):
         #set basic properties like configs
@@ -26,7 +26,7 @@ class BasePipeline:
         except: #using custom class
             self.type = self.__module__
         conf = utils.get_conf(conf)
-        self.parent_process = parent_process
+        self.parent_integration_type = parent_integration_type
         self.pipeline_type = pipeline_type
         self.runner_conf = runner_conf
         self.problem_type = problem_type
@@ -80,7 +80,7 @@ class BasePipeline:
         if "components" in conf.keys(): 
             for component in conf.get("components",{}).keys(): 
                 obj = utils.register_component_class(self, conf, component, pipeline_conf = pipeline_conf, 
-                                                     runner_conf = runner_conf, parent_process=self.name, 
+                                                     runner_conf=runner_conf, parent_integration_type=self.integration_type,
                                                      problem_type = self.problem_type, dependent_components=components, 
                                                      plugin_mods=plugin_mods, decorators=decorators, 
                                                      skip_config_validation=skip_config_validation)

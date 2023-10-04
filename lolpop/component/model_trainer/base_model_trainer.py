@@ -33,7 +33,7 @@ class BaseModelTrainer(BaseComponent):
                                     "metadata_tracker": self.metadata_tracker,
                                     "resource_version_control": self.resource_version_control}
             self.feature_transformer = transformer_cl(conf=transformer_config, pipeline_conf=self.pipeline_conf, runner_conf=self.runner_conf,
-                         parent_process=self.name, problem_type=self.problem_type, components=dependent_components)
+                                                      parent_integration_type=self.integration_type, problem_type=self.problem_type, components=dependent_components)
         
 
     def fit(self, data, *args, **kwargs) -> Any: 

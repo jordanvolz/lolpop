@@ -22,7 +22,7 @@ class BaseRunner:
         self.integration_type = "runner"
         try: 
             self.type = self.__module__.split(".")[-2]
-        except: #using some kind of custom class
+        except: #using some kind of custom class  # noqa: E722
             self.type = self.__module__
 
         conf = utils.get_conf(conf)
@@ -52,12 +52,13 @@ class BaseRunner:
 
         #handle decorators:
         decorators = utils.set_up_decorators(self, conf, plugin_mods=plugin_mods, components=runner_components)
+        self = utils.apply_decorators(self, decorators, integration_type="runner")
 
         #build all other components
         for component in conf.get("components",{}).keys(): 
             #ignore logger and metadata_tracker since we have already set those up
             if component != "logger" and component !="metadata_tracker" and component !="notifier": 
-                obj = utils.register_component_class(self, conf, component, runner_conf=self.config, parent_process=self.name,
+                obj = utils.register_component_class(self, conf, component, runner_conf=self.config, parent_integration_type=self.integration_type,
                                                      problem_type=self.problem_type, dependent_components=runner_components, 
                                                      plugin_mods=plugin_mods, decorators=decorators, 
                                                      skip_config_validation=skip_config_validation)
@@ -74,7 +75,7 @@ class BaseRunner:
 
         #build all pipelines 
         for pipeline in conf.get("pipelines",{}).keys(): 
-            utils.register_pipeline_class(self, conf, pipeline, runner_conf=self.config, parent_process=self.name,
+            utils.register_pipeline_class(self, conf, pipeline, runner_conf=self.config, parent_integration_type=self.integration_type,
                                           problem_type=self.problem_type, dependent_components=runner_components, 
                                           plugin_mods=plugin_mods, decorators=decorators, 
                                           skip_config_validation=skip_config_validation)
