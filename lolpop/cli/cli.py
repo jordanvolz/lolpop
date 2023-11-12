@@ -2,7 +2,7 @@ import typer
 import os 
 import re 
 
-from lolpop.cli import create, run, package, test, datagen, seed, extension
+from lolpop.cli import create, run, test, datagen, seed, extension, deployment
 from importlib.metadata import version
 from typing import Optional
 from pathlib import Path 
@@ -31,10 +31,8 @@ app.add_typer(create.app, name="create")
 app.add_typer(datagen.app, name="datagen")
 app.add_typer(seed.app, name="seed")
 app.add_typer(test.app, name="test")
-app.add_typer(package.app, name="package")
+app.add_typer(deployment.app, name="deployment")
 app.add_typer(extension.app, name="extension")
-
-
 
 def version_callback(value: bool):
     if value:

@@ -96,6 +96,47 @@ example_grocery_sales:
 	fi
 	echo "Data for Grocery Sales Forecasting set up successfully!"
 
+
+.PHONY example_prefect_local
+example_prefect_local: 
+
+.PHONY example_prefect_docker
+example_prefect_docker:
+poetry build 
+cp dist/lolpop*.tar.gz examples/quickstart/classification/titanic/prefect_files/lolpop-testing.tar.gz 
+cd examples/quickstart/classification/titanic && lolpop deployment package QuickstartRunner -m prefect_files.quickstart_runner -c prefect_files/quickstart.yaml --packager PrefectOrchestrator --packaging-kwargs '{"copy_files":["train.csv","test.csv", "process_titanic.py"], "lolpop_install_location":"prefect_files/lolpop-testing.tar.gz[cli,prefect,mlflow,xgboost]", "config_file":"prefect_files/quickstart.yaml", "skip_validation":true}'
+
+.PHONY example_prefect_docker_deploy
+example_prefect_docker_deploy: 
+prefect work-pool create lolpop-docker-pool --type docker
+cd examples/quickstart/classification/titanic && lolpop deployment package QuickstartRunner -m prefect_files.quickstart_runner -c prefect_files/quickstart.yaml --packager PrefectOrchestrator --packaging-kwargs '{"copy_files":["train.csv","test.csv", "process_titanic.py"], "lolpop_install_location":"prefect_files/lolpop-testing.tar.gz[cli,prefect,mlflow,xgboost]", "config_file":"prefect_files/quickstart.yaml", "skip_validation":true, "work_pool":"lopop-docker-pool", "docker_image_tag":"lolpop-quickstartrunner-build-all"}'
+cd examples/quickstart/classification/titanic && lolpop deployment build -c prefect_files/quickstart.yaml --deployer PrefectOrchestrator --deployment-kwargs '{ "work_pool":"lolpop-docker-pool", "flow_class":"prefect_files.run", "flow_entrypoint": "prefect_entrypoint","docker_image_name":"lolpop-quickstartrunner-build-all", "job_variables":{"image_pull_policy":"Never"}}' -n 'lolpop-quickstartrunner-build_all' -l prefect_files/run.py
+prefect worker start --pool lolpop-docker-pool &
+cd examples/quickstart/classification/titanic && lolpop deployment run prefect-entrypoint/lolpop-quickstartrunner-build_all -c prefect_files/quickstart.yaml --deployer PrefectOrchestrator
+
+.PHONY: example_prefect_k8s
+example_prefect_k8s: 
+poetry build 
+cp dist/lolpop*.tar.gz examples/quickstart/classification/titanic/prefect_files/lolpop-testing.tar.gz 
+cd examples/quickstart/classification/titanic && lolpop deployment package QuickstartRunner -m prefect_files.quickstart_runner -c prefect_files/quickstart.yaml --packager PrefectOrchestrator --packaging-kwargs '{"copy_files":["train.csv","test.csv", "process_titanic.py"], "lolpop_install_location":"prefect_files/lolpop-testing.tar.gz[cli,prefect,mlflow,xgboost]", "config_file":"prefect_files/quickstart.yaml", "skip_validation":true, "docker_image_tag":"lolpop-quickstartrunner-build-all"}'
+#docker pull registry 
+#docker run -d -p 5000:5000 --name registry registry:2.7
+#docker tag lolpop-quickstartrunner-build-all-serve localhost:5000/lolpop-quickstartrunner-build-all-serve
+#docker push localhost:5000/lolpop-quickstartrunner-build-all-serve
+cd examples/quickstart/classification/titanic && lolpop deployment build -c prefect_files/quickstart.yaml -t kubernetes --deployer PrefectOrchestrator --deployment-kwargs '{"docker_image_name":"lolpop-quickstartrunner-build-all-serve", "flow_entrypoint":"prefect_entrypoint"}' -n 'lolpop-quickstartrunner-build-all' -l prefect_files/run.py
+prefect deployment run prefect-entrypoint/lolpop-quickstartrunner-build-all
+kubcetl delete deployment lolpop-quickstartrunner-build-all
+
+.PHONY: example_prefect_k8s_deploy
+example_prefect_k8s_deploy: 
+prefect work-pool create lolpop-k8s-pool --type k8s
+cd examples/quickstart/classification/titanic && lolpop deployment package QuickstartRunner -m prefect_files.quickstart_runner -c prefect_files/quickstart.yaml --packager PrefectOrchestrator --packaging-kwargs '{"copy_files":["train.csv","test.csv", "process_titanic.py"], "lolpop_install_location":"prefect_files/lolpop-testing.tar.gz[cli,prefect,mlflow,xgboost]", "config_file":"prefect_files/quickstart.yaml", "skip_validation":true,  "work_pool":"lolpop-k8s-pool", "docker_image_tag":"lolpop-quickstartrunner-build-all", }'
+cd examples/quickstart/classification/titanic && lolpop deployment build -c prefect_files/quickstart.yaml --deployer PrefectOrchestrator --deployment-kwargs '{"work_pool":"lolpop-k8s-pool", "flow_class":"prefect_files.run", "flow_entrypoint": "prefect_entrypoint","docker_image_name":"lolpop-quickstartrunner-build-all", "job_variables":{"image_pull_policy":"IfNotPresent", "namespace":"lolpop"}}' -n 'lolpop-quickstartrunner-build-all' -t kubernetes -l prefect_files/run.py
+prefect worker start --pool lolpop-docker-pool &
+cd examples/quickstart/classification/titanic && lolpop deployment run prefect-entrypoint/lolpop-quickstartrunner-build_all -c prefect_files/quickstart.yaml --deployer PrefectOrchestrator
+
+
+
 examples: example_titanic example_medical_bills example_sales_forecasting example_petfinder example_crab_age example_grocery_sales
 	
 

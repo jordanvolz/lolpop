@@ -1,4 +1,5 @@
 import subprocess 
+import asyncio
 import os 
 import sys
 import json 
@@ -14,13 +15,24 @@ import types
 from inspect import isclass
 
 
-#shell command wrapper
-def execute_cmd(cmd, logger=None):
-    if logger: 
-        logger.log("Executing command: `%s`" %(" ".join(cmd)))
-    p = subprocess.run(cmd, stdout=subprocess.PIPE, universal_newlines=True, shell=False)
-    return (p.stdout, p.returncode)
+async def async_cmd(cmd): 
+    p = await asyncio.create_subprocess_exec(cmd, universal_newlines=True, shell=False)
+    return p 
 
+#shell command wrapper
+def execute_cmd(cmd, logger=None, run_async=False, run_background=False):
+    if logger: 
+        logger.log("Executing command: `%s`" %(" ".join(cmd)))      
+    if run_async: 
+        p = async_cmd(cmd)
+        return (p,0)
+    elif run_background: 
+        p = subprocess.Popen(cmd, universal_newlines=True, shell=False, close_fds=True)
+        return (p, 0)
+    else: 
+        p = subprocess.run(cmd, stdout=subprocess.PIPE,
+                       universal_newlines=True, shell=False)
+        return (p.stdout, p.returncode)
 # pulls keys out of config or gets from env variable
 # i.e. either handle secret manager before getting here and pass in 
 # or populate via env vars
@@ -771,5 +783,7 @@ def compare_objects(objA, objB):
     else: 
         return False 
 
+def get_docker_string(image_str): 
+    return image_str.lower().replace("_","-")
 
 

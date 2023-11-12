@@ -133,3 +133,6 @@ dmypy.json
 
 #hidden files
 *.hidden
+
+#mlflow
+mlruns/
