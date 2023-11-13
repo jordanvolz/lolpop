@@ -21,11 +21,11 @@ $ lolpop [OPTIONS] COMMAND [ARGS]...
 * `help`: Show CLI usage help.
 * `list-extras`: list available extra packages
 * `run`: Run workflows with lolpop.
-* `create`: Create new runners, pipelines, and components.
+* `create`: Create new runners, pipelines, and...
 * `datagen`: Generate synthetic data from existing data.
 * `seed`: Upload local data into your data platform.
 * `test`: Test lolpop runners, pipelines, and...
-* `package`: Package a lolpop workflow.
+* `deployment`: Utilities for building deployments.
 * `extension`: Run lolpop CLI extensions.
 
 ## `lolpop init`
@@ -102,10 +102,12 @@ $ lolpop run workflow [OPTIONS] RUNNER_CLASS
 
 **Options**:
 
-* `--config-file PATH`: Location of runner configuration file.  [required]
-* `--build-method TEXT`: The method in the runner class to execute.  [default: main]
+* `-c, --config-file PATH`: Location of runner configuration file.  [required]
+* `-b, --build-method TEXT`: The method in the runner class to execute.  [default: main]
 * `--build-args TEXT`: List of args to pass into build_method.
 * `--build-kwargs TEXT`: Dict (as a string) of kwargs to pass into build_method  [default: {}]
+* `-l, --local-file PATH`: Local file to use to read class definition instead of reading directly from lolpop. Useful when you want to run a modified local class that isn't properly registered. 
+* `--skip-validation`: Skip configuration validation.
 * `--help`: Show this message and exit.
 
 ## `lolpop create`
@@ -413,18 +415,133 @@ $ lolpop test workflow [OPTIONS] INTEGRATION_CLASS TEST_CONFIG
 * `--build-kwargs TEXT`: Dict (as a string) of kwargs to pass into build_method  [default: {}]
 * `--help`: Show this message and exit.
 
-## `lolpop package`
+## `lolpop deployment`
 
-Package a lolpop workflow.
+Utilities for building deployments.
 
 **Usage**:
 
 ```console
-$ lolpop package [OPTIONS] COMMAND [ARGS]...
+$ lolpop deployment [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
 
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `package`: package a workflow.
+* `build`: build a deployment.
+* `run`: run a deployment.
+* `stop`: stop a deployment.
+
+### `lolpop deployment package`
+
+package a workflow.
+
+**Usage**:
+
+```console
+$ lolpop deployment package [OPTIONS] LOLPOP_CLASS
+```
+
+**Arguments**:
+
+* `LOLPOP_CLASS`: Lolpop class to package.  [required]
+
+**Options**:
+
+* `-c, --config-file PATH`: Location of runner configuration file.  [required]
+* `-e, --build-method TEXT`: The method in the runner class to execute.  [default: build_all]
+* `-m, --module TEXT`: The lolpop module that the lolpop class belongs in.  [default: lolpop.runner]
+* `-f TEXT`: The flow name to use in the entrypoint file.  [default: prefect_entrypoint]
+* `--packager TEXT`: The orchestrator class to use to package the workflow.
+* `--packager-args TEXT`: List of args to pass into the orchestrator class.
+* `--packager-kwargs TEXT`: Dict (as a string) of kwargs to pass into the orchestrator class  [default: {}]
+* `-p TEXT`: Package method  [default: package]
+* `-t TEXT`: Type of package resource to create.  [default: docker]
+* `--packaging-args TEXT`: Arguments to pass into the package_method
+* `--packaging-kwargs TEXT`: Dict (as a string) of keyword arguments to pass into the package method  [default: {}]
+* `-l, --local-file PATH`: Local file to use to read class definition instead of reading directly from lolpop. Useful when you want to run a modified local class that isn't properly registered. 
+* `--skip-validation`: Skip configuration validation.
+* `--help`: Show this message and exit.
+
+### `lolpop deployment build`
+
+build a deployment.
+
+**Usage**:
+
+```console
+$ lolpop deployment build [OPTIONS]
+```
+
+**Options**:
+
+* `--deployer TEXT`: The orchestrator class to use to deploy the workflow.  [required]
+* `-c, --config-file PATH`: Location of runner configuration file.  [required]
+* `--deployer-args TEXT`: List of args to pass into the orchestrator class.
+* `--deployer-kwargs TEXT`: Dict (as a string) of kwargs to pass into the orchestrator class  [default: {}]
+* `-d TEXT`: Deployment method  [default: deploy]
+* `-n TEXT`: Name of the deployment.  [default: lolpop-deployment]
+* `-t TEXT`: Type of deployment to create.  [default: docker]
+* `--deployment-args TEXT`: Arguments to pass into the deployment_method
+* `--deployment-kwargs TEXT`: Dict (as a string) of keyword arguments to pass into the deployment method  [default: {}]
+* `-l, --local-file PATH`: Local file to use to read class definition instead of reading directly from lolpop. Useful when you want to run a modified local class that isn't properly registered. 
+* `--skip-validation`: Skip configuration validation.
+* `--help`: Show this message and exit.
+
+### `lolpop deployment run`
+
+run a deployment.
+
+**Usage**:
+
+```console
+$ lolpop deployment run [OPTIONS] DEPLOYMENT_NAME
+```
+
+**Arguments**:
+
+* `DEPLOYMENT_NAME`: Name of the deployment.  [required]
+
+**Options**:
+
+* `--deployer TEXT`: The orchestrator class to use to deploy the workflow.  [required]
+* `-c, --config-file PATH`: Location of runner configuration file.  [required]
+* `--deployer-args TEXT`: List of args to pass into the orchestrator class.
+* `--deployer-kwargs TEXT`: Dict (as a string) of kwargs to pass into the orchestrator class  [default: {}]
+* `-r TEXT`: Run method  [default: run]
+* `--run-args TEXT`: Arguments to pass into the deployment_method
+* `--run-kwargs TEXT`: Dict (as a string) of keyword arguments to pass into the deployment method  [default: {}]
+* `-l, --local-file PATH`: Local file to use to read class definition instead of reading directly from lolpop. Useful when you want to run a modified local class that isn't properly registered. 
+* `--skip-validation`: Skip configuration validation.
+* `--help`: Show this message and exit.
+
+### `lolpop deployment stop`
+
+stop a deployment.
+
+**Usage**:
+
+```console
+$ lolpop deployment stop [OPTIONS]
+```
+
+**Options**:
+
+* `--deployer TEXT`: The orchestrator class to use to deploy the workflow.  [required]
+* `-c, --config-file PATH`: Location of runner configuration file.  [required]
+* `--deployer-args TEXT`: List of args to pass into the orchestrator class.
+* `--deployer-kwargs TEXT`: Dict (as a string) of kwargs to pass into the orchestrator class  [default: {}]
+* `-s TEXT`: Stop method  [default: stop]
+* `-n TEXT`: Name of the deployment.  [default: lolpop-deployment]
+* `-t TEXT`: Type of deployment to create.  [default: docker]
+* `--stop-args TEXT`: Arguments to pass into the deployment_method
+* `--stop-kwargs TEXT`: Dict (as a string) of keyword arguments to pass into the deployment method  [default: {}]
+* `-l, --local-file PATH`: Local file to use to read class definition instead of reading directly from lolpop. Useful when you want to run a modified local class that isn't properly registered. 
+* `--skip-validation`: Skip configuration validation.
 * `--help`: Show this message and exit.
 
 ## `lolpop extension`

@@ -25,11 +25,11 @@ class PrefectOrchestrator(BaseOrchestrator):
 
         # check to see if env variables are set. 
         # in prefect env variables override profiles and are set in the root context so
-        # there is no (non-super hacky) currently way to override them programatically
+        # there is no (non-super hacky) current way to override them programatically
         # but we can at least provide a warning
         prefect_env_variables = [x for x in os.environ.keys() if x.startswith("PREFECT")]
         if len(prefect_env_variables)>0: 
-            self.log("Found PREFECT_* configuration in the environment variables: %s. Environment variables override profile settings in Prefect. Consider unsetting these variables if their use is not intended." %str(prefect_env_variables), level="WARN")
+            self.log("Found PREFECT_* configuration in the environment variables: %s. Environment variables override profile settings in Prefect. Consider unsetting these variables if their use is not intended." %str(prefect_env_variables), level="INFO")
 
         # we need to switch profiles before importing prefect. The reason being that prefect
         # sets the root context when imported to the active profile. The only way to change this
@@ -56,13 +56,22 @@ class PrefectOrchestrator(BaseOrchestrator):
         globals()["task"] = task 
 
     def decorator(self, func, cls):
+        """
+        Decorates a function with Prefect flow or task.
+
+        Args:
+            func (object): The function to decorate.
+            cls (objcet): The class containing the function.
+
+        Returns:
+            The decorated function.
+        """
         @wraps(func)
         def prefect_wrapper(*args, **kwargs):
             obj = args[0]
             #wrap in flow
             if obj.integration_type in self._get_config("prefect_flow_integration"):
                 flow_kwargs = self._get_config("flow_kwargs", {})
-                deployment_kwargs = self._get_config("deployment_kwargs", {})
                 return flow(func, **flow_kwargs)(*args, **kwargs)  # noqa: F821
             #wrap in task
             elif obj.integration_type in self._get_config("prefect_task_integration"):
@@ -103,6 +112,30 @@ class PrefectOrchestrator(BaseOrchestrator):
                 job_variables = {},
                 *args, **kwargs):
 
+        """
+        Packages the Prefect flow into a Docker image or any other packaging format supported by Prefect.
+
+        Args:
+            lolpop_class (str): The name of the lolpop class to package.
+            lolpop_module (str): The name of the lolpop module to package.
+            lolpop_entrypoint (str): The name of the lolpop entrypoint to package.
+            flow_name (str): The name of the Prefect flow.
+            package_type (str): The packaging format for the Prefect flow (default: "docker").
+            base_image (str): The base Docker image to use for building the Docker image (default: "prefecthq/prefect:2-python3.9").
+            prefect_files (str): The folder containing the Prefect files.
+            copy_files (list): The files in the base directory to be copied to the Docker image.
+            lolpop_install_location (str): The installation location for the lolpop package.
+            run_cmd (str): The command to run the at the end of the docker file.
+            config_file (str): The path to the config file.
+            flow_kwargs (dict): Additional keyword arguments for the Prefect fkiw
+            dockerfile_path (str): Path to the dockerfile to use for a custom image when creating a prefect deployment. Defaults to "Dockerfile",
+            docker_image_tag (str): Tag to apply to the docker image after creation.
+            push_image (bool): Whether to push the image after creation. Defaults to False.
+            skip_validation (bool): Whether to skip component validation on the when loading the config file in the entrypoint script.
+            create_deployment (bool): Whether to use a proper prefect deploy method. Defaults to False,
+            work_pool (str): The workpool name associated with this package.  
+            job_variables (str): Additional variables to be passed into the flow deployment to override the base deployment template. 
+        """
         self.log("Building entrypoint script for prefect flow...")
 
         if config_file is None: 
@@ -136,6 +169,9 @@ class PrefectOrchestrator(BaseOrchestrator):
 
         self.log(f"Successfully built entrypoint script {entrypoint_script}")
 
+        #we can now build a dockerfile w/ the correct entrypoint script. 
+        #we need this regardless of if we're going to build the docker file now 
+        #or later in a flow deploy method. 
         self.log("Building dockerfile...")
 
         if run_cmd is None:
@@ -151,7 +187,7 @@ class PrefectOrchestrator(BaseOrchestrator):
 
         self.log(f"Successfully built dockerfile {dockerfile}")
         
-        if work_pool is None: 
+        if work_pool is None:
 
             docker_image_tag = utils.get_docker_string(docker_image_tag)
             self.log(f"Building docker image {docker_image_tag}...")
@@ -175,12 +211,41 @@ class PrefectOrchestrator(BaseOrchestrator):
                namespace="lolpop", worker_image="prefecthq/prefect:2-python3.9-kubernetes", 
                worker_deployment_manifest="prefect_files/worker_deployment_manifest.yaml",
                flow_kwargs={}, deployment_kwargs={}, *args, **kwargs):
+        """Deploys the prefect flow
+
+        Args:
+            deployment_name (str): Name of the deployment to create. 
+            deployment_type (str, optional): Type of deploymen to create. Defaults to "docker".
+            work_pool (str, optional): Name of the work pool to deploy into. Defaults to None.
+            flow_class (str, optional): The flow class to deploy. Only used if work pool is used. Defaults to None.
+            flow_entrypoint (str, optional): The flow entrypoint. Only used if work pool is used. Defaults to None.
+            docker_image_name (str, optional): The docker image name to use in the deployment, if using a custom image. Defaults to None.
+            k8s_deployment_manifest (str, optional): The path to the k8s deployment manifest to use, if deployment_type = kubernetes. Defaults to None.
+            dockerfile (str, optional): The path to the dockerfile to use if building a deployment with a custom image. Defaults to "Dockerfile".
+            push_image (bool, optional): Whether to push the image after creation. Only used if deploying a custom image. Defaults to False.
+            job_variables (dict, optional): Other job variables to pass into the flow deploy method to override the default template. Defaults to {}.
+            secret_name (str, optional): Name of the k8s secret holding the prefect secrets. Only used if deploying into k8s. Defaults to "prefect-secrets".
+            num_replicas (int, optional): Number of replica pods to deploy. Only used if deploying into k8s. Defaults to 1.
+            prefect_api_key (str, optional): The name of the prefect api key secret in secret_name. Defaults to "prefect-api-key".
+            prefect_api_url (str, optional): The name of the prefect api url secret in secret name. Defaults to "prefect-api-url".
+            image_pull_policy (str, optional): The image pull policy to use in the k8s deployment manifest.. Defaults to "Never".
+            manifest_path (str, optional): Path to a k8s deployment manifest. Only used if deploying into k8s and if you wish to use a custom manifest file. Defaults to "prefect_files/deployment_manifest.yaml".
+            namespace (str, optional): k8s namespace to deploy into. Onkly used if deploying into k8s. Defaults to "lolpop".
+            worker_image (str, optional): The image to use for the prefect k8s worker. Defaults to "prefecthq/prefect:2-python3.9-kubernetes".
+            worker_deployment_manifest (str, optional): The manifest to use for the prefect k8s worker. Defaults to "prefect_files/worker_deployment_manifest.yaml".
+            flow_kwargs (dict, optional): kwargs to pass into the flow instatiation. Defaults to {}.
+            deployment_kwargs (dict, optional): kwargs to pass into the deployment instatiation. Defaults to {}.
+
+        Raises:
+            Nothing
+        """
         
 
         if docker_image_name is not None:
             if ":" not in docker_image_name:
                 docker_image_name = docker_image_name + ":latest"
 
+        #if we have a workpool or deploying local then we'll use the prefect deployment mechanism
         if deployment_type=="local" or work_pool is not None: 
             if flow_class is None and flow_entrypoint is None: 
                 raise Exception("flow_class and flow_entrypoint are None. They must be populated for deployment_type = 'local'.")
@@ -286,6 +351,14 @@ class PrefectOrchestrator(BaseOrchestrator):
 
 
     def run(self, deployment_name, *args, **kwargs): 
+        """Runs a prefect deployment. 
+
+        Args:
+            deployment_name (str): The deployment name to run.
+
+        Returns:
+            (flow_id, url): A tuple containing the flow id and the url of the flow run. 
+        """
 
         if kwargs is not None and len(kwargs) > 0: 
             out, code = utils.execute_cmd(["prefect", "deployment", "run", deployment_name, "--params", json.dumps(kwargs)], logger=self)
@@ -305,6 +378,16 @@ class PrefectOrchestrator(BaseOrchestrator):
 
 
     def stop(self, deployment_name, deployment_type="docker", docker_image_name = None, *args, **kwargs): 
+        """Shuts down a current prefect deployment
+
+        Args:
+            deployment_name (str): The deployment name to shut down
+            deployment_type (str, optional): The type of deployment that it is. Defaults to "docker".
+            docker_image_name (str, optional): The image name used in the deployment. Defaults to None.
+
+        Returns:
+            None
+        """
         if deployment_type == "docker": 
             if docker_image_name is None: 
                 raise Exception("docker_image_name not provided. This is required to stop the running docker container.")
@@ -339,6 +422,8 @@ class PrefectOrchestrator(BaseOrchestrator):
             raise Exception("Deployment type %s unsupported." %deployment_type)
 
 
+    # creates an entrypoint script to use in the docker image. 
+    # this file gets saved into prefect_files/run.py
     def _make_entrypoint_script(self,
                                 flow_name="prefect_entrypoint",
                                 lolpop_module = "lolpop.runner",
@@ -397,6 +482,7 @@ if __name__ == "__main__":
 
         return entrypoint_script_path
 
+    #makes a dockerfile that sets up lolpop and executes the entrypoint script
     def _make_dockerfile(self, 
                           base_image="prefecthq/prefect:2-python3.9",
                           prefect_files="prefect_files/",
@@ -427,7 +513,8 @@ CMD {json.dumps(run_cmd.split(" "))}
 
         return dockerfile_path
 
-
+    #create a deployment manifest for the lolpop docker image. 
+    #This manifest will deploy the lolpop docker image into k8s
     def _make_deployment_manifest(self,
                                       manifest_path="prefect_files/deployment_manifest.yaml",
                                       deployment_name="lolpop-prefect", 
@@ -481,6 +568,8 @@ spec:
 
         return manifest_path
 
+    #Create a manifest for the prefect worker. 
+    #This worker will pool the prefect server for work and run flows. 
     def _make_worker_deployment_manifest(self,
                                          manifest_path="prefect_files/worker_deployment_manifest.yaml",
                                          deployment_name="lolpop-prefect-worker",
@@ -549,6 +638,7 @@ spec:
 
         return manifest_path
 
+    #apply prefect secrets to k8s
     def _apply_secrets(self, secret_name, secret_dict, namespace="lolpop"):
         
         secret_arr = ["kubectl", "create", "secret", "generic", secret_name, "--namespace", namespace]
@@ -558,7 +648,7 @@ spec:
                           "--ignore-not-found", "--namespace", namespace], logger=self)
         return utils.execute_cmd(secret_arr)
 
-
+    #build the docker image
     def _build_docker_image(self,
             dockerfile_path="Dockerfile",
             docker_image_tag=None,
@@ -575,26 +665,3 @@ spec:
 
         if push_image: 
             utils.execute_cmd(["docker", "push", docker_image_tag], logger=self)
-
-
-        # general steps to get this working in prefect: 
-        # 1. need to create worker pool -- prefect work-pool create --type docker my-docker-pool
-        # --> we assume this is already done
-        # 2. Create deployment and assign to workpool via deploy func
-        # --> deploy func is really just an entry point for docker image. i.e. end of docker image should do lolpop deploy X 
-        # 3. Start WOrker via prefect worker start --pool my-docker-pool
-        # --> again, assume this is already done 
-        # 4. Submit flow run via run above. 
-        # --> i.e. lolpop run workflow --orchestration X should just do a prefect deploy run flow/deployment-name
-        # 5. Should be done! 
-
-        #TODO: 
-        ## figure out docker deploy via workpools. 
-        ## --> Seems like we should change lolpop deployment build to just run the run.py script if work_pool is used. 
-        ##     this would create a a deployment and build the custom image, which could then be run via work pool. 
-        ## --> need to see if entrypoint is correct in this path. for deployment
-        ## If that works, then make sure k8s serve/deploy/stop works. 
-        ## Once all those cases are covered, then make tests for 
-        ## --> local, docker, k8s. For manual running, serve, and deploy
-        ## then do documentation
-        ## Look at refactoring deployment.py since all commands use a similar pattern

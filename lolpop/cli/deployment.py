@@ -92,7 +92,7 @@ def build(
     config_file: Path = typer.Option(..., "-c", "--config-file",help="Location of runner configuration file."),
     deployer_args: List[str] = typer.Option([], help="List of args to pass into the orchestrator class."),
     deployer_kwargs: str = typer.Option("{}", help="Dict (as a string) of kwargs to pass into the orchestrator class"),
-    deployment_method: str = typer.Option("deploy", "-d", help="Package method"), 
+    deployment_method: str = typer.Option("deploy", "-d", help="Deployment method"), 
     deployment_name: str = typer.Option("lolpop-deployment", "-n", help="Name of the deployment."),
     deployment_type: str = typer.Option("docker", "-t", help="Type of deployment to create."),
     deployment_args: List[str] = typer.Option([], help="Arguments to pass into the deployment_method"), 
@@ -146,7 +146,7 @@ def run(
     deployer_kwargs: str = typer.Option(
         "{}", help="Dict (as a string) of kwargs to pass into the orchestrator class"),
     run_method: str = typer.Option(
-        "run", "-d", help="Package method"),
+        "run", "-r", help="Run method"),
     run_args: List[str] = typer.Option(
         [], help="Arguments to pass into the deployment_method"),
     run_kwargs: str = typer.Option(
@@ -202,7 +202,7 @@ def stop(
     deployer_kwargs: str = typer.Option(
         "{}", help="Dict (as a string) of kwargs to pass into the orchestrator class"),
     stop_method: str = typer.Option(
-        "stop", "-s", help="Package method"),
+        "stop", "-s", help="Stop method"),
     deployment_name: str = typer.Option(
         "lolpop-deployment", "-n", help="Name of the deployment."),
     deployment_type: str = typer.Option(
