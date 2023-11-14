@@ -24,7 +24,7 @@ class BaseHyperparameterTuner(BaseComponent):
         if hasattr(self, "feature_transformer"): #pass the feature_transformer if it's defined at the pipeline level 
             dependent_components["feature_transformer"] = self.feature_transformer
         model = model_cl(conf=trainer_config, pipeline_conf=self.pipeline_conf, runner_conf=self.runner_conf, 
-                         parent_process = self.name, problem_type = self.problem_type, params=params, components=dependent_components) 
+                         parent_integration_type=self.integration_type, problem_type=self.problem_type, params=params, components=dependent_components)
 
         #now fit model 
         model_obj = model.transform_and_fit(data)

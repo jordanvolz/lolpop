@@ -10,7 +10,7 @@ class StdOutLogger(BaseLogger):
         super().__init__(*args, **kwargs)
         colorama_init()
         
-    def log(self, msg, level, time=None, process_name=None, line_num=None, *args, **kwargs): 
+    def log(self, msg, level="INFO", time=None, process_name=None, line_num=None, *args, **kwargs): 
         """
         Logs the message to standard output.
 

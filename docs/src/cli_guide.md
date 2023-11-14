@@ -48,6 +48,51 @@ Example:
 lolpop test workflow XGBoostTrainer xgboost_tests.yaml --build-method fit --build-kwargs "{...}"
 ```
 
+## lolpop deployment 
+
+`lolpop deployment` allows users to build, deploy, and run workflows on external systems. 
+
+be sure to visit the [CLI reference](cli_reference.md) for all available options. 
+
+### lolpop deployment package
+
+In order to package a lolpop class, you'll need to provide the packaging class to use, along w/ the config file for that class. You can optionally provide the method in the class to use for packaging via `-p` and any keyword arguments via `--packaging-kwargs`
+
+```bash 
+lolpop deployment package <lolpop_class> --packager <PackagerClass> -c /path/to/packager_config.yaml -p <package_method> --packaging_kwargs {<dict_values>}
+```
+
+Typically, the expectation is that this creates something like a docker image that can then be deployed via `lolpop deployment build`.
+
+### lolpop deployment build 
+
+In order to deploy a packaged workflow, you'll need to provide the Deployer class to use, along w/ the config file for that class. You can optionally provide the method in the class to use for deployment via `-d` and any keyword arguments via `--deployment-kwargs`
+
+```bash 
+lolpop deployment build --deployer <DeployerClass> -c /path/to/deployer_config.yaml -d <deployment_method> --deployment_kwargs {<dict_values>}
+```
+
+This action should create/register a deployment with the deployer for future use. 
+
+### lolpop deployment run 
+
+In order to run a deployed workflow, you'll need to provide the Deployer class to use, along w/ the config file for that class. You can optionally provide the method in the class to use for run via `-r` and any keyword arguments via `--run-kwargs`
+
+```bash 
+lolpop deployment run <deployment_name> --deployer <DeployerClass> -c /path/to/deployer_config.yaml -d <run_method> --run_kwargs {<dict_values>}
+```
+
+This should create a workflow instance in the deployer. 
+
+### lolpop deployment stop 
+
+In order to stop a deployed workflow, you'll need to provide the Deployer class to use, along w/ the config file for that class. You can optionally provide the method in the class to use for run via `-s` and any keyword arguments via `--run-kwargs`
+
+```bash 
+lolpop deployment stop <deployment_name> --deployer <DeployerClass> -c /path/to/deployerclass_config.yaml -d <package_method> --stop_kwargs {<dict_values>}
+```
+
+
 ## lolpop create 
 
 `lolpop create` serves two main purposes: 

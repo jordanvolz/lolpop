@@ -47,7 +47,7 @@ def fake_component_config(tmp_path_factory):
         },
         "pipeline_conf": {},
         "runner_conf" : {}, 
-        "parent_process" : "fake_parent", 
+        "parent_integration_type": "runner",
         "problem_type" : "fake_problem",
         "components" : {
             "logger": StdOutLogger({}),

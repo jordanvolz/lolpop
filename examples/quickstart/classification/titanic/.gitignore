@@ -1,2 +1,11 @@
 *.csv
 mlruns/
+Dockerfile*
+
+prefect_files/lolpop-testing.tar.gz
+prefect_files/deployment-manifest*
+prefect_files/deployment_manifest*
+prefect_files/run.py*
+prefect_files/role*
+prefect_files/serviceaccount*
+prefect_files/worker_deployment_manifest*

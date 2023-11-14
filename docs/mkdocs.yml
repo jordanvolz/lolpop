@@ -66,6 +66,7 @@ nav:
       - Building Workflows: building_workflows.md
       - Running Workflows: running_workflows.md
       - Testing Workflows: testing_workflows.md
+      - Using Orchestrators: working_with_orchestrators.md
       - lolpop Projects: lolpop_projects.md
     - Extensions: 
         - Overview: extensions.md
@@ -182,6 +183,9 @@ nav:
         #- Slack: slack_notifier.md
         - SMTP : smtp_notifier.md
         - StdOut: stdout_notifier.md
+      - Orchestrators: 
+        - BaseOrchestrator: base_orchestrator.md
+        - PrefectOrchestrator: prefect_orchestrator.md
       - Resource Version Control: 
         - BaseResourceVersionControl: base_resource_version_control.md
         - DVC: dvc_resource_version_control.md

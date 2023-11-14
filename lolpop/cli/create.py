@@ -135,7 +135,7 @@ def create_documentation(
     documentation_format: str = typer.Option(
         "markdown", "--documentation-format", "-d", help="The format you would like the documentation to be written in.")
 ):
-    chatbot = load_chatbot(generator_class)
+    chatbot = load_chatbot(generator_class, json.loads(generator_kwargs))
     class_code, num_lines = get_source_from_file(source_file, class_name)
 
     if num_lines > 0: 
