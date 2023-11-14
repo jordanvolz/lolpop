@@ -142,7 +142,7 @@ class PrefectOrchestrator(BaseOrchestrator):
             config_file = f"{prefect_files}/dev.yaml"
 
         if docker_image_tag is None:
-            docker_image_tag = f"lolpop-{lolpop_class}-{lolpop_entrypoint}:latest"
+            docker_image_tag = utils.get_docker_string(f"lolpop-{lolpop_class}-{lolpop_entrypoint}:latest")
         if ":" not in docker_image_tag:
             docker_image_tag = docker_image_tag + ":latest"
 
@@ -210,6 +210,7 @@ class PrefectOrchestrator(BaseOrchestrator):
                image_pull_policy="Never", manifest_path="prefect_files/deployment_manifest.yaml",
                namespace="lolpop", worker_image="prefecthq/prefect:2-python3.9-kubernetes", 
                worker_deployment_manifest="prefect_files/worker_deployment_manifest.yaml",
+               service_account="default",
                flow_kwargs={}, deployment_kwargs={}, *args, **kwargs):
         """Deploys the prefect flow
 
@@ -290,6 +291,7 @@ class PrefectOrchestrator(BaseOrchestrator):
                         prefect_secret_name=secret_name, 
                         key_prefect_api_key = prefect_api_key, 
                         key_prefect_api_url = prefect_api_url,
+                        service_account=service_account,
                         )
                     self.log("Built k8s deployment manifest for prefect worker. Saved to %s." %k8s_deployment_manifest)
                     
