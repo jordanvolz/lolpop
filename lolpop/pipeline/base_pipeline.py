@@ -23,7 +23,7 @@ class BasePipeline:
         self.integration_type = "pipeline"
         try: 
             self.type = self.__module__.split(".")[-2]
-        except: #using custom class
+        except: #using custom class  # noqa: E722
             self.type = self.__module__
         conf = utils.get_conf(conf)
         self.parent_integration_type = parent_integration_type

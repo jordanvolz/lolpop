@@ -1,0 +1,263 @@
+from lolpop.utils import common_utils as utils
+from anytree import AnyNode, RenderTree
+from omegaconf import dictconfig, OmegaConf
+import os  
+from inspect import currentframe
+
+class BaseIntegration: 
+
+    __REQUIRED_CONF__ = {
+        "config": []
+    }
+    __DEFAULT_CONF__ = {
+        "config": {}
+    }
+    
+    suppress_logger = False
+    suppress_notifier = False
+
+    def __init__(self, 
+                 conf={}, 
+                 parent=None, 
+                 integration_type=None, 
+                 integration_framework = None, 
+                 problem_type="Unknown", 
+                 skip_config_validation=False, 
+                 dependent_integrations={}, 
+                 decorators=[],
+                 plugin_mods=[], 
+                 plugin_paths=[],
+                 *args, **kwargs):     
+
+        # Integration name. Mainly going to be used for referring to this during logging, etc. 
+        # self.name = class name
+        self.name = type(self).__name__
+
+        # self.module = module. 
+        # Built in modules should have the structure: 
+        # lolpop.<integration_type>.<type>.<module>, such as: 
+        # lolpop.component.metadata_tracker.mlflow_metadata_tracker
+        self.module = self.__module__
+        
+        #figure out what type of integration we are? I.E. runner, pipeline, component, etc. 
+        self.integration_type = integration_type
+        if self.integration_type is None:
+            try:
+                self.integration_type = self.module.split(".")[-3]
+            except:  # noqa: E722
+                self.integration_type = "extension"
+
+        #figure out what type of integration type we are. 
+        # i.e. if you are a "runner" then we want to know what "runner_type" you are
+        try:
+            int_type = self.module.split(".")[-2]
+        except:  # using some kind of custom class  # noqa: E722
+            int_type = self.module
+        self.type = int_type
+        #setattr(self, "%s_type" %self.integration_type, int_type)
+
+        #set parent object 
+        self.parent = parent 
+        self.parent_integration_type = None
+        if parent is not None:
+            self.parent_integration_type = parent.integration_type
+        self.problem_type = problem_type
+
+        #get configuration 
+        config = utils.get_conf(conf)
+
+        #set up integration framework
+        self.integration_framework = integration_framework
+        if self.integration_framework is None:
+            integration_framework = config.get("integration_framework", {})
+            if len(integration_framework) > 0:
+                self.integration_framework = _get_integration_framework_tree(integration_framework)
+            elif parent is None: 
+                self.integration_framework = _get_default_integration_framework()
+            else: #has parent but didn't pass in integration_framework
+                raise Exception("Unable to determine integration framework for %s. No parent or integration framework found." %self.name)
+            
+        #handle config    
+        config = utils.resolve_conf_variables(config)
+        valid_conf = OmegaConf.create(config).copy() 
+
+        #set the integration config before we start copying parent config in. 
+        #This saves the integration config as whatever is passed in + the default config
+        self.config = utils.copy_config_into(valid_conf.get("config", {}), self.__DEFAULT_CONF__.get("config", {}))
+
+        #handle all the configuration inheritance
+        OmegaConf.update(
+            valid_conf, 
+            "config", 
+            _inherit_config(
+                valid_conf.get("config",{}),
+                self.__DEFAULT_CONF__.get("config",{}),
+                self
+            )
+        )
+
+        #validate configuration to ensure we have all requirements
+        if not skip_config_validation:
+            self._validate_conf(valid_conf, dependent_integrations)
+
+        #handle plugins
+        if len(plugin_mods) == 0:
+            if len(plugin_paths) == 0:
+                plugin_paths = self._get_config("plugin_paths", [])
+            file_path = None
+            if hasattr(self, "__file_path__"):
+                file_path = self.__file_path__
+            plugin_mods = utils.get_plugin_mods(self, plugin_paths, file_path)
+        self.plugin_mods = plugin_mods
+
+        #set up default integrations
+        dependent_integrations = utils.set_up_default_integrations(
+                                    self, 
+                                    valid_conf, 
+                                    plugin_mods=plugin_mods,
+                                    skip_config_validation=skip_config_validation,
+                                    dependent_integrations=dependent_integrations
+                                    )
+
+
+        #set up decorators
+        decorators = decorators + utils.set_up_decorators(
+            self, valid_conf, plugin_mods=plugin_mods, dependent_integrations=dependent_integrations
+            )
+        #if we're at the root of our framework, we have to apply decorators here ,
+        # otherwise, things will be applied when they registered below
+        if integration_framework.is_root: 
+            self = utils.apply_decorators(self, decorators, integration_type=self.integration_type)
+    
+        #set all passed in integrations 
+        for integration_type in dependent_integrations.keys():
+            for integration in dependent_integrations.get(integration_type).keys(): 
+                setattr(self, integration, dependent_integrations.get(integration_type).get(integration))
+
+        #process children
+        for child in integration_framework.children:
+            processed_integrations = {}
+
+            #id of the node in the intergration framework should be the integration type
+            #the name of your list of integrations in your yaml might be plural, 
+            # i.e. "pipeline" --> "pipelines", as this feels more natural. 
+            # so if we don't get a hit then try the plural form (i.e. + "s")
+            key = child.id
+            if key not in config.keys(): 
+                key = _swap_key_plurality(key)
+                
+            for integration in config.get(key,{}).keys():
+                obj = utils.register_integration_class(self, 
+                                                        config, 
+                                                        integration,
+                                                        integration_type=child.id,
+                                                        problem_type=self.problem_type, 
+                                                        dependent_integrations=dependent_integrations,
+                                                        plugin_mods=plugin_mods,
+                                                        decorators=decorators,
+                                                        skip_config_validation=skip_config_validation)
+                if obj is not None: 
+                    self.log("Loaded class %s into %s %s" %(type(getattr(self,integration)).__name__, self.integration_type, integration))
+                    processed_integrations[integration] = obj
+                else: 
+                    self.log("Unable to load class for %s: %s" %(key, integration))
+
+            #if integration is a leaf then we need to update other integrations with the full set
+            if child.is_leaf(): 
+                for obj in processed_integrations.values(): 
+                    obj._update_integrations(integrations=processed_integrations)
+
+            #add processed integrations to the dependent list so they get passed down.
+            dependent_integrations[child.id].update(processed_integrations)
+
+    def _update_integrations(self, integrations={}, *args, **kwargs):
+        for integration in integrations.keys():
+            setattr(self, integration, integrations.get(integration))
+
+    def _validate_conf(self, conf, integrations=None):   
+        missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__)
+        if total_missing > 0:
+            #check to see if missing integrations are passed in
+            for integration_type in missing.keys(): 
+                for integration in missing.get(integration_type): 
+                    if integrations.get(integration_type,{}).get(integration) is not None: 
+                        total_missing = total_missing - 1
+            if total_missing > 0:
+                raise Exception("Missing the following from %s configuration: %s" % (
+                    type(self).__name__, missing))
+
+    def log(self, msg, level="INFO", **kwargs): 
+        if not self.suppress_logger: 
+            self.logger.log(msg, level, process_name=self.name,
+                            line_num=currentframe().f_back.f_lineno, **kwargs)
+
+    def notify(self, msg, level="ERROR"): 
+        if not self.suppress_notifier: 
+            self.notifier.notify(msg, level)
+            self.log("Notification Sent: %s" %msg, level)
+
+    #helper function for lookup up config key
+    def _get_config(self, key, default_value=None):
+        key = key.lower()
+        value = utils.lower_conf(self.config).get(key, None)
+
+        #if value wasn't found, check in parent
+        if value is None and self.parent is not None: 
+            value = self.parent._get_config(key)
+        
+        #if no value found in parent, check environment
+        if value is None: 
+            value = os.getenv(key,default=default_value)
+        
+        return value
+        
+    def _set_config(self, key, value): 
+        key = key.lower()
+        self.config[key]=value
+
+    def _print_integration_framework(self): 
+        print(RenderTree(self.integration_framework))
+
+
+def _get_default_integration_framework():
+    runner = AnyNode(id="runner")
+    global_component = AnyNode(id="component", parent=runner)
+    pipeline = AnyNode(id="pipeline", parent=runner)
+    component = AnyNode(id="component", parent=pipeline)
+    return runner
+
+
+def _get_integration_framework_tree(framework_conf, parent=None):
+    node = AnyNode()
+    for k, v in framework_conf.items():
+        node = AnyNode(id=k)
+        if parent is not None:
+            node.parent = parent
+        if isinstance(v, dictconfig.DictConfig):
+            _ = _get_integration_framework_tree(v, parent=node)
+    return node
+
+
+def _inherit_config(conf, default_conf, integration, conf_array=[]):
+
+    parent = integration.parent 
+
+    #parent exists, so we need to iterate
+    if parent is not None: 
+        conf_array.append(parent.config)
+        return _inherit_config(conf, default_conf, parent, conf_array=conf_array)
+    else: #no parent, so we can stop
+        conf_array.append(conf)
+        final_conf = default_conf
+
+        for c in conf_array: 
+            final_conf = utils.copy_config_into(c, final_conf)
+
+        return final_conf 
+
+#super naive pluralization
+def _swap_key_plurality(key): 
+    if key[-1] == "s": 
+        return key[:-1]
+    else: 
+        return key + "s"

@@ -69,7 +69,7 @@ class BaseComponent:
             setattr(self, component, components.get(component))
 
     def _validate_conf(self, conf, components):
-        missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__, components)
+        missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__)
         if total_missing>0: 
             #check to see if missing components are provided by runner
             if len(missing.get("components",{})) > 0: 
