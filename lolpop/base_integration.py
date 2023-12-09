@@ -12,6 +12,14 @@ class BaseIntegration:
     __DEFAULT_CONF__ = {
         "config": {}
     }
+
+    __DEFAULT_INT__ = {
+        "component": {
+            "logger": "StdOutLogger",
+            "notifier": "StdOutNotifier",
+            "metadata_tracker": "MLFlowMetadataTracker",
+        }
+    }
     
     suppress_logger = False
     suppress_notifier = False
@@ -59,32 +67,30 @@ class BaseIntegration:
         #set parent object 
         self.parent = parent 
         self.parent_integration_type = None
-        if parent is not None:
+        if self.parent is not None:
             self.parent_integration_type = parent.integration_type
         self.problem_type = problem_type
 
         #get configuration 
         config = utils.get_conf(conf)
-
+        
         #set up integration framework
         self.integration_framework = integration_framework
         if self.integration_framework is None:
             integration_framework = config.get("integration_framework", {})
-            if len(integration_framework) > 0:
+            if len(integration_framework) > 0: #framework provided via conf
                 self.integration_framework = _get_integration_framework_tree(integration_framework)
-            elif parent is None: 
+            elif self.parent is None: # no parent, so assume we are at the root and get the default
                 self.integration_framework = _get_default_integration_framework()
-            else: #has parent but didn't pass in integration_framework
-                raise Exception("Unable to determine integration framework for %s. No parent or integration framework found." %self.name)
-            
+            else: #no framework provided and we have a parent, so not root, assume we are being dynamically created somewhere, so don't try to traverse the framework
+                pass 
+
         #handle config    
         config = utils.resolve_conf_variables(config)
         valid_conf = OmegaConf.create(config).copy() 
-
         #set the integration config before we start copying parent config in. 
         #This saves the integration config as whatever is passed in + the default config
         self.config = utils.copy_config_into(valid_conf.get("config", {}), self.__DEFAULT_CONF__.get("config", {}))
-
         #handle all the configuration inheritance
         OmegaConf.update(
             valid_conf, 
@@ -114,6 +120,7 @@ class BaseIntegration:
         dependent_integrations = utils.set_up_default_integrations(
                                     self, 
                                     valid_conf, 
+                                    self.__DEFAULT_INT__,
                                     plugin_mods=plugin_mods,
                                     skip_config_validation=skip_config_validation,
                                     dependent_integrations=dependent_integrations
@@ -124,9 +131,10 @@ class BaseIntegration:
         decorators = decorators + utils.set_up_decorators(
             self, valid_conf, plugin_mods=plugin_mods, dependent_integrations=dependent_integrations
             )
-        #if we're at the root of our framework, we have to apply decorators here ,
+        
+        #if we're at the root of our framework, we have to apply decorators here,
         # otherwise, things will be applied when they registered below
-        if integration_framework.is_root: 
+        if  (self.integration_framework is not None) and (self.integration_framework.is_root): 
             self = utils.apply_decorators(self, decorators, integration_type=self.integration_type)
     
         #set all passed in integrations 
@@ -135,40 +143,50 @@ class BaseIntegration:
                 setattr(self, integration, dependent_integrations.get(integration_type).get(integration))
 
         #process children
-        for child in integration_framework.children:
-            processed_integrations = {}
+        if self.integration_framework is not None: 
+            for child in self.integration_framework.children:
+                self.log("Processing node %s in %s integration framework..." %(child.id, self.integration_type))
+                processed_integrations = {}
 
-            #id of the node in the intergration framework should be the integration type
-            #the name of your list of integrations in your yaml might be plural, 
-            # i.e. "pipeline" --> "pipelines", as this feels more natural. 
-            # so if we don't get a hit then try the plural form (i.e. + "s")
-            key = child.id
-            if key not in config.keys(): 
-                key = _swap_key_plurality(key)
-                
-            for integration in config.get(key,{}).keys():
-                obj = utils.register_integration_class(self, 
-                                                        config, 
-                                                        integration,
-                                                        integration_type=child.id,
-                                                        problem_type=self.problem_type, 
-                                                        dependent_integrations=dependent_integrations,
-                                                        plugin_mods=plugin_mods,
-                                                        decorators=decorators,
-                                                        skip_config_validation=skip_config_validation)
-                if obj is not None: 
-                    self.log("Loaded class %s into %s %s" %(type(getattr(self,integration)).__name__, self.integration_type, integration))
-                    processed_integrations[integration] = obj
-                else: 
-                    self.log("Unable to load class for %s: %s" %(key, integration))
+                #id of the node in the intergration framework should be the integration type
+                #the name of your list of integrations in your yaml might be plural, 
+                # i.e. "pipeline" --> "pipelines", as this feels more natural. 
+                # so if we don't get a hit then try the plural form (i.e. + "s")
+                child_integration_type = child.id
+                    
+                for integration in config.get(child_integration_type, {}).keys():
+                    #skip registration if the integration already exists in the default_integrations
+                    if integration not in self.__DEFAULT_INT__.get(child_integration_type, {}).keys():
+                        self.log("Declared %s integration: %s. Processing..." % (child_integration_type, integration))
 
-            #if integration is a leaf then we need to update other integrations with the full set
-            if child.is_leaf(): 
-                for obj in processed_integrations.values(): 
-                    obj._update_integrations(integrations=processed_integrations)
+                        obj = utils.register_integration_class(self, 
+                                                                config, 
+                                                                integration,
+                                                                integration_type=child_integration_type,
+                                                                integration_framework=child,
+                                                                problem_type=self.problem_type, 
+                                                                dependent_integrations=dependent_integrations,
+                                                                plugin_mods=plugin_mods,
+                                                                decorators=decorators,
+                                                                skip_config_validation=skip_config_validation)
+                        if obj is not None: 
+                            self.log("Loaded class %s into %s %s" %(type(getattr(self,integration)).__name__, child_integration_type, integration))
+                            processed_integrations[integration] = obj
+                        else: 
+                            self.log("Unable to load class for %s: %s" %(child_integration_type, integration))
+                    else: 
+                        self.log("Integration %s already in default integrations. Skipping..." %integration)
 
-            #add processed integrations to the dependent list so they get passed down.
-            dependent_integrations[child.id].update(processed_integrations)
+                #if integration is a leaf then we need to update other integrations with the full set
+                if child.is_leaf: 
+                    for obj in processed_integrations.values(): 
+                        obj._update_integrations(integrations=processed_integrations)
+
+                #add processed integrations to the dependent list so they get passed down.
+                if child.id not in dependent_integrations.keys(): 
+                    dependent_integrations[child.id] = processed_integrations
+                else: #update existing integration type 
+                    dependent_integrations[child.id].update(processed_integrations)
 
     def _update_integrations(self, integrations={}, *args, **kwargs):
         for integration in integrations.keys():

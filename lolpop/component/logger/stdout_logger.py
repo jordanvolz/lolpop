@@ -39,7 +39,7 @@ class StdOutLogger(BaseLogger):
                 else: 
                     msg_out = msg_out + "> ::: %s" %msg
             else: 
-                msg_out = msg_out + "::: msg"
+                msg_out = msg_out + "::: %s" %msg
             print(msg_out)
 
     def _get_level_value(self, level): 

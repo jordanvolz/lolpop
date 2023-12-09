@@ -161,27 +161,30 @@ def load_module_from_file(file_path):
     spec.loader.exec_module(mod)
     return mod 
 
-def register_integration_class(self_obj, conf, integration_type_type, integration_type="component",
+def register_integration_class(self_obj, conf, integration_type_type, 
+                               integration_type="component",
+                               integration_framework=None,
                                default_class_name=None,
                                parent_integration_type=None,
                                problem_type=None,
                                dependent_integrations={},
                                plugin_mods=[],
-                               decorators=None,
+                               decorators=[],
                                *args, **kwargs): 
     obj = None 
     integration_class_name = conf.get(integration_type, {}).get(integration_type_type, default_class_name)
     if integration_class_name is not None: 
         cl = load_class(integration_class_name, class_type=integration_type)
         if cl is not None: 
-            if decorators is not None: 
+            if len(decorators) > 0: 
                 cl = apply_decorators(cl, decorators)
+            if integration_framework is None: #try to find integration framework from children
+                arr_children = [x for x in self_obj.integration_framework.children if x.id == integration_type]
+                if len(arr_children)>0: 
+                    integration_framework= arr_children[0] #should only be one child w/ that id
             obj = cl(conf = conf.get(integration_type_type),
                      parent=self_obj, 
-                     integration_famework=[
-                         x for x in self_obj.integration_framework.children
-                         if x.id == integration_type
-                     ][0], #should only get one result
+                     integration_framework=integration_framework,
                      parent_integration_type=parent_integration_type, 
                      problem_type=problem_type,
                      dependent_integrations=dependent_integrations,
@@ -700,75 +703,47 @@ def test_plan_decorator(obj, logger, recorder, prehooks, posthooks, level="DEBUG
     return test_decorator
 
 
-def set_up_default_integrations(obj, conf,
-                              plugin_mods=[],
-                              skip_config_validation=False,
-                              dependent_integrations={}, 
-                              decorators=[], 
-                              default_integration_types=["logger", "notifier", "metadata_tracker"],
-                              component_integration_type="components"):
+def set_up_default_integrations(obj, conf, 
+                                default_integrations,
+                                plugin_mods=[],
+                                skip_config_validation=False,
+                                dependent_integrations={}, 
+                                decorators=[]
+                              ):
     
-    #these are the defaults, so if you're explicitly building one, skip this to avoid
-    #recursion error 
-    if obj.type not in default_integration_types:
-        #set up logger first because we want to pass that to all children
-        #we set this up separately from the other components in case you want access to the logger in the
-        #__init__ function
-        components = dependent_integrations.get(component_integration_type, {})
-        if "logger" not in components.keys(): #you were passed a logger from somewhere else, skip
-            logger_obj = register_integration_class(obj, conf, "logger",
-                                                    default_class_name="StdOutLogger",
-                                                    parent_integration_type=obj.integration_type,
-                                                    problem_type=obj.problem_type,
-                                                    plugin_mods=plugin_mods, 
-                                                    skip_config_validation=skip_config_validation,
-                                                )
-            if logger_obj is not None:
-                components["logger"] = logger_obj
-                obj.log("Loaded class %s into component logger" %(logger_obj.name))
-            else:
-                raise Exception("Unable to find logger class.")
-        else: 
-            setattr(obj, "logger", components["logger"])
+    #is obj type is part of the default_integration types then skip
+    #this prevent infinite recursion during the __init__ call 
+    if default_integrations.get(obj.integration_type, {}).get(obj.type, None) is None:
+        for integration_type in default_integrations.keys():
+            if integration_type not in dependent_integrations.keys(): 
+                dependent_integrations[integration_type]={}
+            integrations = dependent_integrations.get(integration_type)
+  
+            for integration in default_integrations.get(integration_type).keys(): 
+                #ignore module name
+                #skip if we already have the integration
+                if integration not in integrations.keys(): 
+                    int_obj = register_integration_class(obj, conf, integration, 
+                                                        integration_type=integration_type,
+                                                        integration_type_conf_name=integration_type, 
+                                                        default_class_name=default_integrations.get(integration_type).get(integration), 
+                                                        parent_integration_type=obj.integration_type,
+                                                        problem_type=obj.problem_type, 
+                                                        dependent_integrations=dependent_integrations,
+                                                        plugin_mods=plugin_mods,
+                                                        decorators=decorators,
+                                                        skip_config_validation=skip_config_validation,
+                                                        )
+                    if int_obj is not None: 
+                        dependent_integrations.get(integration_type).update({integration: int_obj})
+                        obj.log("Loaded class %s into %s %s" %
+                                (int_obj.name, integration_type, integration))
+                    else: 
+                        raise Exception("Unable to find %s class" %integration)
 
-        if "notifier" not in components.keys():#you were passed a notifier from somewhere else, skip
-            notifier_obj = register_integration_class(obj, conf, "notifier",
-                                                    default_class_name = "StdOutNotifier", 
-                                                    parent_integration_type=obj.integration_type,
-                                                    problem_type=obj.problem_type, 
-                                                    dependent_integrations=components,
-                                                    plugin_mods=plugin_mods, 
-                                                    skip_config_validation=skip_config_validation)
-            if notifier_obj is not None:
-                components["notifier"] = notifier_obj
-                obj.log("Loaded class %s into component notifier" %(notifier_obj.name))
-            else:
-                obj.log("Unable to load notifier component.")
-        else:
-            setattr(obj, "notifier", components["notifier"])
+                else: 
+                    setattr(obj, integration, integrations[integration])
 
-        #we also want to special handle the metadata tracker, so we'll set that up first as well and pass
-        #it to all children so they have access in __init__.
-        #it's unclear why you might not want to use a metadata tracker,
-        #but we sould consider this use case in the future
-        if "metadata_tracker" not in components.keys(): #you were passed a metadata_tracker from somewhere else, skip
-            meta_obj = register_integration_class(obj, conf, "metadata_tracker",
-                                                parent_integration_type=obj.integration_type,
-                                                problem_type=obj.problem_type, 
-                                                dependent_integrations=components,
-                                                plugin_mods=plugin_mods, 
-                                                decorators=decorators, 
-                                                skip_config_validation=skip_config_validation)
-            if meta_obj is not None:
-                components["metadata_tracker"] = meta_obj
-                obj.log("Loaded class %s into component metadata_tracker" %(obj.metadata_tracker.name))
-            else:
-                #for local dev you may turn off metadata_tracker, so let's not strictly enforce that it exists for now
-                obj.log("Unable to load metadata_tracker component.")
-        else:
-            setattr(obj, "metadata_tracker", components["metadata_tracker"])
-
-    dependent_integrations["component"] = components
     return dependent_integrations
 
 def parse_dict_string(dict_string): 
