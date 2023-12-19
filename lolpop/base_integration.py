@@ -35,6 +35,7 @@ class BaseIntegration:
                  decorators=[],
                  plugin_mods=[], 
                  plugin_paths=[],
+                 is_standalone=False,
                  *args, **kwargs):     
 
         # Integration name. Mainly going to be used for referring to this during logging, etc. 
@@ -70,6 +71,8 @@ class BaseIntegration:
         if self.parent is not None:
             self.parent_integration_type = parent.integration_type
         self.problem_type = problem_type
+        if (self.problem_type == "Unknown" or self.problem_type is None) and self.parent is not None: 
+            self.problem_type = self.parent.problem_type
 
         #get configuration 
         config = utils.get_conf(conf)
@@ -80,7 +83,7 @@ class BaseIntegration:
             integration_framework = config.get("integration_framework", {})
             if len(integration_framework) > 0: #framework provided via conf
                 self.integration_framework = _get_integration_framework_tree(integration_framework)
-            elif self.parent is None: # no parent, so assume we are at the root and get the default
+            elif self.parent is None and not is_standalone: # no parent, so assume we are at the root and get the default
                 self.integration_framework = _get_default_integration_framework()
             else: #no framework provided and we have a parent, so not root, assume we are being dynamically created somewhere, so don't try to traverse the framework
                 pass 
@@ -177,16 +180,21 @@ class BaseIntegration:
                     else: 
                         self.log("Integration %s already in default integrations. Skipping..." %integration)
 
-                #if integration is a leaf then we need to update other integrations with the full set
-                if child.is_leaf: 
-                    for obj in processed_integrations.values(): 
-                        obj._update_integrations(integrations=processed_integrations)
+                ##if integration is a leaf then we need to update other integrations with the full set
+                #if child.is_leaf: 
+                #    for obj in processed_integrations.values(): 
+                #        obj._update_integrations(integrations=processed_integrations)
 
                 #add processed integrations to the dependent list so they get passed down.
                 if child.id not in dependent_integrations.keys(): 
                     dependent_integrations[child.id] = processed_integrations
                 else: #update existing integration type 
                     dependent_integrations[child.id].update(processed_integrations)
+
+                #if integration is a leaf then we need to update other integrations with the full set
+                if child.is_leaf:
+                    for obj in dependent_integrations[child.id].values():
+                        obj._update_integrations(integrations=dependent_integrations[child.id])
 
     def _update_integrations(self, integrations={}, *args, **kwargs):
         for integration in integrations.keys():
@@ -198,6 +206,9 @@ class BaseIntegration:
             #check to see if missing integrations are passed in
             for integration_type in missing.keys(): 
                 for integration in missing.get(integration_type): 
+                    #make sure to check for class-specific requirements
+                    if "|" in integration: 
+                        integration = integration.split("|")[0]
                     if integrations.get(integration_type,{}).get(integration) is not None: 
                         total_missing = total_missing - 1
             if total_missing > 0:

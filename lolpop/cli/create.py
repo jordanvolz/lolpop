@@ -135,7 +135,7 @@ def create_documentation(
     documentation_format: str = typer.Option(
         "markdown", "--documentation-format", "-d", help="The format you would like the documentation to be written in.")
 ):
-    chatbot = load_chatbot(generator_class, json.loads(generator_kwargs))
+    chatbot = load_chatbot(generator_class, **json.loads(generator_kwargs))
     class_code, num_lines = get_source_from_file(source_file, class_name)
 
     if num_lines > 0: 
@@ -175,7 +175,7 @@ def create_tests(
         None, "--output-path", "-o", help="The location to save the documentation"),
     testing_framework: str = typer.Option("pytest", "--testing-framework", "-t", help="The testing framework you would like the tests to be written in.")
 ):
-    chatbot = load_chatbot(generator_class)
+    chatbot = load_chatbot(generator_class, **json.loads(generator_kwargs))
     class_code, num_lines = get_source_from_file(source_file, class_name)
     
     if num_lines > 0:
@@ -223,7 +223,7 @@ def create_docstrings(
         "Google", "--docstring-format", "-d", help="The format you would like the docstring to be written in.")
 
     ):
-    chatbot = load_chatbot(generator_class)
+    chatbot = load_chatbot(generator_class, **json.loads(generator_kwargs))
     class_code, num_lines = get_source_from_file(source_file, class_name)
 
     if num_lines > 0:
@@ -254,11 +254,13 @@ def create_docstrings(
 
 
 
-def load_chatbot(generator_class):
+def load_chatbot(generator_class, **kwargs):
     typer.secho("Loading generator class %s..." % generator_class, fg="blue")
     generator_cl = utils.load_class(generator_class, "component")
     logger_cl = utils.load_class("StdOutLogger", "component")
-    chatbot = generator_cl(components={"logger": logger_cl()})
+    chatbot = generator_cl(dependent_integrations={"component": {"logger": logger_cl()}}, 
+                           is_standalone=True, 
+                           **kwargs)
     #suppress logging/notifying to reduce cli noise 
     chatbot.suppress_logger = True
     chatbot.suppress_notifier = True

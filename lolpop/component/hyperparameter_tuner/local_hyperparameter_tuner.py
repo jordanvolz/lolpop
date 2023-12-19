@@ -6,7 +6,7 @@ class LocalHyperparameterTuner(BaseHyperparameterTuner):
 
     __REQUIRED_CONF__ = {
         "config": ["training_params", "metrics", "perf_metric"], 
-        "components": ["metadata_tracker", "metrics_tracker", "resource_version_control"]
+        "component": ["metadata_tracker", "metrics_tracker", "resource_version_control"]
         }
 
     def run_experiment(self, data, model_version, *args, **kwargs): 

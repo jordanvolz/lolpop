@@ -69,7 +69,9 @@ def package(
 
     typer.secho("Initializing class %s with config file %s" %
                 (packager_class, config_file), fg="blue")
-    packager = packager_cl(conf=config_file, skip_config_validation=skip_validation,
+    packager = packager_cl(conf=config_file, 
+                           is_standalone=True,
+                           skip_config_validation=skip_validation,
                            *packager_args, **json.loads(packager_kwargs))
     typer.secho("Initialized!", fg="green")
 
@@ -119,7 +121,9 @@ def build(
     typer.secho("Loaded %s!" % deployer_class, fg="green")
 
     typer.secho("Initializing class %s with config file %s" %(deployer_class, config_file), fg="blue")
-    deployer = deployer_cl(conf=config_file, skip_config_validation=skip_validation,
+    deployer = deployer_cl(conf=config_file, 
+                           is_standalone=True,
+                           skip_config_validation=skip_validation,
                            *deployer_args, **json.loads(deployer_kwargs))
     typer.secho("Initialized!", fg="green")
     
@@ -176,7 +180,9 @@ def run(
 
     typer.secho("Initializing class %s with config file %s" %
                 (deployer_class, config_file), fg="blue")
-    deployer = deployer_cl(conf=config_file, skip_config_validation=skip_validation,
+    deployer = deployer_cl(conf=config_file, 
+                           is_standalone=True, 
+                           skip_config_validation=skip_validation,
                            *deployer_args, **json.loads(deployer_kwargs))
     typer.secho("Initialized!", fg="green")
 
@@ -236,7 +242,9 @@ def stop(
 
     typer.secho("Initializing class %s with config file %s" %
                 (deployer_class, config_file), fg="blue")
-    deployer = deployer_cl(conf=config_file, skip_config_validation=skip_validation,
+    deployer = deployer_cl(conf=config_file, 
+                           is_standalone=True, 
+                           skip_config_validation=skip_validation,
                            *deployer_args, **json.loads(deployer_kwargs))
     typer.secho("Initialized!", fg="green")
 

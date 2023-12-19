@@ -7,7 +7,7 @@ class MetaflowClassificationRunner(BaseRunner):
 
     __REQUIRED_CONF__ = {
         "pipelines": ["process", "train", "deploy", "predict"],
-        "components": ["metadata_tracker", "metrics_tracker", "resource_version_control"],
+        "component": ["metadata_tracker", "metrics_tracker", "resource_version_control"],
         "config": ["train_data", "eval_data", "prediction_data", "model_target", "drop_columns"]
     }
 

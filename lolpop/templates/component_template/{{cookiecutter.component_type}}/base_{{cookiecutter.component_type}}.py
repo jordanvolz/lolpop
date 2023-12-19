@@ -12,10 +12,10 @@ class Base{{cookiecutter.ComponentType}}(BaseComponent):
         "config": {}
     }
 
-    def __init__(self, conf, pipeline_conf, runner_conf, **kwargs):
+    def __init__(self, conf, **kwargs):
         self.__file_path__ = __file__
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, **kwargs)
+        super().__init__(conf, **kwargs)
 
     # Write your functions here. The Base Class should primarily just implement an interface for 
     # other classes to implement.   

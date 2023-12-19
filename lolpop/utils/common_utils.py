@@ -165,7 +165,6 @@ def register_integration_class(self_obj, conf, integration_type_type,
                                integration_type="component",
                                integration_framework=None,
                                default_class_name=None,
-                               parent_integration_type=None,
                                problem_type=None,
                                dependent_integrations={},
                                plugin_mods=[],
@@ -185,7 +184,6 @@ def register_integration_class(self_obj, conf, integration_type_type,
             obj = cl(conf = conf.get(integration_type_type),
                      parent=self_obj, 
                      integration_framework=integration_framework,
-                     parent_integration_type=parent_integration_type, 
                      problem_type=problem_type,
                      dependent_integrations=dependent_integrations,
                      plugin_mods=plugin_mods,
@@ -193,41 +191,6 @@ def register_integration_class(self_obj, conf, integration_type_type,
                      *args, **kwargs)
             setattr(self_obj, integration_type_type, obj)
     return obj
-
-##register component class as an attribute of the provided object
-#def register_component_class(self_obj, conf, component_type, default_class_name=None, 
-#                             pipeline_conf={}, runner_conf={}, parent_integration_type="runner",
-#                             problem_type = None, dependent_components = {}, plugin_mods=[], 
-#                             decorators=None, *args, **kwargs): 
-#    obj = None
-#    component_class_name = conf.get("components",{}).get(component_type, default_class_name)
-#    if component_class_name is not None:
-#        cl = load_class(component_class_name) 
-#        if cl is not None: 
-#            if decorators is not None: 
-#                cl = apply_decorators(cl, decorators)
-#            obj = cl(conf=conf.get(component_type, {}), pipeline_conf=pipeline_conf, runner_conf=runner_conf,
-#                     parent_integration_type=self_obj.integration_type, problem_type=problem_type, 
-#                     components=dependent_components, plugin_mods=plugin_mods, *args, **kwargs)
-#            setattr(self_obj, component_type, obj)
-#    return obj 
-
-##registers pipeline as an attribute of the provided object
-#def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=None, runner_conf = {}, 
-#                            parent_integration_type="runner", problem_type=None, dependent_components={},
-#                            plugin_mods=[], decorators=None, *args, **kwargs): 
-#    obj = None 
-#    pipeline_class_name = conf.get("pipelines",{}).get(pipeline_type, default_class_name)
-#    if pipeline_class_name is not None: 
-#        cl = load_class(pipeline_class_name, class_type="pipeline")
-#        if cl is not None: 
-#            if decorators is not None: 
-#                cl = apply_decorators(cl, decorators, integration_type="pipeline")
-#            obj = cl(conf=conf.get(pipeline_type, {}), runner_conf=runner_conf, parent_integration_type=self_obj.integration_type,
-#                     problem_type=problem_type, components=dependent_components, 
-#                     plugin_mods=plugin_mods, decorators=decorators, *args, **kwargs)
-#            setattr(self_obj, pipeline_type, obj)
-#    return obj
 
 def lower_conf(conf): 
     return {k.lower():v for k,v in conf.items()}
@@ -243,15 +206,6 @@ def copy_config_into(conf, default_conf):
 #validates configuration with the required conf specified
 def validate_conf(config, required_conf):
     conf = config.copy()
-    #convert int_objs dict into primitives
-    #integrations = OmegaConf.create({k:type(v).__name__ for k,v in int_objs.items()})
-    ##updates conf.components with components. 
-    ##we want local config values to overwrite globals, so we do a two step update
-    #if conf.get("components", None) is None: 
-    #    conf["components"]=components
-    #else: 
-    #    components.update(conf.get("components",{}))
-    #    conf.get("components",{}).update(components)
 
     missing = {}
     total_missing = 0
@@ -546,7 +500,7 @@ def chunker(seq, size):
 #generates a test plan from a configuration file
 def generate_test_plan(config, test_plan={}, parent=None, logger=None, test_recorder=None): 
     config = get_conf(config)
-    components = config.pop("components", {})
+    components = config.pop("component", {})
     #set up logger
     if logger is None: 
         logger_cl = load_class(components.get("test_logger",None))

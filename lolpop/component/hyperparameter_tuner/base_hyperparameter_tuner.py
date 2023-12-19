@@ -7,7 +7,7 @@ from typing import Any
 
 class BaseHyperparameterTuner(BaseComponent): 
     __REQUIRED_CONF__ = {
-        "components": ["metadata_tracker", "resource_version_control", "metrics_tracker"],
+        "component": ["metadata_tracker", "resource_version_control", "metrics_tracker"],
         "config" : ["training_params", "metrics", "perf_metric"],
     }
     
@@ -20,11 +20,16 @@ class BaseHyperparameterTuner(BaseComponent):
 
         #load model trainer and build model
         model_cl = utils.load_class(algo)
-        dependent_components = {"logger" : self.logger, "notifier" : self.notifier,  "metadata_tracker" :self.metadata_tracker, "metrics_tracker": self.metrics_tracker, "resource_version_control": self.resource_version_control}
+        dependent_integrations = {"component": {"logger": self.logger, "notifier": self.notifier,  "metadata_tracker": self.metadata_tracker,
+                                  "metrics_tracker": self.metrics_tracker, "resource_version_control": self.resource_version_control}}
         if hasattr(self, "feature_transformer"): #pass the feature_transformer if it's defined at the pipeline level 
-            dependent_components["feature_transformer"] = self.feature_transformer
-        model = model_cl(conf=trainer_config, pipeline_conf=self.pipeline_conf, runner_conf=self.runner_conf, 
-                         parent_integration_type=self.integration_type, problem_type=self.problem_type, params=params, components=dependent_components)
+            dependent_integrations.get("component").update({"feature_transformer": self.feature_transformer})
+        model = model_cl(conf=trainer_config, 
+                         parent=self,
+                         is_standalone=True,  
+                         problem_type=self.problem_type, 
+                         params=params, 
+                         dependent_integrations=dependent_integrations)
 
         #now fit model 
         model_obj = model.transform_and_fit(data)

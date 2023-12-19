@@ -1,9 +1,9 @@
 #runner config
-pipelines: 
+pipeline: 
   process: OfflineProcess 
   train: OfflineTrain
   predict: OfflinePredict
-components: 
+component: 
   metadata_tracker: MLFlowMetadataTracker
   notifier: StdOutNotifier
   resource_version_control: BaseResourceVersionControl
@@ -22,14 +22,14 @@ decorators:
 
 #pipelines config
 process: 
-  components: 
+  component: 
     data_transformer: LocalDataTransformer
   data_transformer: 
     config: 
       transformer_path: process_titanic.py
 
 train: 
-  components: 
+  component: 
     data_splitter: LocalDataSplitter
     model_trainer: XGBoostModelTrainer
   data_splitter: 
@@ -52,7 +52,7 @@ train:
       retrain_all: True 
 
 predict: 
-  components: 
+  component: 
     data_connector: LocalDataConnector
   config: 
     skip_prediction_explanations: True 

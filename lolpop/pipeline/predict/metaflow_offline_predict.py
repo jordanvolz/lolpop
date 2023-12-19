@@ -10,7 +10,7 @@ PLUGIN_PATHS = "plugin_paths.txt"
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class MetaflowOfflinePredict(BasePredict):
     __REQUIRED_CONF__ = {
-        "components": ["data_connector", "metadata_tracker", "resource_version_control", "model_explainer", "data_checker", "data_profiler"],
+        "component": ["data_connector", "metadata_tracker", "resource_version_control", "model_explainer", "data_checker", "data_profiler"],
         "config": []
     }
 

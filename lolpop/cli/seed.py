@@ -34,8 +34,10 @@ def seed_file(
     typer.secho("Loading data connector class %s" % data_connector_class, fg="blue")
     data_connector_cl = utils.load_class(data_connector_class, "component")
     logger_cl = utils.load_class("StdOutLogger", "component")
-    data_connector = data_connector_cl(conf={}, pipeline_conf={}, runner_conf={}, components={
-                                       "logger": logger_cl()}, **json.loads(data_connector_kwargs))
+    data_connector = data_connector_cl(conf={}, 
+                                       dependent_integrations={"component": {"logger": logger_cl()}}, 
+                                       is_standalone=True,
+                                       **json.loads(data_connector_kwargs))
     data_connector.suppress_logger = True
     data_connector.suppress_notifier = True
     typer.secho("Successfully loaded data connector class %s" %

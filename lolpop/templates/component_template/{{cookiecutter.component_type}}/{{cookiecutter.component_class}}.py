@@ -14,9 +14,9 @@ class {{cookiecutter.ComponentClass}}(Base{{cookiecutter.ComponentType}}):
     #    "config": {}
     #}
 
-    def __init__(self, conf, pipeline_conf, runner_conf, **kwargs):
+    def __init__(self, conf, **kwargs):
         #set normal config
-        super().__init__(conf, pipeline_conf, runner_conf, **kwargs)
+        super().__init__(conf, **kwargs)
         #Add any additional class initialization code here.
 
     # Write your functions here. Implement Base class functions and actually write them! 

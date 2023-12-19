@@ -3,7 +3,7 @@ from typing import Any
 
 
 class BaseFeatureTransformer(BaseComponent):
-    __REQUIRED_CONF__ = {"components": ["resource_version_control", "metadata_tracker"]
+    __REQUIRED_CONF__ = {"component": ["resource_version_control", "metadata_tracker"]
                          }
     
     def fit(self, data, *args, **kwargs) -> Any: 
