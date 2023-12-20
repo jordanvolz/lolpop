@@ -33,8 +33,9 @@ def create_nested_run(parent_run):
         #if the parent is not the active run, make it the active run so the nested run
         #is properly placed under the parent run
         if active_run.info.run_id != parent_run.info.run_id: 
+            mlflow.end_run() #explicitly end run ... this used to not be necessary but seems to be now
             mlflow.start_run(run_id = parent_run.info.run_id)
-    else: #we have no active run, so we ened ot start the parent run
+    else: #we have no active run, so we need to start the parent run
         mlflow.start_run(run_id=parent_run.info.run_id)
     #create nested run under parent
     run = mlflow.start_run(experiment_id=parent_run.info.experiment_id, nested=True)

@@ -152,9 +152,6 @@ class BaseIntegration:
                 processed_integrations = {}
 
                 #id of the node in the intergration framework should be the integration type
-                #the name of your list of integrations in your yaml might be plural, 
-                # i.e. "pipeline" --> "pipelines", as this feels more natural. 
-                # so if we don't get a hit then try the plural form (i.e. + "s")
                 child_integration_type = child.id
                     
                 for integration in config.get(child_integration_type, {}).keys():

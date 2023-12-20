@@ -46,10 +46,6 @@ def fake_component_config(tmp_path_factory):
             }
         },
         "problem_type" : "fake_problem",
-        "component" : {
-            "logger": StdOutLogger({}),
-            "notifier": StdOutNotifier({}),
-        },
     }
 
 #def generate_required_conf(required_conf):

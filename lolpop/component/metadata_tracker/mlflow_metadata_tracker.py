@@ -12,15 +12,17 @@ import json
                              utils.log_execution(), 
                              mlflow_utils.check_active_mlflow_run(mlflow)])
 class MLFlowMetadataTracker(BaseMetadataTracker):
-    #Override required or default configurations here for your class
-    ##Add required configuration here
-    __REQUIRED_CONF__ = {
-        "config": ["mlflow_tracking_uri", "mlflow_experiment_name"]
-    }
-    ##Add default configuration here
-    #__DEFAULT_CONF__ = {
-    #    "config": {}
+    
+    #__REQUIRED_CONF__ = {
+    #    "config": ["mlflow_tracking_uri", "mlflow_experiment_name"]
     #}
+    
+    __DEFAULT_CONF__ = {
+        "config": {
+                "mlflow_tracking_uri" : "./mlruns",
+                "mlflow_experiment_name": "lolpop"
+                }
+    }
 
     def __init__(self, *args, **kwargs):
         #set normal config
@@ -420,14 +422,18 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         if ref_model is not None:
             config = ref_model.config
             params = ref_model.params
+            parent = ref_model.parent #want to inherit parent's config (i.e. from hyperparameter tuner and train config)
+            problem_type = ref_model.problem_type
         else:
             config = {}
             params = {}
+            parent = self
+            problem_type = self.problem_type
         
         model = model_cl(conf=config, 
-                         parent = self, 
+                         parent = parent, 
                          is_standalone=True,                        
-                         problem_type=self.problem_type, 
+                         problem_type=problem_type, 
                          params=params, 
                          dependent_integrations=dependent_integrations)
         #if you passed in a model_obj, we assume you have a pre-trained model object you wish to use

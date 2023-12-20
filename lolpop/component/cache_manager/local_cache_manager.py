@@ -42,8 +42,11 @@ class LocalCacheManager(BaseCacheManager):
         file = self.cache_dir / key
         if callable(value): 
             value = getsource(value)
-        joblib.dump(value,file)
-        self.log("Wrote file %s to cache." %file, level="DEBUG")
+        try: 
+            joblib.dump(value,file)
+            self.log("Wrote file %s to cache." %file, level="DEBUG")
+        except Exception as e: 
+            self.log("Unable to cache %s to %s: %s. Subsequent workflow runs will have to recompute this value" %(value, file, str(e)), level="WARN")
         return file 
 
     def retrieve(self, key, *args, **kwargs): 
@@ -68,7 +71,7 @@ class LocalCacheManager(BaseCacheManager):
         try: 
             out = joblib.load(file)
             self.log("Cache hit for file %s" % file, level="DEBUG")
-        except: #if file doesn't exist, it's the first time, so just pass 
+        except: #if file doesn't exist, it's the first time, so just pass   # noqa: E722
             pass 
 
         return out 

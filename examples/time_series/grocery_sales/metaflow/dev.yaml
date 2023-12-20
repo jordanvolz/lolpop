@@ -1,10 +1,10 @@
 #runner config
-pipelines: 
+pipeline: 
   process: MetaflowOfflineProcess 
   train: MetaflowOfflineTrain
   deploy: MetaflowOfflineDeploy
   predict: MetaflowOfflinePredict
-components: 
+component: 
   metadata_tracker: MLFlowMetadataTracker
   metrics_tracker: MLFlowMetricsTracker
   resource_version_control: dvcVersionControl
@@ -22,7 +22,7 @@ config:
 
 #pipelines config
 process: 
-  components: 
+  component: 
     data_transformer: DuckDBDataTransformer
     data_profiler: tslumenDataProfiler
     data_checker: StumpyMatrixProfiler
@@ -35,7 +35,7 @@ process:
       stumpy_num_discords: 5
 
 train: 
-  components: 
+  component: 
     data_splitter: LocalDataSplitter
     hyperparameter_tuner: OptunaHyperparameterTuner
     model_checker: BaseModelChecker
@@ -78,14 +78,14 @@ train:
       cv_horizon: '90 days'
 
 deploy: 
-  components: 
+  component: 
     model_repository: MLFlowModelRepository
     model_deployer: SeldonModelDeployer
 
 predict: 
-  components: 
-    data_profiler: $process.components.data_profiler
-    data_checker: $process.components.data_checker
+  component: 
+    data_profiler: $process.component.data_profiler
+    data_checker: $process.component.data_checker
     data_connector: DuckDBDataConnector
     model_explainer: BaseModelExplainer
   data_connector: 

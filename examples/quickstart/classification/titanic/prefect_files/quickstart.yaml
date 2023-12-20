@@ -17,7 +17,7 @@ config:
   model_index: PassengerId
   drop_columns: [PassengerId, Name, Ticket, Cabin, SPLIT]
   local_dir: /tmp/artifacts/
-decorators: 
+decorator: 
   orchestrator: PrefectOrchestrator
 
 #pipelines config

@@ -392,7 +392,7 @@ def decorate_all_methods(decorators):
 #sets up decorators in provided configuration
 def set_up_decorators(obj, conf, 
                       plugin_mods=None, bind_decorators=True, 
-                      decorator_integration_type="decorators", 
+                      decorator_integration_type="decorator", 
                       dependent_integrations={}): 
     #set up all decorator classes 
     decorators = []
@@ -401,7 +401,9 @@ def set_up_decorators(obj, conf,
         decorator_cl = load_class(decorator, plugin_mods=plugin_mods,self_obj=obj)
         decorator_conf = conf.get(decorator_type,{"config":{}})
         decorator_obj = decorator_cl(
-            conf=decorator_conf, dependent_integrations=dependent_integrations)
+            conf=decorator_conf,
+            is_standalone=True,
+            dependent_integrations=dependent_integrations)
         if bind_decorators: 
             setattr(obj, decorator_type, decorator_obj)
         decorators.append(decorator_obj)
