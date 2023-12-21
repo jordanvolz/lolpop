@@ -71,12 +71,13 @@ def get_push_repo(repo_path=None, logger=None):
         logger.log("Pushed repository %s. Result: %s" % (repo.working_dir, result))
     return result
 
-def load_plugins(plugin_paths=[]):
+def load_plugins(plugin_paths=None):
     plugins = []
-    for dir in plugin_paths:
-        if dir.exists():
-            plugin = load_plugin(dir)
-            plugins.append(plugin)
+    if plugin_paths is not None and len(plugin_paths) > 0:
+        for dir in plugin_paths:
+            if dir.exists():
+                plugin = load_plugin(dir)
+                plugins.append(plugin)
     return plugins
 
 def load_plugin(plugin_path, obj=None): 
@@ -166,10 +167,16 @@ def register_integration_class(self_obj, conf, integration_type_type,
                                integration_framework=None,
                                default_class_name=None,
                                problem_type=None,
-                               dependent_integrations={},
-                               plugin_mods=[],
-                               decorators=[],
+                               dependent_integrations=None,
+                               plugin_mods=None,
+                               decorators=None,
                                *args, **kwargs): 
+    if dependent_integrations is None: 
+        dependent_integrations = {}
+    if plugin_mods is None: 
+        plugin_mods = []
+    if decorators is None: 
+        decorators = []
     obj = None 
     integration_class_name = conf.get(integration_type, {}).get(integration_type_type, default_class_name)
     if integration_class_name is not None: 
@@ -285,9 +292,11 @@ def get_conf_value(var, conf):
         out = None 
     return out 
 
-def get_plugin_mods(self_obj, plugin_paths=[], file_path=None):
+def get_plugin_mods(self_obj, plugin_paths=None, file_path=None):
     # if no plugin_dir is provided, then try to use the parent directory.
     # if the parent directory is lolpop, then it is a built-in runner and we can ignore
+    if plugin_paths is None: 
+        plugin_paths = []
     if file_path is not None:
         #directory should be something like <module_name>/<runner>/<runner_type>/<runner_class>.py
         plugin_dir = os.path.dirname(os.path.dirname(
@@ -393,7 +402,9 @@ def decorate_all_methods(decorators):
 def set_up_decorators(obj, conf, 
                       plugin_mods=None, bind_decorators=True, 
                       decorator_integration_type="decorator", 
-                      dependent_integrations={}): 
+                      dependent_integrations=None): 
+    if dependent_integrations is None: 
+        dependent_integrations = {}
     #set up all decorator classes 
     decorators = []
     decorators_conf = conf.get(decorator_integration_type, {})
@@ -500,7 +511,10 @@ def chunker(seq, size):
 
 
 #generates a test plan from a configuration file
-def generate_test_plan(config, test_plan={}, parent=None, logger=None, test_recorder=None): 
+def generate_test_plan(config, test_plan=None, parent=None, logger=None, test_recorder=None): 
+    if test_plan is None: 
+        test_plan = {} 
+
     config = get_conf(config)
     components = config.pop("component", {})
     #set up logger
@@ -523,7 +537,9 @@ def generate_test_plan(config, test_plan={}, parent=None, logger=None, test_reco
     return test_plan, logger, test_recorder
 
 
-def extract_tests(config, test_plan={}, parent=None):
+def extract_tests(config, test_plan=None, parent=None):
+    if test_plan is None: 
+        test_plan = {}
     config = get_conf(config)
 
     #extract tests
@@ -661,12 +677,18 @@ def test_plan_decorator(obj, logger, recorder, prehooks, posthooks, level="DEBUG
 
 def set_up_default_integrations(obj, conf, 
                                 default_integrations,
-                                plugin_mods=[],
+                                plugin_mods=None,
                                 skip_config_validation=False,
-                                dependent_integrations={}, 
-                                decorators=[]
+                                dependent_integrations=None, 
+                                decorators=None
                               ):
-    
+    if dependent_integrations is None: 
+        dependent_integrations = {}
+    if plugin_mods is None: 
+        plugin_mods = []
+    if decorators is None: 
+        decorators = [] 
+
     #is obj type is part of the default_integration types then skip
     #this prevent infinite recursion during the __init__ call 
     if default_integrations.get(obj.integration_type, {}).get(obj.type, None) is None:

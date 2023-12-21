@@ -14,7 +14,9 @@ class BaseHyperparameterTuner(BaseComponent):
     def run_experiment(self, data, *args, **kwargs) -> Any: 
         pass 
 
-    def build_model(self, data, model_version, algo, params, trainer_config={}, *args, **kwargs) -> tuple[Any, Any]: 
+    def build_model(self, data, model_version, algo, params, trainer_config = None, *args, **kwargs) -> tuple[Any, Any]: 
+        if trainer_config is None: 
+            trainer_config = {}
         #create experiment and log params
         experiment = self.metadata_tracker.create_resource(id=None, type="experiment", parent=model_version)
 

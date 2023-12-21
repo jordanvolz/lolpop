@@ -21,7 +21,9 @@ class MLFlowMetricsTracker(BaseMetricsTracker):
     #    "config": {}
     #}
 
-    def __init__(self, dependent_integrations={}, *args, **kwargs):
+    def __init__(self, dependent_integrations=None, *args, **kwargs):
+        if dependent_integrations is None: 
+            dependent_integrations = {}
         #set normal config
         super().__init__(dependent_integrations=dependent_integrations, *args, **kwargs)
 

@@ -8,7 +8,7 @@ class MetaflowClassificationRunner(BaseRunner):
     __REQUIRED_CONF__ = {
         "pipeline": ["process", "train", "deploy", "predict"],
         "component": ["metadata_tracker", "metrics_tracker", "resource_version_control"],
-        "config": ["train_data", "eval_data", "prediction_data", "model_target", "drop_columns"]
+        "config": ["train_data", "eval_data", "prediction_data", "model_target"]
     }
 
     def __init__(self, problem_type="classification", *args, **kwargs):

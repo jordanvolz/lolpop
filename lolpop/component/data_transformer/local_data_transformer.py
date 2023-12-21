@@ -17,7 +17,10 @@ class LocalDataTransformer(BaseDataTransformer):
                    "data_connector": "LocalDataConnector"}
     }
 
-    def __init__(self, dependent_integrations={}, *args, **kwargs):
+    def __init__(self, dependent_integrations=None, *args, **kwargs):
+        if dependent_integrations is None: 
+            dependent_integrations = {}
+            
         super().__init__(dependent_integrations=dependent_integrations, *args, **kwargs)
 
         transformer_path = Path(self._get_config("transformer_path")) 

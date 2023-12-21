@@ -46,6 +46,7 @@ def workflow(
     typer.secho("Initializing class %s with config file %s" %(runner_class, config_file), fg="blue")
     runner = runner_cl(
         conf=config_file, 
+        dependent_integrations={},
         skip_config_validation=skip_validation
         )
     typer.secho("Initialized!", fg="green")

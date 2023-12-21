@@ -308,7 +308,7 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         else: #there's no real heirarchy other than this in the mlflow implementation
             return None 
         
-    def register_vc_resource(self, resource, vc_info, key=None, additional_metadata={}, *args, **kwargs):
+    def register_vc_resource(self, resource, vc_info, key=None, additional_metadata=None, *args, **kwargs):
         """Registers information received from a resource version control component into the metadata tracker
 
         Args:
@@ -317,6 +317,8 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
             key (str, optional): key to append to values to be logged. Defaults to None.
             additional_metadata (dict, optional): additionally metadat to log. Defaults to {}.
         """
+        if additional_metadata is None: 
+            additional_metadata = {}
         #check if a git commit is present. if so then we know we did an external save
         if vc_info and "hexsha" in vc_info.keys():
             uri = vc_info.get("uri")

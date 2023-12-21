@@ -1,10 +1,10 @@
 #runner config
-pipelines: 
+pipeline: 
   process: MetaflowOfflineProcess 
   train: MetaflowOfflineTrain
   deploy: MetaflowOfflineDeploy
   predict: MetaflowOfflinePredict
-components: 
+component: 
   metadata_tracker: MLFlowMetadataTracker
   metrics_tracker: MLFlowMetricsTracker
   resource_version_control: dvcVersionControl
@@ -21,7 +21,7 @@ config:
 
 #pipelines config
 process: 
-  components: 
+  component: 
     data_transformer: LocalDataTransformer
     data_profiler: EvidentlyAIDataProfiler
     data_checker: DeepchecksDataChecker
@@ -32,7 +32,7 @@ process:
       data_connector_config: 
         duckdb_path: duckdb/duck.db
 train: 
-  components: 
+  component: 
     data_splitter: LocalDataSplitter
     feature_transformer: FeatureEngineFeatureTransformer
     hyperparameter_tuner: OptunaHyperparameterTuner
@@ -93,15 +93,15 @@ train:
       retrain_all: True 
 
 deploy: 
-  components: 
+  component: 
     model_repository: MLFlowModelRepository
     model_deployer: SeldonModelDeployer
 
 predict: 
-  components: 
-    data_profiler: $process.components.data_profiler
-    model_explainer: $train.components.model_explainer
-    data_checker: $process.components.data_checker
+  component: 
+    data_profiler: $process.component.data_profiler
+    model_explainer: $train.component.model_explainer
+    data_checker: $process.component.data_checker
     data_connector: DuckDBDataConnector
   data_connector: 
     config:

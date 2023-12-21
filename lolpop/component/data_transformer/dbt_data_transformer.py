@@ -10,7 +10,10 @@ class dbtDataTransformer(BaseDataTransformer):
         "config": ["data_connector", "DBT_TARGET", "DBT_PROFILE", "DBT_PROJECT_DIR", "DBT_PROFILES_DIR"]
     }
 
-    def __init__(self, dependent_integrations={}, *args, **kwargs): 
+    def __init__(self, dependent_integrations=None, *args, **kwargs): 
+        if dependent_integrations is None: 
+            dependent_integrations = {}
+
         super().__init__(dependent_integrations=dependent_integrations, *args, **kwargs)
 
         self.dbt_config = utils.load_config(["DBT_TARGET", "DBT_PROFILE", "DBT_PROJECT_DIR", "DBT_PROFILES_DIR"], self.config)

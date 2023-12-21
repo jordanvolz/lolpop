@@ -98,18 +98,18 @@ class PrefectOrchestrator(BaseOrchestrator):
                 package_type="docker",
                 base_image="prefecthq/prefect:2-python3.9", 
                 prefect_files="prefect_files/",
-                copy_files=[],
+                copy_files=None,
                 lolpop_install_location="'lolpop[cli,prefect,mlflow,xgboost]'",
                 run_cmd = None,
                 config_file=None,
-                flow_kwargs={},
+                flow_kwargs=None,
                 dockerfile_path="Dockerfile",
                 docker_image_tag=None,
                 push_image=False,
                 skip_validation=False,
                 create_deployment=False,
                 work_pool = None, 
-                job_variables = {},
+                job_variables = None,
                 *args, **kwargs):
 
         """
@@ -136,6 +136,13 @@ class PrefectOrchestrator(BaseOrchestrator):
             work_pool (str): The workpool name associated with this package.  
             job_variables (str): Additional variables to be passed into the flow deployment to override the base deployment template. 
         """
+        if flow_kwargs is None: 
+            flow_kwargs = {}
+        if copy_files is None: 
+            copy_files = [] 
+        if job_variables is None: 
+            job_variables = {} 
+
         self.log("Building entrypoint script for prefect flow...")
 
         if config_file is None: 
@@ -205,13 +212,13 @@ class PrefectOrchestrator(BaseOrchestrator):
     def deploy(self, deployment_name, deployment_type="docker", work_pool=None,
                flow_class=None, flow_entrypoint=None,
                docker_image_name = None, k8s_deployment_manifest=None, dockerfile="Dockerfile",
-               push_image=False, job_variables={}, secret_name="prefect-secrets", num_replicas=1, 
+               push_image=False, job_variables=None, secret_name="prefect-secrets", num_replicas=1, 
                prefect_api_key="prefect-api-key", prefect_api_url="prefect-api-url", 
                image_pull_policy="Never", manifest_path="prefect_files/deployment_manifest.yaml",
                namespace="lolpop", worker_image="prefecthq/prefect:2-python3.9-kubernetes", 
                worker_deployment_manifest="prefect_files/worker_deployment_manifest.yaml",
                service_account="default",
-               flow_kwargs={}, deployment_kwargs={}, *args, **kwargs):
+               flow_kwargs=None, deployment_kwargs=None, *args, **kwargs):
         """Deploys the prefect flow
 
         Args:
@@ -240,7 +247,12 @@ class PrefectOrchestrator(BaseOrchestrator):
         Raises:
             Nothing
         """
-        
+        if flow_kwargs is None: 
+            flow_kwargs = {}
+        if deployment_kwargs is None: 
+            deployment_kwargs = {}
+        if job_variables is None: 
+            job_variables = {}         
 
         if docker_image_name is not None:
             if ":" not in docker_image_name:
@@ -432,17 +444,21 @@ class PrefectOrchestrator(BaseOrchestrator):
                                 lolpop_class = None,
                                 lolpop_entrypoint = "build_all",
                                 config_file="prefect_files/dev.yaml",
-                                flow_kwargs={}, 
+                                flow_kwargs=None, 
                                 prefect_files = "prefect_files",
                                 create_deployment=False,
                                 skip_validation=False,
                                 work_pool=None, 
-                                job_variables={}, 
+                                job_variables=None, 
                                 docker_image_name=None, 
                                 docker_image_tag="latest", 
                                 dockerfile="Dockerfile",
                                 ): 
-        
+        if flow_kwargs is None: 
+            flow_kwargs = {} 
+        if job_variables is None: 
+            job_variables = {}
+
         if lolpop_class is None: 
             raise Exception("lolpop_class must not be None!")
 
@@ -488,11 +504,11 @@ if __name__ == "__main__":
     def _make_dockerfile(self, 
                           base_image="prefecthq/prefect:2-python3.9",
                           prefect_files="prefect_files/",
-                          copy_files=[],
+                          copy_files=None,
                           lolpop_install_location="'lolpop[cli,prefect,mlflow,xgboost]'",
                           run_cmd="lolpop prefect_files/run.py",
                           dockerfile_path = "Dockerfile"):
-        if len(copy_files) > 0:
+        if copy_files is not None and len(copy_files) > 0:
             copy_files = "COPY %s ./" % " ".join(copy_files)
         else: 
             copy_files = ""
@@ -655,8 +671,10 @@ spec:
             dockerfile_path="Dockerfile",
             docker_image_tag=None,
             push_image=False,
-            docker_kwargs={}
+            docker_kwargs=None
     ): 
+        if docker_kwargs is None: 
+            docker_kwargs = {}
         if docker_image_tag is None: 
             raise Exception("docker_image_tag is None. Must provided a proper tag for the image.")
         

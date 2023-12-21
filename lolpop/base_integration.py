@@ -25,18 +25,27 @@ class BaseIntegration:
     suppress_notifier = False
 
     def __init__(self, 
-                 conf={}, 
+                 conf=None, 
                  parent=None, 
                  integration_type=None, 
-                 integration_framework = None, 
+                 integration_framework=None, 
                  problem_type="Unknown", 
                  skip_config_validation=False, 
-                 dependent_integrations={}, 
-                 decorators=[],
-                 plugin_mods=[], 
-                 plugin_paths=[],
+                 dependent_integrations=None, 
+                 decorators=None,
+                 plugin_mods=None, 
+                 plugin_paths=None,
                  is_standalone=False,
                  *args, **kwargs):     
+        
+        if dependent_integrations is None: 
+            dependent_integrations = {}
+        if decorators is None: 
+            decorators = []
+        if plugin_mods is None: 
+            plugin_mods = []
+        if plugin_paths is None: 
+            plugin_paths = []
 
         # Integration name. Mainly going to be used for referring to this during logging, etc. 
         # self.name = class name
@@ -193,21 +202,31 @@ class BaseIntegration:
                     for obj in dependent_integrations[child.id].values():
                         obj._update_integrations(integrations=dependent_integrations[child.id])
 
-    def _update_integrations(self, integrations={}, *args, **kwargs):
+    def _update_integrations(self, integrations=None, *args, **kwargs):
+        if integrations is None: 
+            integrations = {} 
         for integration in integrations.keys():
             setattr(self, integration, integrations.get(integration))
 
-    def _validate_conf(self, conf, integrations=None):   
+    def _validate_conf(self, conf, dependent_integrations):
+        integrations=dependent_integrations.copy()   
         missing, total_missing = utils.validate_conf(conf, self.__REQUIRED_CONF__)
         if total_missing > 0:
             #check to see if missing integrations are passed in
             for integration_type in missing.keys(): 
+                missing_found = []
                 for integration in missing.get(integration_type): 
                     #make sure to check for class-specific requirements
-                    if "|" in integration: 
-                        integration = integration.split("|")[0]
-                    if integrations.get(integration_type,{}).get(integration) is not None: 
+                    integration_key=integration
+                    if "|" in integration_key:
+                        integration_key = integration_key.split("|")[0]
+                    if integrations.get(integration_type, {}).get(integration_key) is not None:
+                        #if missing int is part of passed in dependent ints, then decrement count and remove from missing
                         total_missing = total_missing - 1
+                        missing_found.append(integration)
+                #need to remove after the above loop so you don't mess up the indices in the middle of a traversal
+                for key in missing_found: 
+                    missing[integration_type].remove(key)
             if total_missing > 0:
                 raise Exception("Missing the following from %s configuration: %s" % (
                     type(self).__name__, missing))
@@ -264,7 +283,10 @@ def _get_integration_framework_tree(framework_conf, parent=None):
     return node
 
 
-def _inherit_config(conf, default_conf, integration, conf_array=[]):
+def _inherit_config(conf, default_conf, integration, conf_array=None):
+
+    if conf_array is None: 
+        conf_array = []
 
     parent = integration.parent 
 
