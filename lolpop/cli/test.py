@@ -27,7 +27,7 @@ def workflow(
     test_config: Path = typer.Argument(..., help="Location of the testing configuration file."),
     integration_config: Path = typer.Option(None, help="Location of integration configuration file. Optional. If not provided, lolpop will attempt to use the testing configurationa as the runner configuration as well."),
     integration_type: str = typer.Option("runner",
-                                     help="The type of class to test: runner, pipeline, componenet, etc."),
+                                     help="The type of class to test: runner, pipeline, component, etc."),
     build_method: str = typer.Option("main",
                                      help="The method in the integration class to execute."),
     build_args: List[str] = typer.Option([], help="List of args to pass into build_method."),

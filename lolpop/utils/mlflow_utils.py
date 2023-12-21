@@ -18,7 +18,17 @@ def get_experiment(experiment_name):
     return experiment_id
 
 def create_run(client, experiment_id): 
-    #use mlflow.start_run instead of client.create_run because the latter doesn't set the active run
+    #use mlflow.start_run instead of client.create_run because the latter doesn't set the active run 
+    active_run = mlflow.active_run()
+    if active_run is not None: 
+        # if experiment id is the same as active run, then we are in a nested scenario
+        if active_run.info.experiment_id == experiment_id: 
+            return create_nested_run(active_run)
+        #if experiment id is different, then we need to shut down the active run
+        else: 
+            stop_run()
+            
+    #should no longer be an active run at this point, so we can create one:
     run = mlflow.start_run(experiment_id=experiment_id)
     #run = client.create_run(experiment_id=experiment_id)
     #tag as a parent run for filtering on previous runs
@@ -41,7 +51,7 @@ def create_nested_run(parent_run):
     run = mlflow.start_run(experiment_id=parent_run.info.experiment_id, nested=True)
     return run 
 
-def stop_run(run_id, experiment_id): 
+def stop_run(): 
     mlflow.end_run()
     #if we were in a nested run then we should end the parent run too. 
     active_run = mlflow.active_run()

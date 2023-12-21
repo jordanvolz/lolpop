@@ -398,7 +398,7 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
     def stop(self, *args, **kwargs):
         """Stop the metadata tracker run. 
         """
-        mlflow_utils.stop_run(self.run.info.run_id, self.run.info.experiment_id)
+        mlflow_utils.stop_run()
 
     #should this live in model_repository?
     def load_model(self, model_obj, model_version, ref_model, *args, **kwargs):
