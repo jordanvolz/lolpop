@@ -187,7 +187,7 @@ def register_integration_class(self_obj, conf, integration_type_type,
         if cl is not None: 
             if len(decorators) > 0: 
                 cl = apply_decorators(cl, decorators, integration_type=integration_type)
-            if integration_framework is None: #try to find integration framework from children
+            if integration_framework is None and self_obj.integration_framework is not None: #try to find integration framework from children
                 arr_children = [x for x in self_obj.integration_framework.children if x.id == integration_type]
                 if len(arr_children)>0: 
                     integration_framework= arr_children[0] #should only be one child w/ that id

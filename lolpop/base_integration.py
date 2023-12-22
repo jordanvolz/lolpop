@@ -273,6 +273,8 @@ def _get_default_integration_framework():
 
 
 def _get_integration_framework_tree(framework_conf, parent=None):
+    if len(framework_conf) > 1 and parent is None: 
+        raise Exception("ERROR: Detected more than one root node in integration framework. You may only have one one root node in your integration framework tree. Found root nodes: %s" %str(framework_conf.keys()))
     node = AnyNode()
     for k, v in framework_conf.items():
         node = AnyNode(id=k)
