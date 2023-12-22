@@ -375,7 +375,7 @@ def error_handler(func, obj):
 # Update: modified to also support being applied to a class instance.
 # Reason being that we can apply this to a runner instance. This allows us to dynamically 
 # decorate a runner, even though the decoration doesn't happen until after object instantiation
-def decorate_all_methods(decorators):
+def decorate_all_methods(decorators, skippable_methods=["log", "notify"]):
     def decorate(obj):
         decorator_list = decorators
         if not isinstance(decorator_list, list):
@@ -383,11 +383,11 @@ def decorate_all_methods(decorators):
         for attr in dir(obj):
             # we can decorate a class or an instance (in the case of a runner, which will already
             # have been instantiated when we try to decorate it). In the latter case we need to 
-            # handle it a little differenlty
+            # handle it a little differently
             cls=obj
             if not isclass(cls): 
                 cls=type(obj)
-            if callable(getattr(obj, attr)) and not attr.startswith("_") and attr !="log" and attr !="notify":
+            if callable(getattr(obj, attr)) and not attr.startswith("_") and attr not in skippable_methods:
                 func = getattr(cls,attr)
                 for decorator in decorator_list[::-1]: 
                     func = decorator(func, cls)
