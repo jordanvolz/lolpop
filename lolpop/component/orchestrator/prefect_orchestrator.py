@@ -72,6 +72,14 @@ class PrefectOrchestrator(BaseOrchestrator):
             #wrap in flow
             if obj.integration_type in self._get_config("prefect_flow_integration"):
                 flow_kwargs = self._get_config("flow_kwargs", {})
+                #note: the integration_framework object creates a "maximum recursion depth exceeded" error in prefect
+                # prefect calls prefect._vendors.fastapi.encoders.jsonable_encoder on parameters you pass into your flow
+                # for complex stuff this usually errors out and is handled safely, but the anytree object doesn't error
+                # and it seems it gets stuck in a child -> parent -> child loop until it breaks. So, we'll just remove it here.
+                # this should be safe, as the integration_framework is really only used during __init__ calls and is otherwise
+                # a cosmetic feature
+                if hasattr(obj, "integration_framework"):
+                    delattr(obj, "integration_framework")
                 return flow(func, **flow_kwargs)(*args, **kwargs)  # noqa: F821
             #wrap in task
             elif obj.integration_type in self._get_config("prefect_task_integration"):
