@@ -180,10 +180,13 @@ def register_integration_class(self_obj, conf, integration_type_type,
     obj = None 
     integration_class_name = conf.get(integration_type, {}).get(integration_type_type, default_class_name)
     if integration_class_name is not None: 
-        cl = load_class(integration_class_name, class_type=integration_type)
+        cl = load_class(integration_class_name, 
+                        class_type=integration_type,
+                        plugin_mods=plugin_mods, 
+                        self_obj=self_obj)
         if cl is not None: 
             if len(decorators) > 0: 
-                cl = apply_decorators(cl, decorators)
+                cl = apply_decorators(cl, decorators, integration_type=integration_type)
             if integration_framework is None: #try to find integration framework from children
                 arr_children = [x for x in self_obj.integration_framework.children if x.id == integration_type]
                 if len(arr_children)>0: 
@@ -421,6 +424,7 @@ def set_up_decorators(obj, conf,
 
     return decorators
 
+#apply decorators to the provided class 
 def apply_decorators(cls, decorators, integration_type="component"): 
     #apply decorators
     decorator_list = []
@@ -435,7 +439,7 @@ def apply_decorators(cls, decorators, integration_type="component"):
         if apply_decorator:
             decorator_method = getattr(decorator,decorator._get_config("decorator_method"))
             decorator_list.append(decorator_method)
-            cls = decorate_all_methods(decorator_list)(cls)
+    cls = decorate_all_methods(decorator_list)(cls)
     
     return cls
 
