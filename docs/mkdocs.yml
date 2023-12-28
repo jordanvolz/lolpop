@@ -89,6 +89,7 @@ nav:
       - Contact & Requesting Features: contact.md
   - Integrations: 
     - Overview: integrations.md
+    - BaseIntegration: base_integration.md
     - Components: 
       #- Overview: components.md
       - BaseComponent: base_component.md

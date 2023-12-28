@@ -7,6 +7,8 @@ This guide will deep dive into using lolpop's pre-built components, pipelines, a
 
 Here's an index of built-in integrations: 
 
+- Integrations: 
+    - [BaseIntegration](base_integration.md)
 - Components: 
     - [BaseComponent](base_component.md)
     - **Data Checkers**: 
@@ -90,6 +92,9 @@ Here's an index of built-in integrations:
         - [Gmail](gmail_notifier.md)
         - [SMTP](smtp_notifier.md)
         - [StdOut](stdout_notifier.md)
+    - **Orchestrators**: 
+        - [BaseOrchestrator](base_orchestrator.md)
+        - [PrefectOrchestrator](prefect_orchestrator.md)
     - **Resource Version Control**: 
         - [BaseResourceVersionControl](base_resource_version_control.md)
         - [DVC](dvc_resource_version_control.md)

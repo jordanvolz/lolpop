@@ -273,7 +273,25 @@ class BaseIntegration:
         self.config[key]=value
 
     def _print_integration_framework(self): 
-        print(RenderTree(self.integration_framework))
+        if hasattr(self, "integration_framework"):
+            print(RenderTree(self.integration_framework))
+        else: 
+            print("Object has no integration framework defined.")
+
+    def _print_integrations(self): 
+        if hasattr(self, "integration_framework"):
+            print("Integrations attached to %s %s:" %(self.integration_type, self.name))
+            for child in self.integration_framework.children: 
+                integration_type = child.id 
+                print("\n %s" %integration_type)
+                for integration in [x for x in dir(self) if (not x.startswith("_") and hasattr(getattr(self,x),"integration_type"))]:
+                    int_obj = getattr(self, integration)
+                    if getattr(int_obj,"integration_type") == integration_type: 
+                        print(" -- %s (%s)" %(integration, int_obj.name))
+        else:
+            print("Object has no integration framework defined.")
+
+
 
 
 def _get_default_integration_framework():
@@ -316,10 +334,3 @@ def _inherit_config(conf, default_conf, integration, conf_array=None):
             final_conf = utils.copy_config_into(c, final_conf)
 
         return final_conf 
-
-#super naive pluralization
-def _swap_key_plurality(key): 
-    if key[-1] == "s": 
-        return key[:-1]
-    else: 
-        return key + "s"

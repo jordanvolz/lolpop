@@ -176,7 +176,7 @@ lolpop's integration frameworks suppors any type of (yaml-compatible) name for y
 
 ## Building Custom Integrations
 
-To leverage customer integration frameworks, you'll likely need to build some custom integrations. This should be as simple as building some lolpop extensions. Please see the section on [creating extensions](building_extensions.md) for more information. 
+To leverage customer integration frameworks, you'll likely need to build some custom integrations. This should be as simple as building some lolpop extensions that inherit the `BaseIntegration` class. Please see the section on [creating extensions](building_extensions.md) for more information. 
 
 
 
