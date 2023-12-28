@@ -7,7 +7,10 @@ class XGBoostModelTrainer(BaseModelTrainer):
 
     mlflow_module = "xgboost"
 
-    def __init__(self, problem_type=None, params={}, *args, **kwargs): 
+    def __init__(self, problem_type=None, params=None, *args, **kwargs): 
+        if params is None: 
+            params = {} 
+
         #set normal config
         super().__init__(problem_type = problem_type, params=params, *args, **kwargs)
  

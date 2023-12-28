@@ -13,7 +13,7 @@ class MLFlowMetricsTracker(BaseMetricsTracker):
     #Override required or default configurations here for your class
     ##Add required configuration here
     __REQUIRED_CONF__ = {
-        "components" : ["metadata_tracker|MLFlowMetadataTracker"],
+        "component" : ["metadata_tracker|MLFlowMetadataTracker"],
         #"config": ["mlflow_tracking_uri", "mlflow_experiment_name"]
     }
     ##Add default configuration here
@@ -21,13 +21,15 @@ class MLFlowMetricsTracker(BaseMetricsTracker):
     #    "config": {}
     #}
 
-    def __init__(self, components={}, *args, **kwargs):
+    def __init__(self, dependent_integrations=None, *args, **kwargs):
+        if dependent_integrations is None: 
+            dependent_integrations = {}
         #set normal config
-        super().__init__(components=components, *args, **kwargs)
+        super().__init__(dependent_integrations=dependent_integrations, *args, **kwargs)
 
         # if we are using mlflow for metadata tracking then we won't have to set up connection to mlflow
         # if not, then we do. If would be weird to have to do this, but just in case.
-        if isinstance(components.get("metadata_tracker"), MLFlowMetadataTracker):
+        if isinstance(dependent_integrations.get("component",{}).get("metadata_tracker"), MLFlowMetadataTracker):
             self.client = self.metadata_tracker.client
             self.run = self.metadata_tracker.run
             self.url = self.metadata_tracker.url

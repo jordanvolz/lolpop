@@ -124,7 +124,7 @@ There are two special optional components that can be provided in test configura
 The configuration for these two components would look something like this within a the test configuraiton. 
 
 ```yaml title="test configuration with test_logger and test_recorder"
-components:
+component:
   test_logger: FileLogger
   test_recorder: MyTestRecorder
 test_logger: 

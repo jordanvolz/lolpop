@@ -45,19 +45,12 @@ def fake_component_config(tmp_path_factory):
                 "local_dir": str(tmp_path_factory.mktemp("pytest")),
             }
         },
-        "pipeline_conf": {},
-        "runner_conf" : {}, 
-        "parent_integration_type": "runner",
         "problem_type" : "fake_problem",
-        "components" : {
-            "logger": StdOutLogger({}),
-            "notifier": StdOutNotifier({}),
-        },
     }
 
 #def generate_required_conf(required_conf):
 #    required_components = {}
-#    components = required_conf.get("components",[])
+#    components = required_conf.get("component",[])
 #    for component in components: 
 #        if "|" in component: 
 #            component, required_class = component.split("|")

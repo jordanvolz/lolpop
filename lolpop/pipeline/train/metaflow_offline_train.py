@@ -11,7 +11,7 @@ PLUGIN_PATHS = "plugin_paths.txt"
 @utils.decorate_all_methods([utils.error_handler, utils.log_execution()])
 class MetaflowOfflineTrain(BaseTrain):
     __REQUIRED_CONF__ = {
-        "components": ["data_splitter", "metadata_tracker", "model_checker", "model_explainer", "model_visualizer", "model_bias_checker"],
+        "component": ["data_splitter", "metadata_tracker", "model_checker", "model_explainer", "model_visualizer", "model_bias_checker"],
         "config": []
     }
 

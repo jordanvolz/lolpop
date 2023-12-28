@@ -11,15 +11,17 @@ import mlflow
                              mlflow_utils.check_active_mlflow_run(mlflow)])
 class MLFlowModelRepository(BaseModelRepository):
     __REQUIRED_CONF__ = {
-        "components": ["metadata_tracker|MLFlowMetadataTracker"],
+        "component": ["metadata_tracker|MLFlowMetadataTracker"],
         "config": []
     }
 
-    def __init__(self, components={}, *args, **kwargs):
+    def __init__(self, dependent_integrations=None, *args, **kwargs):
+        if dependent_integrations is None: 
+            dependent_integrations = {}
         #set normal config
-        super().__init__(components=components, *args, **kwargs)
+        super().__init__(dependent_integrations=dependent_integrations, *args, **kwargs)
 
-        if isinstance(components.get("metadata_tracker"), MLFlowMetadataTracker):
+        if isinstance(dependent_integrations.get("component",{}).get("metadata_tracker"), MLFlowMetadataTracker):
             self.client = self.metadata_tracker.client
             self.run = self.metadata_tracker.run
             self.url = self.metadata_tracker.url

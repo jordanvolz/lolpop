@@ -11,7 +11,7 @@ class OpenAIChatbot(BaseGenAIChatbot):
         super().__init__(*args, **kwargs)
         self.api_key = utils.load_config(["OPENAI_API_KEY"], self.config).get("OPENAI_API_KEY")
 
-    def ask(self, messages=[], model="gpt-3.5-turbo", *args, **kwargs):
+    def ask(self, messages=None, model="gpt-3.5-turbo", *args, **kwargs):
         """
         Sends a chat message(s) to OpenAI's Chat API and returns the response.
 
@@ -26,7 +26,8 @@ class OpenAIChatbot(BaseGenAIChatbot):
         Raises:
             Exception: If no messages are provided to the chatbot.
         """
-        if len(messages) == 0: 
+
+        if messages is None or len(messages) == 0: 
             raise Exception("Error: No messages provided to chatbot. Please try again with non-null content.")
         else: 
             completion = openai.ChatCompletion.create(

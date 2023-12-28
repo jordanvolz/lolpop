@@ -6,7 +6,7 @@ from lolpop.utils import common_utils as utils
 class OfflineDeploy(BaseDeploy):
 
     __REQUIRED_CONF__ = {
-        "components" : [
+        "component" : [
             "metadata_tracker", 
             "resource_version_control", 
             "model_repository", 

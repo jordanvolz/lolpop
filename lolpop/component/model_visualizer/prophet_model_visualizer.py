@@ -8,7 +8,7 @@ from prophet.plot import plot_cross_validation_metric
 class ProphetModelVisualizer(BaseModelVisualizer):
 
     __REQUIRED_CONF__ = {
-        "components": ["metadata_tracker"],
+        "component": ["metadata_tracker"],
     }
 
     def generate_viz(self, data, model, model_version, forecast_period=7, forecast_frequency="D", *args, **kwargs):

@@ -10,8 +10,11 @@ class dbtDataTransformer(BaseDataTransformer):
         "config": ["data_connector", "DBT_TARGET", "DBT_PROFILE", "DBT_PROJECT_DIR", "DBT_PROFILES_DIR"]
     }
 
-    def __init__(self, components={}, *args, **kwargs): 
-        super().__init__(components=components, *args, **kwargs)
+    def __init__(self, dependent_integrations=None, *args, **kwargs): 
+        if dependent_integrations is None: 
+            dependent_integrations = {}
+
+        super().__init__(dependent_integrations=dependent_integrations, *args, **kwargs)
 
         self.dbt_config = utils.load_config(["DBT_TARGET", "DBT_PROFILE", "DBT_PROJECT_DIR", "DBT_PROFILES_DIR"], self.config)
 
@@ -22,8 +25,10 @@ class dbtDataTransformer(BaseDataTransformer):
         # in your dbt configuration
         if data_connector is not None:
             config = get_dw_config_from_profile(self.dbt_config)
-            obj = utils.register_component_class(self, config, "data_connector", data_connector, self.pipeline_conf, self.runner_conf,
-                                                 parent_integration_type=self.integration_type, problem_type=self.problem_type, dependent_components=components)
+            obj = utils.register_integration_class(self, config, "data_connector", 
+                                                   default_class_name=data_connector,  
+                                                   problem_type=self.problem_type, 
+                                                   dependent_integrations=dependent_integrations)
 
     def transform(self, source_table_name, *args, **kwargs):
         """Runs dbt workflow, specifid by dbt configuration provided. 
@@ -86,7 +91,7 @@ def get_dw_config_from_profile(dbt_config):
               for x,y in conf.items() 
               if x.lower() in config_keys}
     config = OmegaConf.create(
-        #{"components": {}, "data_connector": {"config": config}})
-        {"components": {}, "config": config})
+        #{"component": {}, "data_connector": {"config": config}})
+        {"component": {}, "config": config})
     
     return config 

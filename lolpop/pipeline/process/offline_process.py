@@ -4,7 +4,7 @@ from lolpop.utils import common_utils as utils
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class OfflineProcess(BaseProcess): 
     __REQUIRED_CONF__ = {
-        "components": ["data_transformer", "metadata_tracker", "resource_version_control", "data_profiler", "data_checker"], 
+        "component": ["data_transformer", "metadata_tracker", "resource_version_control", "data_profiler", "data_checker"], 
         "config": []
     }
 

@@ -11,7 +11,7 @@ PLUGIN_PATHS = "plugin_paths.txt"
 class MetaflowOfflineDeploy(BaseDeploy):
 
     __REQUIRED_CONF__ = {
-        "components": ["metadata_tracker", "model_repository", "resource_version_control", "model_deployer"]
+        "component": ["metadata_tracker", "model_repository", "resource_version_control", "model_deployer"]
     }
 
     def run(self, model, model_version, *args, **kwargs):

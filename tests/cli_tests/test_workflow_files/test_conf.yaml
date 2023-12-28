@@ -9,6 +9,6 @@ tests:
         hook_method: test
         hook_on_failure: continue
 
-components: 
+component: 
   metadata_tracker: BaseMetadataTracker
   resource_version_control: BaseResourceVersionControl

@@ -14,7 +14,7 @@ class BasePredict(BasePipeline):
     def track_predictions(self, prediction_job, data, *args, **kwargs):
         pass 
 
-    def analyze_prediciton_drift(self, dataset_version, prediction_job, data, *args, **kwargs):
+    def analyze_prediction_drift(self, dataset_version, prediction_job, data, *args, **kwargs):
         pass 
 
     def check_predictions(self, data, prediction_job,  *args, **kwargs):

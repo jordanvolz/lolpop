@@ -3,7 +3,7 @@ docs_dir: src
 site_description: A Software Engineering Framework for Machine Learning
 site_url: https://lolpop.readthedocs.io
 repo_url: https://github.com/jordanvolz/lolpop
-edit_url: docs/src/
+edit_uri: docs/src/
 repo_name: lolpop
 theme: 
   name: material
@@ -67,6 +67,7 @@ nav:
       - Running Workflows: running_workflows.md
       - Testing Workflows: testing_workflows.md
       - Using Orchestrators: working_with_orchestrators.md
+      - Integration Frameworks: integration_framework.md
       - lolpop Projects: lolpop_projects.md
     - Extensions: 
         - Overview: extensions.md
@@ -88,6 +89,7 @@ nav:
       - Contact & Requesting Features: contact.md
   - Integrations: 
     - Overview: integrations.md
+    - BaseIntegration: base_integration.md
     - Components: 
       #- Overview: components.md
       - BaseComponent: base_component.md
@@ -226,7 +228,7 @@ nav:
       - Metaflow: 
         - Metaflow Classification Runner: metaflow_classification_runner.md
         - Metaflow Regression Runner: metaflow_regression_runner.md 
-        - Metaflow Time-Series: metaflow_regression_runner.md
+        # - Metaflow Time-Series: metaflow_timeseries_runner.md
   - Examples: 
     - Overview: examples.md
     - Quick Start Examples: 

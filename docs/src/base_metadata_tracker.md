@@ -479,7 +479,7 @@ def stop(self, *args, **kwargs):
 The `load_model` method loads a model trainer object from the metadata tracker.
 
 ```python
-def load_model(self, model_obj, model_version, ref_model, pipeline_config={}, *args, **kwargs) -> Any:
+def load_model(self, model_obj, model_version, ref_model, *args, **kwargs) -> Any:
 ```
 
 **Arguments**:
@@ -487,7 +487,6 @@ def load_model(self, model_obj, model_version, ref_model, pipeline_config={}, *a
 - `model_obj` (object): A fitted model 
 - `model_version` (str, run): The model version to use to retrieve the model trainer
 - `ref_model` (object): A model trainer object to use as a reference. I.E. will have similar configs, etc
-- `pipeline_config` (dict, optional): pipeline config to pass. Defaults to {}.
 
 **Returns**:
 

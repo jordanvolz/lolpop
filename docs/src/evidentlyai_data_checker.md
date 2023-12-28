@@ -59,7 +59,7 @@ kwargs = {
             "local_dir": "/tmp/artifacts",
         },
     },
-    "components": {
+    "component": {
         "logger": StdOutLogger(),
     }
 }

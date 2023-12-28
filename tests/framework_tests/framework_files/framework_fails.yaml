@@ -1,0 +1,9 @@
+integration_framework: 
+  runner: 
+    widget: 
+    component: 
+      widget:
+    pipeline: 
+      component: 
+        widget:
+  style: 

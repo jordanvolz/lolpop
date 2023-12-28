@@ -5,7 +5,7 @@ from typing import Any
 
 class BaseModelChecker(BaseComponent): 
 
-    __REQUIRED_CONF__ = {"components": ["metrics_tracker"],
+    __REQUIRED_CONF__ = {"component": ["metrics_tracker"],
                          "config": ["baseline_method", "baseline_value", "perf_metric"]}
 
     def check_model(self, data, model, *args, **kwargs) -> tuple[Any, str, str]:

@@ -6,8 +6,8 @@ from lolpop.utils import common_utils as utils
 class TimeSeriesRunner(BaseRunner):
 
     __REQUIRED_CONF__ = {
-        "pipelines": ["process", "train", "deploy", "predict"],
-        "components": ["metadata_tracker", "metrics_tracker", "resource_version_control"],
+        "pipeline": ["process", "train", "deploy", "predict"],
+        "component": ["metadata_tracker", "metrics_tracker", "resource_version_control"],
         "config": ["train_data", "eval_data", "prediction_data", "model_target", "time_index"]
     }
 

@@ -2,6 +2,7 @@ import typer
 from lolpop.utils import common_utils as utils
 from pathlib import Path
 import os 
+import json 
 from typer.core import TyperGroup
 
 
@@ -24,9 +25,10 @@ def create(
     source_file: Path = typer.Argument(
         ..., help="Path to the source file."),
     datagen_class: str = typer.Option("SDVDataSynthesizer", "--datagen-class", "-c", help="Data Synthesizer class name."),
+    datagen_kwargs: str = typer.Option(
+        "{}", "--datagen-kwargs", '-k', help="Keyword arguments to apss into the Data Synthesizer Class"),
     synthesizer_class: str = typer.Option(
         "SingleTablePreset", "--synthesizer-class", "-s", help="Class name in the data synthesizer to use to build a synthesizer model."),
-
     num_rows: int = typer.Option(10000, "--num-rows", "-n", help="The number of rows to generate for the synthetic data."),
     output_path: Path = typer.Option(os.getcwd(), "--output-path", "-o", help="The location to save the generated_data"),
     evaluate_fake_data: bool = typer.Option(False, "--evaluate-fake-data", help="Run evaluator on fake data.")
@@ -34,7 +36,10 @@ def create(
     typer.secho("Loading datagen class %s" %datagen_class, fg="blue")
     datagen_cl = utils.load_class(datagen_class, "component")
     logger_cl = utils.load_class("StdOutLogger", "component")
-    data_generator = datagen_cl(components={"logger": logger_cl()})
+    data_generator = datagen_cl(
+        dependent_integrations={"component": {"logger": logger_cl()}},
+        is_standalone=True, 
+        **json.loads(datagen_kwargs))
     data_generator.suppress_logger = True 
     data_generator.suppress_notifier = True 
     typer.secho("Successfully loaded datagen class %s" % datagen_class, fg="green")

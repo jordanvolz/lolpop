@@ -12,7 +12,7 @@ matplotlib.use('Agg')
 class YellowbrickModelVisualizer(BaseModelVisualizer): 
 
     __REQUIRED_CONF__ = {
-        "components": ["metadata_tracker"]
+        "component": ["metadata_tracker"]
     }
 
     def generate_viz(self, data, model, model_version, *args, **kwargs): 

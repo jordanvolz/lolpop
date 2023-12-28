@@ -9,7 +9,7 @@ class OptunaHyperparameterTuner(BaseHyperparameterTuner):
 
     __REQUIRED_CONF__ = {
         "config": ["training_params", "metrics", "perf_metric", "local_dir"],
-        "components": ["metadata_tracker", "metrics_tracker", "resource_version_control"]}
+        "component": ["metadata_tracker", "metrics_tracker", "resource_version_control"]}
 
     __DEFAULT_CONF__  = {"config": {"param_type": "fixed", "optuna_timeout": 3600, "num_jobs": 1, "num_trials": 100}}
 

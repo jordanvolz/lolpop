@@ -12,15 +12,17 @@ import json
                              utils.log_execution(), 
                              mlflow_utils.check_active_mlflow_run(mlflow)])
 class MLFlowMetadataTracker(BaseMetadataTracker):
-    #Override required or default configurations here for your class
-    ##Add required configuration here
-    __REQUIRED_CONF__ = {
-        "config": ["mlflow_tracking_uri", "mlflow_experiment_name"]
-    }
-    ##Add default configuration here
-    #__DEFAULT_CONF__ = {
-    #    "config": {}
+    
+    #__REQUIRED_CONF__ = {
+    #    "config": ["mlflow_tracking_uri", "mlflow_experiment_name"]
     #}
+    
+    __DEFAULT_CONF__ = {
+        "config": {
+                "mlflow_tracking_uri" : "./mlruns",
+                "mlflow_experiment_name": "lolpop"
+                }
+    }
 
     def __init__(self, *args, **kwargs):
         #set normal config
@@ -306,7 +308,7 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         else: #there's no real heirarchy other than this in the mlflow implementation
             return None 
         
-    def register_vc_resource(self, resource, vc_info, key=None, additional_metadata={}, *args, **kwargs):
+    def register_vc_resource(self, resource, vc_info, key=None, additional_metadata=None, *args, **kwargs):
         """Registers information received from a resource version control component into the metadata tracker
 
         Args:
@@ -315,6 +317,8 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
             key (str, optional): key to append to values to be logged. Defaults to None.
             additional_metadata (dict, optional): additionally metadat to log. Defaults to {}.
         """
+        if additional_metadata is None: 
+            additional_metadata = {}
         #check if a git commit is present. if so then we know we did an external save
         if vc_info and "hexsha" in vc_info.keys():
             uri = vc_info.get("uri")
@@ -394,42 +398,46 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
     def stop(self, *args, **kwargs):
         """Stop the metadata tracker run. 
         """
-        mlflow_utils.stop_run(self.run.info.run_id, self.run.info.experiment_id)
+        mlflow_utils.stop_run()
 
     #should this live in model_repository?
-    def load_model(self, model_obj, model_version, ref_model, pipeline_config={}, *args, **kwargs):
+    def load_model(self, model_obj, model_version, ref_model, *args, **kwargs):
         """Load a model trainer object from the metadata tracker
 
         Args:
             model_obj (object): A fitted model 
             model_version (str, run): The model version to use to retrieve the model trainer
             ref_model (object): A model trainer object to use as a reference. I.E. will have similar configs, etc.
-            pipeline_config (dict, optional): pipeline config to pass. Defaults to {}.
 
         Returns:
             model: the model trainer object
         """
         model_trainer = self.get_metadata(model_version, "winning_experiment_model_trainer")
         model_cl = utils.load_class(model_trainer)
-        dependent_components = {"logger": self.logger, "notifier": self.notifier,  "metadata_tracker": self.metadata_tracker,
-                                "metrics_tracker": self.metrics_tracker, "resource_version_control": self.resource_version_control}
+        dependent_integrations = {"component": {"logger": self.logger, 
+                                                "notifier": self.notifier,  
+                                                "metadata_tracker": self,
+                                                "metrics_tracker": self.metrics_tracker, 
+                                                "resource_version_control": self.resource_version_control}}
         #might want to find a better way to do this next step.
         #it would be nice if you could reconstruct a model trainer class only w/ a model version object
         if ref_model is not None:
             config = ref_model.config
-            parent_integration_type = ref_model.parent_integration_type
             params = ref_model.params
-            pipeline_conf = ref_model.pipeline_conf
+            parent = ref_model.parent #want to inherit parent's config (i.e. from hyperparameter tuner and train config)
+            problem_type = ref_model.problem_type
         else:
             config = {}
-            parent_integration_type = self.integration_type
             params = {}
-            pipeline_conf = {}
-        if len(pipeline_config) > 0:
-            pipeline_conf = pipeline_config 
+            parent = self
+            problem_type = self.problem_type
         
-        model = model_cl(conf=config, pipeline_conf=pipeline_conf, runner_conf=self.runner_conf, parent_integration_type=parent_integration_type,
-                         problem_type=self.problem_type, params=params, components=dependent_components)
+        model = model_cl(conf=config, 
+                         parent = parent, 
+                         is_standalone=True,                        
+                         problem_type=problem_type, 
+                         params=params, 
+                         dependent_integrations=dependent_integrations)
         #if you passed in a model_obj, we assume you have a pre-trained model object you wish to use
         if model_obj is not None:
             model._set_model(model_obj)
@@ -445,11 +453,10 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
         
             transformer_cl = utils.load_class(transformer_class)
             transformer = transformer_cl(conf={"config": transformer_config},
-                                            pipeline_conf=pipeline_conf,
-                                            runner_conf=self.runner_conf,
-                                            parent_integration_type=self.integration_type,
+                                            parent = self, 
+                                            is_standalone=True,
                                             problem_type=self.problem_type,
-                                            components=dependent_components)
+                                            dependent_integrations=dependent_integrations)
             setattr(model, "feature_transformer", transformer)
 
             #try to fetch transformer object and set it

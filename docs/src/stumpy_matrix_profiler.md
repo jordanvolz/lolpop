@@ -64,7 +64,7 @@ kwargs = {
             "model_target": "y",
         },
     },
-    "components": {
+    "component": {
         "logger": StdOutLogger(),
     }
 }

@@ -14,7 +14,6 @@ from inspect import getsource
 import types
 from inspect import isclass
 
-
 async def async_cmd(cmd): 
     p = await asyncio.create_subprocess_exec(cmd, universal_newlines=True, shell=False)
     return p 
@@ -33,6 +32,7 @@ def execute_cmd(cmd, logger=None, run_async=False, run_background=False):
         p = subprocess.run(cmd, stdout=subprocess.PIPE,
                        universal_newlines=True, shell=False)
         return (p.stdout, p.returncode)
+    
 # pulls keys out of config or gets from env variable
 # i.e. either handle secret manager before getting here and pass in 
 # or populate via env vars
@@ -55,20 +55,29 @@ def git_commit_file(file_path, repo_path=None, msg="Commiting file from lolpop",
     repo.index.add(file_path)
     hexsha = repo.index.commit(msg).hexsha
 
+    if logger:
+        logger.log("Committed file %s." % (file_path))
+
     if push: 
-        origin = repo.remotes[0]
-        result = origin.push()
-        if logger: 
-            logger.log("Committed and pushed file %s. Result: %s" %(file_path, result[0].summary))
+        get_push_repo(repo_path, logger)
 
     return hexsha
 
-def load_plugins(plugin_paths=[]):
+def get_push_repo(repo_path=None, logger=None): 
+    repo = Repo(repo_path, search_parent_directories=True)
+    origin = repo.remotes[0]
+    result = origin.push()
+    if logger:
+        logger.log("Pushed repository %s. Result: %s" % (repo.working_dir, result))
+    return result
+
+def load_plugins(plugin_paths=None):
     plugins = []
-    for dir in plugin_paths:
-        if dir.exists():
-            plugin = load_plugin(dir)
-            plugins.append(plugin)
+    if plugin_paths is not None and len(plugin_paths) > 0:
+        for dir in plugin_paths:
+            if dir.exists():
+                plugin = load_plugin(dir)
+                plugins.append(plugin)
     return plugins
 
 def load_plugin(plugin_path, obj=None): 
@@ -153,39 +162,44 @@ def load_module_from_file(file_path):
     spec.loader.exec_module(mod)
     return mod 
 
-#register component class as an attribute of the provided object
-def register_component_class(self_obj, conf, component_type, default_class_name=None, 
-                             pipeline_conf={}, runner_conf={}, parent_integration_type="runner",
-                             problem_type = None, dependent_components = {}, plugin_mods=[], 
-                             decorators=None, *args, **kwargs): 
-    obj = None
-    component_class_name = conf.get("components",{}).get(component_type, default_class_name)
-    if component_class_name is not None:
-        cl = load_class(component_class_name) 
-        if cl is not None: 
-            if decorators is not None: 
-                cl = apply_decorators(cl, decorators)
-            obj = cl(conf=conf.get(component_type, {}), pipeline_conf=pipeline_conf, runner_conf=runner_conf,
-                     parent_integration_type=self_obj.integration_type, problem_type=problem_type, 
-                     components=dependent_components, plugin_mods=plugin_mods, *args, **kwargs)
-            setattr(self_obj, component_type, obj)
-    return obj 
-
-#registers pipeline as an attribute of the provided object
-def register_pipeline_class(self_obj, conf, pipeline_type, default_class_name=None, runner_conf = {}, 
-                            parent_integration_type="runner", problem_type=None, dependent_components={},
-                            plugin_mods=[], decorators=None, *args, **kwargs): 
+def register_integration_class(self_obj, conf, integration_type_type, 
+                               integration_type="component",
+                               integration_framework=None,
+                               default_class_name=None,
+                               problem_type=None,
+                               dependent_integrations=None,
+                               plugin_mods=None,
+                               decorators=None,
+                               *args, **kwargs): 
+    if dependent_integrations is None: 
+        dependent_integrations = {}
+    if plugin_mods is None: 
+        plugin_mods = []
+    if decorators is None: 
+        decorators = []
     obj = None 
-    pipeline_class_name = conf.get("pipelines",{}).get(pipeline_type, default_class_name)
-    if pipeline_class_name is not None: 
-        cl = load_class(pipeline_class_name, class_type="pipeline")
+    integration_class_name = conf.get(integration_type, {}).get(integration_type_type, default_class_name)
+    if integration_class_name is not None: 
+        cl = load_class(integration_class_name, 
+                        class_type=integration_type,
+                        plugin_mods=plugin_mods, 
+                        self_obj=self_obj)
         if cl is not None: 
-            if decorators is not None: 
-                cl = apply_decorators(cl, decorators, integration_type="pipeline")
-            obj = cl(conf=conf.get(pipeline_type, {}), runner_conf=runner_conf, parent_integration_type=self_obj.integration_type,
-                     problem_type=problem_type, components=dependent_components, 
-                     plugin_mods=plugin_mods, decorators=decorators, *args, **kwargs)
-            setattr(self_obj, pipeline_type, obj)
+            if len(decorators) > 0: 
+                cl = apply_decorators(cl, decorators, integration_type=integration_type)
+            if integration_framework is None and self_obj.integration_framework is not None: #try to find integration framework from children
+                arr_children = [x for x in self_obj.integration_framework.children if x.id == integration_type]
+                if len(arr_children)>0: 
+                    integration_framework= arr_children[0] #should only be one child w/ that id
+            obj = cl(conf = conf.get(integration_type_type),
+                     parent=self_obj, 
+                     integration_framework=integration_framework,
+                     problem_type=problem_type,
+                     dependent_integrations=dependent_integrations,
+                     plugin_mods=plugin_mods,
+                     decorators=decorators, 
+                     *args, **kwargs)
+            setattr(self_obj, integration_type_type, obj)
     return obj
 
 def lower_conf(conf): 
@@ -200,17 +214,8 @@ def copy_config_into(conf, default_conf):
     return updated_conf
 
 #validates configuration with the required conf specified
-def validate_conf(config, required_conf, components_objs={}):
+def validate_conf(config, required_conf):
     conf = config.copy()
-    #convert componenets_obj dict into primitives
-    components = OmegaConf.create({k:type(v).__name__ for k,v in components_objs.items()})
-    #updates conf.components with components. 
-    #we want local config values to overwrite glboals, so we do a two step update
-    if conf.get("components", None) is None: 
-        conf["components"]=components
-    else: 
-        components.update(conf.get("components",{}))
-        conf.get("components",{}).update(components)
 
     missing = {}
     total_missing = 0
@@ -268,7 +273,7 @@ def resolve_conf_variables(conf, main_conf=None):
 def get_conf(conf_obj): 
     if isinstance(conf_obj, str) or isinstance(conf_obj, Path):
         conf = OmegaConf.load(conf_obj)
-    elif type(conf_obj) is dict: 
+    elif isinstance(conf_obj, dict): 
         conf = OmegaConf.create(conf_obj)
     elif isinstance(conf_obj, dictconfig.DictConfig):
         conf = conf_obj
@@ -290,9 +295,11 @@ def get_conf_value(var, conf):
         out = None 
     return out 
 
-def get_plugin_mods(self_obj, plugin_paths=[], file_path=None):
+def get_plugin_mods(self_obj, plugin_paths=None, file_path=None):
     # if no plugin_dir is provided, then try to use the parent directory.
     # if the parent directory is lolpop, then it is a built-in runner and we can ignore
+    if plugin_paths is None: 
+        plugin_paths = []
     if file_path is not None:
         #directory should be something like <module_name>/<runner>/<runner_type>/<runner_class>.py
         plugin_dir = os.path.dirname(os.path.dirname(
@@ -371,7 +378,7 @@ def error_handler(func, obj):
 # Update: modified to also support being applied to a class instance.
 # Reason being that we can apply this to a runner instance. This allows us to dynamically 
 # decorate a runner, even though the decoration doesn't happen until after object instantiation
-def decorate_all_methods(decorators):
+def decorate_all_methods(decorators, skippable_methods=["log", "notify"]):
     def decorate(obj):
         decorator_list = decorators
         if not isinstance(decorator_list, list):
@@ -379,11 +386,11 @@ def decorate_all_methods(decorators):
         for attr in dir(obj):
             # we can decorate a class or an instance (in the case of a runner, which will already
             # have been instantiated when we try to decorate it). In the latter case we need to 
-            # handle it a little differenlty
+            # handle it a little differently
             cls=obj
             if not isclass(cls): 
                 cls=type(obj)
-            if callable(getattr(obj, attr)) and not attr.startswith("_") and attr !="log" and attr !="notify":
+            if callable(getattr(obj, attr)) and not attr.startswith("_") and attr not in skippable_methods:
                 func = getattr(cls,attr)
                 for decorator in decorator_list[::-1]: 
                     func = decorator(func, cls)
@@ -395,20 +402,29 @@ def decorate_all_methods(decorators):
     return decorate
 
 #sets up decorators in provided configuration
-def set_up_decorators(obj, conf, plugin_mods=None, bind_decorators=True, components={}): 
+def set_up_decorators(obj, conf, 
+                      plugin_mods=None, bind_decorators=True, 
+                      decorator_integration_type="decorator", 
+                      dependent_integrations=None): 
+    if dependent_integrations is None: 
+        dependent_integrations = {}
     #set up all decorator classes 
     decorators = []
-    decorators_conf = conf.get("decorators",{})
+    decorators_conf = conf.get(decorator_integration_type, {})
     for decorator_type, decorator in decorators_conf.items(): 
         decorator_cl = load_class(decorator, plugin_mods=plugin_mods,self_obj=obj)
         decorator_conf = conf.get(decorator_type,{"config":{}})
-        decorator_obj = decorator_cl(conf=decorator_conf,components=components)
+        decorator_obj = decorator_cl(
+            conf=decorator_conf,
+            is_standalone=True,
+            dependent_integrations=dependent_integrations)
         if bind_decorators: 
             setattr(obj, decorator_type, decorator_obj)
         decorators.append(decorator_obj)
 
     return decorators
 
+#apply decorators to the provided class 
 def apply_decorators(cls, decorators, integration_type="component"): 
     #apply decorators
     decorator_list = []
@@ -423,22 +439,22 @@ def apply_decorators(cls, decorators, integration_type="component"):
         if apply_decorator:
             decorator_method = getattr(decorator,decorator._get_config("decorator_method"))
             decorator_list.append(decorator_method)
-            cls = decorate_all_methods(decorator_list)(cls)
+    cls = decorate_all_methods(decorator_list)(cls)
     
     return cls
 
-def wrap_runner_functions(obj, decorators):
-        decorator_list = decorators
-        if not isinstance(decorator_list, list):
-            decorator_list=[decorator_list]
-        for attr in dir(obj):
-            if callable(getattr(obj, attr)) and not attr.startswith("_") and attr !="log" and attr !="notify":
-                func = getattr(type(obj),attr)
-                for decorator in decorator_list[::-1]: 
-                    decorator_method = getattr(decorator, decorator._get_config("decorator_method"))
-                    func = decorator_method(func, type(obj))
-                setattr(obj, attr, types.MethodType(func, obj))
-        return obj
+#def wrap_runner_functions(obj, decorators):
+#        decorator_list = decorators
+#        if not isinstance(decorator_list, list):
+#            decorator_list=[decorator_list]
+#        for attr in dir(obj):
+#            if callable(getattr(obj, attr)) and not attr.startswith("_") and attr !="log" and attr !="notify":
+#                func = getattr(type(obj),attr)
+#                for decorator in decorator_list[::-1]: 
+#                    decorator_method = getattr(decorator, decorator._get_config("decorator_method"))
+#                    func = decorator_method(func, type(obj))
+#                setattr(obj, attr, types.MethodType(func, obj))
+#        return obj
     
 
 #compares two dataframes and tries to convert columns so that match types if they don't otherwise
@@ -499,9 +515,12 @@ def chunker(seq, size):
 
 
 #generates a test plan from a configuration file
-def generate_test_plan(config, test_plan={}, parent=None, logger=None, test_recorder=None): 
+def generate_test_plan(config, test_plan=None, parent=None, logger=None, test_recorder=None): 
+    if test_plan is None: 
+        test_plan = {} 
+
     config = get_conf(config)
-    components = config.pop("components", {})
+    components = config.pop("component", {})
     #set up logger
     if logger is None: 
         logger_cl = load_class(components.get("test_logger",None))
@@ -522,7 +541,9 @@ def generate_test_plan(config, test_plan={}, parent=None, logger=None, test_reco
     return test_plan, logger, test_recorder
 
 
-def extract_tests(config, test_plan={}, parent=None):
+def extract_tests(config, test_plan=None, parent=None):
+    if test_plan is None: 
+        test_plan = {}
     config = get_conf(config)
 
     #extract tests
@@ -658,65 +679,54 @@ def test_plan_decorator(obj, logger, recorder, prehooks, posthooks, level="DEBUG
     return test_decorator
 
 
-def set_up_default_components(obj, conf, runner_conf,
-                              plugin_mods=[],
-                              skip_config_validation=False,
-                              components={}, 
-                              decorators=[]):
-    
-    #these are the defaults, so if you're explicitly building one, skip this to avoid
-    #recursion error 
-    if obj.type != "logger" and obj.type != "notifier" and obj.type !="metadata_tracker":
-        #set up logger first because we want to pass that to all children
-        #we set this up separately from the other components in case you want access to the logger in the
-        #__init__ function
-        if "logger" not in components.keys(): #you were passed a logger from somewhere else, skip
-            logger_obj = register_component_class(obj, conf, "logger", default_class_name="StdOutLogger",
-                                                  runner_conf=runner_conf, parent_integration_type=obj.integration_type,
-                                                plugin_mods=plugin_mods, skip_config_validation=skip_config_validation,
-                                                )
-            if logger_obj is not None:
-                components["logger"] = logger_obj
-                obj.log("Loaded class %s into component %s" %(obj.logger.name, "logger"))
-            else:
-                raise Exception("Unable to find logger class.")
-        else: 
-            setattr(obj, "logger", components["logger"])
+def set_up_default_integrations(obj, conf, 
+                                default_integrations,
+                                plugin_mods=None,
+                                skip_config_validation=False,
+                                dependent_integrations=None, 
+                                decorators=None
+                              ):
+    if dependent_integrations is None: 
+        dependent_integrations = {}
+    if plugin_mods is None: 
+        plugin_mods = []
+    if decorators is None: 
+        decorators = [] 
 
-        if "notifier" not in components.keys():#you were passed a notifier from somewhere else, skip
-            notifier_obj = register_component_class(obj, conf, "notifier", default_class_name = "StdOutNotifier", 
-                                                    runner_conf=runner_conf, parent_integration_type=obj.integration_type,
-                                                problem_type=obj.problem_type, dependent_components=components,
-                                                plugin_mods=plugin_mods, skip_config_validation=skip_config_validation)
-            if notifier_obj is not None:
-                components["notifier"] = notifier_obj
-                obj.log("Loaded class %s into component %s" %
-                            (obj.notifier.name, "notifier"))
-            else:
-                obj.log("Unable to load notifier component.")
-        else:
-            setattr(obj, "notifier", components["notifier"])
+    #is obj type is part of the default_integration types then skip
+    #this prevent infinite recursion during the __init__ call 
+    if default_integrations.get(obj.integration_type, {}).get(obj.type, None) is None:
+        for integration_type in default_integrations.keys():
+            if integration_type not in dependent_integrations.keys(): 
+                dependent_integrations[integration_type]={}
+            integrations = dependent_integrations.get(integration_type)
+  
+            for integration in default_integrations.get(integration_type).keys(): 
+                #ignore module name
+                #skip if we already have the integration
+                if integration not in integrations.keys(): 
+                    int_obj = register_integration_class(obj, conf, integration, 
+                                                        integration_type=integration_type,
+                                                        integration_type_conf_name=integration_type, 
+                                                        default_class_name=default_integrations.get(integration_type).get(integration), 
+                                                        parent_integration_type=obj.integration_type,
+                                                        problem_type=obj.problem_type, 
+                                                        dependent_integrations=dependent_integrations,
+                                                        plugin_mods=plugin_mods,
+                                                        decorators=decorators,
+                                                        skip_config_validation=skip_config_validation,
+                                                        )
+                    if int_obj is not None: 
+                        dependent_integrations.get(integration_type).update({integration: int_obj})
+                        obj.log("Loaded class %s into %s %s" %
+                                (int_obj.name, integration_type, integration))
+                    else: 
+                        raise Exception("Unable to find %s class" %integration)
 
-        #we also want to special handle the metadata tracker, so we'll set that up first as well and pass
-        #it to all children so they have access in __init__.
-        #it's unclear why you might not want to use a metadata tracker,
-        #but we sould consider this use case in the future
-        if "metadata_tracker" not in components.keys() and obj.type !="metadata_tracker": #you were passed a metadata_tracker from somewhere else, skip
-            meta_obj = register_component_class(obj, conf, "metadata_tracker", runner_conf=runner_conf, parent_integration_type=obj.integration_type,
-                                                        problem_type=obj.problem_type, dependent_components=components,
-                                                        plugin_mods=plugin_mods, decorators=decorators, 
-                                                        skip_config_validation=skip_config_validation)
-            if meta_obj is not None:
-                components["metadata_tracker"] = meta_obj
-                obj.log("Loaded class %s into component %s" %
-                            (obj.metadata_tracker.name, "metadata_tracker"))
-            else:
-                #for local dev you may turn off metadata_tracker, so let's not strictly enforce that it exists for now
-                obj.log("Unable to load metadata_tracker component.")
-        else:
-            setattr(obj, "metadata_tracker", components["metadata_tracker"])
+                else: 
+                    setattr(obj, integration, integrations[integration])
 
-    return components
+    return dependent_integrations
 
 def parse_dict_string(dict_string): 
     return json.loads(dict_string.replace("\'", "\"").replace("False", "false").replace("True", "true"))
@@ -785,5 +795,3 @@ def compare_objects(objA, objB):
 
 def get_docker_string(image_str): 
     return image_str.lower().replace("_","-")
-
-

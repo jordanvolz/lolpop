@@ -44,7 +44,11 @@ def workflow(
     typer.secho("Loaded %s!" %runner_class, fg="green")
 
     typer.secho("Initializing class %s with config file %s" %(runner_class, config_file), fg="blue")
-    runner = runner_cl(conf=config_file, skip_config_validation=skip_validation)
+    runner = runner_cl(
+        conf=config_file, 
+        dependent_integrations={},
+        skip_config_validation=skip_validation
+        )
     typer.secho("Initialized!", fg="green")
     
     if hasattr(runner, build_method): 

@@ -145,16 +145,16 @@ def _stringify_input(self, obj, func, args, kwargs) -> str:
 ## Usage 
 
 ```yaml hl_lines="10 11"
-pipelines: 
+pipeline: 
   process: OfflineProcess 
   train: OfflineTrain
   predict: OfflinePredict
-components: 
+component: 
   metadata_tracker: MLFlowMetadataTracker
   notifier: StdOutNotifier
   resource_version_control: dvcVersionControl
   metrics_tracker: MLFlowMetricsTracker
-decorators: 
+decorator: 
   cache_manager: LocalCacheManager
 ... 
 

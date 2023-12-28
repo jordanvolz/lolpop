@@ -4,7 +4,7 @@ from lolpop.utils import common_utils as utils
 @utils.decorate_all_methods([utils.error_handler,utils.log_execution()])
 class OfflineTrain(BaseTrain): 
     __REQUIRED_CONF__ = {
-        "components": ["data_splitter", "metadata_tracker", "resource_version_control", "model_checker", "model_explainer", "model_visualizer", "model_bias_checker"], 
+        "component": ["data_splitter", "metadata_tracker", "resource_version_control", "model_checker", "model_explainer", "model_visualizer", "model_bias_checker"], 
         "config": []
     }
 

@@ -100,7 +100,7 @@ Buckle up, throw on Gavin Bryars' [iconic soundtrack](https://philipjeck.bandcam
 ## Understanding the Example
 
 !!! Note
-    The text here is exactly the same as the text in our [regression quickstart](classification_regression.md#understanding-the-example) example. The reason being that both use the same quickstart_runner.py class. The only difference is the value of the `problem_type` set during initialization of the class. 
+    The text here is exactly the same as the text in our [regression quickstart](regression.md#understanding-the-example) example. The reason being that both use the same quickstart_runner.py class. The only difference is the value of the `problem_type` set during initialization of the class. 
 
 To gain some understanding about what is happening, let's look into the `run.py` file. This is a small script that loads our runner and executes a workflow. 
 
@@ -142,7 +142,7 @@ In this method, we get the source_data_name from our runner config (i.e. `train_
 
 ```yaml title="quickstart.yaml"
 ...
-pipelines: 
+pipeline: 
   process: OfflineProcess 
   train: OfflineTrain
   predict: OfflinePredict
@@ -175,7 +175,7 @@ Here we see that this really just executes `self.data_transformer.transform`. An
 ```yaml title="quickstart.yaml"
 ...
 process: 
-  components: 
+  component: 
     data_transformer: LocalDataTransformer
   data_transformer: 
     config: 

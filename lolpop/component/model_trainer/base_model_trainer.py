@@ -9,7 +9,7 @@ from typing import Any
 class BaseModelTrainer(BaseComponent): 
 
     __REQUIRED_CONF__ = {
-        "components" : ["metadata_tracker", "resource_version_control"], 
+        "component" : ["metadata_tracker", "resource_version_control"], 
     }
 
     model = None 
@@ -29,11 +29,14 @@ class BaseModelTrainer(BaseComponent):
         if transformer_class is not None: 
             transformer_config = self.get_config("transformer_config")
             transformer_cl = utils.load_class(transformer_class)
-            dependent_components = {"logger": self.logger, "notifier": self.notifier,  
+            dependent_integrations = {"component": {"logger": self.logger, "notifier": self.notifier,
                                     "metadata_tracker": self.metadata_tracker,
-                                    "resource_version_control": self.resource_version_control}
-            self.feature_transformer = transformer_cl(conf=transformer_config, pipeline_conf=self.pipeline_conf, runner_conf=self.runner_conf,
-                                                      parent_integration_type=self.integration_type, problem_type=self.problem_type, components=dependent_components)
+                                    "resource_version_control": self.resource_version_control}}
+            self.feature_transformer = transformer_cl(conf=transformer_config, 
+                                                      parent=self, 
+                                                      is_standalone=True, 
+                                                      problem_type=self.problem_type, 
+                                                      dependent_integrations=dependent_integrations)
         
 
     def fit(self, data, *args, **kwargs) -> Any: 
