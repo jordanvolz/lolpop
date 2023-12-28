@@ -127,4 +127,3 @@ Here's an index of built-in integrations:
         - [Metaflow Regression Runner](metaflow_regression_runner.md )
     - **Time-Series**: 
         - [Time-Series Runner](timeseries_runner.md)
-        - [Metaflow Time-Series](metaflow_regression_runner.md)

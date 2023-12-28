@@ -153,7 +153,7 @@ In this method, we get the source_data_name from our runner config (i.e. `train_
 
 ```yaml title="quickstart.yaml"
 ...
-pipelines: 
+pipeline: 
   process: OfflineProcess 
   train: OfflineTrain
   predict: OfflinePredict

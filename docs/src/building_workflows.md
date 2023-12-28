@@ -39,9 +39,9 @@ self.component_type
 When constructing objects, lolpop will make all other global and pipeline-local components available to each pipeline and component. So, for example, let's say that a runner has the following configuration: 
 
 ```yaml
-pipelines: 
+pipeline: 
     ...
-components: 
+component: 
     metadata_tracker: MyMetadataTracker
     metrics_tracker: MyMetricsTracker
 ...
@@ -72,7 +72,7 @@ A number of other components are likely to be global in many of your workflows, 
 In addition to configuration key-value pairs, pipeline configuration also contains local components. These components can only be accessed within the pipeline and by other components in the pipeline. 
 
 ```yaml title="Reference pipeline configuration" 
-components: 
+component: 
     component_type: ComponentClass
     ...
 config: 
@@ -97,10 +97,10 @@ Note that pipeline type names are completely customizable by users, just like co
 Runners are the top level integration and likely the one which will be used the most. 
 
 ```yaml title="Reference runner configuration"
-pipelines: 
+pipeline: 
     pipeline_type: PipelineClass
     ... 
-components: 
+components 
     component_type: ComponentClass
     ...
 config: 

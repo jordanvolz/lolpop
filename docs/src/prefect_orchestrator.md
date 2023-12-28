@@ -290,7 +290,7 @@ Orchestrators are intended to be attached to lolpop workflows by specifying the 
 
 ```yaml title="dev.yaml"
 ...
-decorators: 
+decorator: 
     orchestrator: PrefectOrchestrator
 
 orchestrator: 

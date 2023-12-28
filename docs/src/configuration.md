@@ -11,11 +11,11 @@ Configuration can be provided to lolpop in one of two ways: either via a `yaml` 
 While initializing a component, pipeline, or runner, users can provide configuration via the `conf` parameter. This can either be a string containing a path to a `yaml` file or a python dictionary of configuration values. So, both of the following are valid: 
 
 ```yaml title="my_conf.yaml"
-pipelines: 
+pipeline: 
     process : MyProcessPipeline 
     train : MyTrainingPipeline
     predict : MyPredictionPipeline
-components: 
+component: 
     metadata_tracker : MLFlowMetadataTracker
 config: 
     train_data: /path/to/train.csv
@@ -29,12 +29,12 @@ runner = MyRunner(conf=config_file)
 
 ```python title="Dictionary-based configuration"
 config = {
-    "pipelines": {
+    "pipeline": {
         "process" : "MyProcessPipeline", 
         "train" : "MyTrainingPipeline", 
         "predict" : "MyPredictionPipeline",
     },
-    "components": {
+    "component": {
         "metadata_tracker" : "MLFlowMetadataTracker",
     }
     "config": {
@@ -58,7 +58,7 @@ In some instances, you may have duplicate values used in your configuration. Hav
 ```yaml
 ...
 process: 
-    components: 
+    component: 
         data_connector: SnowflakeDataConnector
     data_connector: 
         config: 
@@ -70,7 +70,7 @@ process:
             snowflake_warehouse: model_preproc
 ...
 predict: 
-    components: 
+    component: 
         data_connector: SnowflakeDataConnector
     data_connector: 
         config: 
@@ -100,8 +100,8 @@ Required configuration takes the following form:
 
 ```python
 __REQUIRED_CONF__ = {
-    "pipelines": ["RequiredPipeline1", "RequiredPipeline2",...]
-    "components": ["RequiredComponent1", "RequiredComponent2",...]
+    "pipeline": ["RequiredPipeline1", "RequiredPipeline2",...]
+    "component": ["RequiredComponent1", "RequiredComponent2",...]
     "config": ["RequiredConfig1", "RequiredConfig2",...]
 }
 ```
@@ -158,10 +158,10 @@ A `YAML` configuration file will likely contain runner, pipeline, and component 
 
 === "Runner" 
     ```yaml title="Reference runner configuration"
-    pipelines: 
+    pipeline: 
         pipeline_type: PipelineClass
         ... 
-    components: 
+    component: 
         component_type: ComponentClass
         ...
     config: 
@@ -179,7 +179,7 @@ A `YAML` configuration file will likely contain runner, pipeline, and component 
     ```
 === "Pipeline" 
     ```yaml title="Reference pipeline configuration" 
-    components: 
+    component: 
         component_type: ComponentClass
         ...
     config: 
@@ -207,11 +207,11 @@ The dictionary structure follows along with the `yaml` structure shown above. In
 
     ```python title="Reference runner configuration"
     config = {
-        "pipelines": {
+        "pipeline": {
             "pipleine_type" : "pipeline_class", 
             ...
         },
-        "components": {
+        "component": {
             "component_type" : "component_class",
             ...
         }
@@ -231,7 +231,7 @@ The dictionary structure follows along with the `yaml` structure shown above. In
 
     ```python title="Reference pipeline configuration"
     config = {
-        "components": {
+        "component": {
             "component_type" : "component_class",
             ...
         }

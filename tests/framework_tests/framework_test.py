@@ -1,5 +1,6 @@
 from lolpop.base_integration import BaseIntegration
 from pathlib import Path 
+from omegaconf import OmegaConf
 
 parent_dir = Path(__file__).parent.resolve()
 framework_files = "%s/framework_files" % parent_dir
@@ -33,3 +34,23 @@ def test_multiple_root_nodes_fails():
 def test_standlone_integration():
     int = BaseIntegration(is_standalone=True)
     assert int.integration_framework is None
+
+def test_integration_sibling_pass(): 
+    conf = OmegaConf.load("%s/framework_sibling.yaml" % framework_files)
+    conf_sib = conf.copy()
+    int = BaseIntegration(conf=conf, skip_config_validation=True)
+    assert not hasattr(int.train, "metrics_tracker")
+
+    conf_sib.component.config.pass_integration_to_siblings = True
+    int = BaseIntegration(conf=conf_sib, skip_config_validation=True)
+    assert hasattr(int.train, "metrics_tracker")
+
+def test_peer_integration_update(): 
+    conf = OmegaConf.load("%s/framework_sibling.yaml" % framework_files)
+    conf_sib = conf.copy()
+    int = BaseIntegration(conf=conf, skip_config_validation=True)
+    assert not hasattr(int.data_checker, "metrics_tracker")
+
+    conf_sib.component.config.update_peer_integrations = True
+    int = BaseIntegration(conf=conf_sib, skip_config_validation=True)
+    assert hasattr(int.data_checker, "metrics_tracker")

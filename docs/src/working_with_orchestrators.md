@@ -21,16 +21,16 @@ In addition to defining the decorator function, a lolpop orchestrator should imp
 Once an orchestrator has been written, they are easy to implement in existing lolpop workflows. You'll simply need to add the decorator to your config `yaml` file. 
 
 ```yaml hl_lines="10 11"
-pipelines: 
+pipeline: 
   process: OfflineProcess 
   train: OfflineTrain
   predict: OfflinePredict
-components: 
+component: 
   metadata_tracker: MLFlowMetadataTracker
   notifier: StdOutNotifier
   resource_version_control: dvcVersionControl
   metrics_tracker: MLFlowMetricsTracker
-decorators: 
+decorator: 
   orchestrator: PrefectOrchestrator
 ... 
 

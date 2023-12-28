@@ -162,7 +162,9 @@ class BaseIntegration:
 
                 #id of the node in the intergration framework should be the integration type
                 child_integration_type = child.id
-                    
+                #pop off config so it's not processed as an integration
+                integration_config = config.get(child_integration_type, {}).pop("config",{})
+
                 for integration in config.get(child_integration_type, {}).keys():
                     #skip registration if the integration already exists in the default_integrations
                     if integration not in self.__DEFAULT_INT__.get(child_integration_type, {}).keys():
@@ -191,16 +193,26 @@ class BaseIntegration:
                 #    for obj in processed_integrations.values(): 
                 #        obj._update_integrations(integrations=processed_integrations)
 
-                #add processed integrations to the dependent list so they get passed down.
-                if child.id not in dependent_integrations.keys(): 
-                    dependent_integrations[child.id] = processed_integrations
-                else: #update existing integration type 
-                    dependent_integrations[child.id].update(processed_integrations)
+                #check to see if we want to pass integrations to siblings
+                if integration_config.get("pass_integration_to_siblings", True):
+                    #add processed integrations to the dependent list so they get passed down.
+                    self.log("Updating dependent integrations with all processed child integrations in integration %s. All sibling integrations will have access to processed integrations: %s" %(child.id, str(list(processed_integrations.keys()))), level="DEBUG")
+                    if child.id not in dependent_integrations.keys(): 
+                        dependent_integrations[child.id] = processed_integrations
+                    else: #update existing integration type 
+                        dependent_integrations[child.id].update(processed_integrations)
+                else: 
+                    self.log("Detected that sibling integration pass down is disabled for integration %s. Siblings will not be updated with processed integrations: %s." %(child.id, str(list(processed_integrations.keys()))), level="DEBUG")
 
-                #if integration is a leaf then we need to update other integrations with the full set
-                if child.is_leaf:
-                    for obj in dependent_integrations[child.id].values():
-                        obj._update_integrations(integrations=dependent_integrations[child.id])
+                #check to sese if we need to update other integrations with the full set
+                # defaults to true if the child is a leaf
+                if integration_config.get("update_peer_integrations", child.is_leaf):
+                    self.log("Updating all peer integrations for integration %s." % child.id, level="DEBUG")
+                    for obj in (list(processed_integrations.values()) + 
+                                [v for k,v in dependent_integrations[child.id].items() if k in self.__DEFAULT_INT__.get(child.id,{}).keys()]):
+                        obj._update_integrations(integrations=processed_integrations)
+                else: 
+                    self.log("Detected that peer integration updating is disabled for integration %s. Peer integrations will not be updated." %child.id,level="DEBUG")
 
     def _update_integrations(self, integrations=None, *args, **kwargs):
         if integrations is None: 

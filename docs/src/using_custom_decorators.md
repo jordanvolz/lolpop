@@ -21,16 +21,16 @@ In your custom component, you'll also want to include the default configuration 
 To use a custom decorator, you'll add a new section to your workflow yaml: `decorators`. This section you'll then fill out as usual, with the abstract integration name and the class you wish to implement, as shown below: 
 
 ```yaml hl_lines="10 11"
-pipelines: 
+pipeline: 
   process: OfflineProcess 
   train: OfflineTrain
   predict: OfflinePredict
-components: 
+component: 
   metadata_tracker: MLFlowMetadataTracker
   notifier: StdOutNotifier
   resource_version_control: dvcVersionControl
   metrics_tracker: MLFlowMetricsTracker
-decorators: 
+decorator: 
   cache_manager: LocalCacheManager
 ... 
 

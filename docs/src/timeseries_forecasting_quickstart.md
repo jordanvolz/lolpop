@@ -152,7 +152,7 @@ In this method, we get the source_data_name from our runner config (i.e. `train_
 
 ```yaml title="quickstart.yaml"
 ...
-pipelines: 
+pipeline: 
   process: OfflineProcess 
   train: OfflineTrain
   predict: OfflinePredict
@@ -185,7 +185,7 @@ Here we see that this really just executes `self.data_transformer.transform`. An
 ```yaml title="quickstart.yaml"
 ...
 process: 
-  components: 
+  component: 
     data_transformer: LocalDataTransformer
   data_transformer: 
     config: 

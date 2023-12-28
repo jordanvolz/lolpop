@@ -93,13 +93,13 @@ class MyTrainingPipeline(BasePipeline):
 We then configure which classes to use in our pipeline and runner configuration, as shown below: 
 ```yaml title="dev.yaml"
 #runner config
-pipelines: 
+pipeline: 
   train: MyTrainingPipeline
 ...
 
 #pipelines config
 train: 
-  components: 
+  component: 
     model_trainer: CatBoostTrainer
   model_trainer: 
     config: 
@@ -145,7 +145,7 @@ Sometimes it's helpful to understand what a tool is not in order to fully unders
 
 1. **lolpop is not an orchestration tool**. In fact, you should probably use an orchestrator to run code you create with lolpop. You should easily be able to integrate your orchestration tool of choice with lolpop. 
 
-2. **lolpop is not a pipelining tool**. There's several good pipelining tools out there and you even might want to use them with lolpop. For example, we have an example of using [metaflow](integrations/metaflow_offline_train.py) with lolpop, for those who are so inclined.
+2. **lolpop is not a pipelining tool**. There's several good pipelining tools out there and you even might want to use them with lolpop. For example, we have an example of using [metaflow](metaflow_offline_train.md) with lolpop, for those who are so inclined.
 
 3. **lolpop is not a metadata tracker, training platform, experiment tacker, etc.** We think you should have and use those if you want to. lolpop will be happy to have those as components and let you build them into your workflows. 
 

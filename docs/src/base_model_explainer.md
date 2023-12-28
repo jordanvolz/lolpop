@@ -8,7 +8,7 @@ A `model_explainer` is a component that takes is focused on model interpretabili
 
 ## Configuration
 
-`BaseModelExplainer` contains no required components: 
+`BaseModelExplainer` contains no required components. 
 
 
 ## Interface

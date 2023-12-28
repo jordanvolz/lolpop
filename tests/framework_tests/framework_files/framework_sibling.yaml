@@ -1,0 +1,21 @@
+integration_framework: 
+  runner: 
+    component: 
+    pipeline: 
+      component: 
+
+component: 
+  metrics_tracker: MLFlowMetricsTracker
+  data_checker: EvidentlyAIDataChecker
+
+  config: 
+    pass_integration_to_siblings: False
+    update_peer_integrations: False
+
+pipeline: 
+  train: OfflineTrain
+
+logger: 
+  config: 
+    log_level: DEBUG
+
