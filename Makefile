@@ -169,10 +169,13 @@ clean_examples:
 		echo "Finished cleaning examples!"
 
 
-.PHONY: update_poetry
-update_poetry: 
+.PHONY: poetry_update
+poetry_update: 
+	poetry update -v
+
+.PHONY: poetry_clear
+poetry_clear: 
 	poetry cache clear --all pypi
-	poetry update 
 
 .PHONY: tests
 tests: examples
