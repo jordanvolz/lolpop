@@ -121,24 +121,27 @@ def load_class_obj(class_name, class_type="component", parent="lolpop"):
 def load_class(class_name, class_type="component", plugin_mods = [], self_obj=None): 
     try:
         cl = load_class_obj(class_name, class_type)
-    except: 
+    except Exception as e1: 
         try: 
             if self_obj: 
-                self_obj.log("Unable to find class %s in build-in resources. Searching extensions..." %class_name)
+                self_obj.log("Unable to find class %s in build-in resources (Error: %s). Searching extensions..." %(class_name,str(e1)))
             cl = load_class_obj(class_name, class_type="extension")
             if self_obj:
                 self_obj.log("Found class %s in extensions!" %class_name)
-        except: 
-            if self_obj:
-                self_obj.log(
-                    "Unable to find class %s in extensions. Searching plugins modules in %s..." %(class_name, str(plugin_mods)))
-            cl = load_class_from_plugin(class_name, plugin_mods, class_type)
-            if cl is not None: 
-                if self_obj: 
-                    self_obj.log("Found class %s in plugins!" % class_name)
-            else: 
+        except Exception as e2: 
+            try: 
                 if self_obj:
-                    self_obj.log("Unable to find class %s in plugins!" %class_name)
+                    self_obj.log(
+                        "Unable to find class %s in extensions (Error: %s). Searching plugins modules in %s..." %(class_name, str(e2), str(plugin_mods)))
+                cl = load_class_from_plugin(class_name, plugin_mods, class_type)
+                if cl is not None: 
+                    if self_obj: 
+                        self_obj.log("Found class %s in plugins!" % class_name)
+                else: 
+                    if self_obj:
+                        self_obj.log("Unable to find class %s in plugins!" %class_name)
+            except Exception as e3: 
+                self_obj.log("Unable to load class %s from pluigins (Error: %s)" %(class_name, str(e3)))
     return cl 
 
 #load class object from plugins

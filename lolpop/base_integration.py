@@ -184,7 +184,7 @@ class BaseIntegration:
                             self.log("Loaded class %s into %s %s" %(type(getattr(self,integration)).__name__, child_integration_type, integration))
                             processed_integrations[integration] = obj
                         else: 
-                            self.log("Unable to load class for %s: %s" %(child_integration_type, integration))
+                            self.log("Unable to load class for %s: %s" %(child_integration_type, integration), level="WARN")
                     else: 
                         self.log("Integration %s already in default integrations. Skipping..." %integration)
 

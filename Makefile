@@ -173,9 +173,22 @@ clean_examples:
 poetry_update: 
 	poetry update -v
 
-.PHONY: poetry_clear
-poetry_clear: 
+.PHONY: poetry_lock
+poetry_lock: 
+	poetry lock --no-update
+
+.PHONY: poetry_clear_cache
+poetry_clear_cache: 
 	poetry cache clear --all pypi
+
+.PHONY: poetry_install
+poetry_install: 
+	poetry install --all-extras
+
+.PHONY: poetry_reset_env
+poetry_reset_env: 
+	poetry install --remove-untracked --all-extras
+
 
 .PHONY: tests
 tests: examples

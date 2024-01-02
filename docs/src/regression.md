@@ -19,7 +19,7 @@ This guide will walk us through a quick example of predicting the age of crabs g
 2. Now let's install the packages we'll need for this example: 
 
     ```bash 
-    pip3 install 'lolpop[cli,mlflow,duckdb,xgboost,dvc,evidently,deepchecks,optuna,yellowbrick,aif360,alibi]'
+    pip3 install 'lolpop[cli,mlflow,duckdb,xgboost,dvc,evidently,deepchecks,optuna,yellowbrick,aif360,alibi,feature-engine]'
     ```
 
 3. This example will version data with dvc. In order to use it, we'll need a git repo to use with dvc. For the purposes of this guide, we'll create a git repository in our provider of choice named `lolpop_crab_age_example`. You'll then want to clone this repo locally via something like: 
