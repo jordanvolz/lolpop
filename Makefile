@@ -169,10 +169,26 @@ clean_examples:
 		echo "Finished cleaning examples!"
 
 
-.PHONY: update_poetry
-update_poetry: 
+.PHONY: poetry_update
+poetry_update: 
+	poetry update -v
+
+.PHONY: poetry_lock
+poetry_lock: 
+	poetry lock --no-update
+
+.PHONY: poetry_clear_cache
+poetry_clear_cache: 
 	poetry cache clear --all pypi
-	poetry update 
+
+.PHONY: poetry_install
+poetry_install: 
+	poetry install --all-extras
+
+.PHONY: poetry_reset_env
+poetry_reset_env: 
+	poetry install --remove-untracked --all-extras
+
 
 .PHONY: tests
 tests: examples
