@@ -413,7 +413,7 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
             model: the model trainer object
         """
         model_trainer = self.get_metadata(model_version, "winning_experiment_model_trainer")
-        model_cl = utils.load_class(model_trainer)
+        model_cl = utils.load_class(model_trainer, self_obj=self)
         dependent_integrations = {"component": {"logger": self.logger, 
                                                 "notifier": self.notifier,  
                                                 "metadata_tracker": self,
@@ -451,7 +451,7 @@ class MLFlowMetadataTracker(BaseMetadataTracker):
             if transformer_config is not None and isinstance(transformer_config, str):
                 transformer_config = utils.parse_dict_string(transformer_config)
         
-            transformer_cl = utils.load_class(transformer_class)
+            transformer_cl = utils.load_class(transformer_class, self_obj=self)
             transformer = transformer_cl(conf={"config": transformer_config},
                                             parent = self, 
                                             is_standalone=True,

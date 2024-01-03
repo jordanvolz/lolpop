@@ -28,7 +28,7 @@ class BaseModelTrainer(BaseComponent):
         transformer_class = self._get_config("transformer_class")
         if transformer_class is not None: 
             transformer_config = self.get_config("transformer_config")
-            transformer_cl = utils.load_class(transformer_class)
+            transformer_cl = utils.load_class(transformer_class, self_obj=self)
             dependent_integrations = {"component": {"logger": self.logger, "notifier": self.notifier,
                                     "metadata_tracker": self.metadata_tracker,
                                     "resource_version_control": self.resource_version_control}}

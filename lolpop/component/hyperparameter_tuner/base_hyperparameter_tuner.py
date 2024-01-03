@@ -21,7 +21,7 @@ class BaseHyperparameterTuner(BaseComponent):
         experiment = self.metadata_tracker.create_resource(id=None, type="experiment", parent=model_version)
 
         #load model trainer and build model
-        model_cl = utils.load_class(algo)
+        model_cl = utils.load_class(algo,self_obj=self)
         dependent_integrations = {"component": {"logger": self.logger, "notifier": self.notifier,  "metadata_tracker": self.metadata_tracker,
                                   "metrics_tracker": self.metrics_tracker, "resource_version_control": self.resource_version_control}}
         if hasattr(self, "feature_transformer"): #pass the feature_transformer if it's defined at the pipeline level 

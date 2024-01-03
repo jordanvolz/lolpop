@@ -37,7 +37,7 @@ class LocalDataTransformer(BaseDataTransformer):
         data_connector_cl_name=self._get_config("data_connector")
         data_connector_config = self._get_config(
             "data_connector_config", {})
-        data_connector_cl = utils.load_class(data_connector_cl_name)
+        data_connector_cl = utils.load_class(data_connector_cl_name, self_obj=self)
         data_connector = data_connector_cl(
             conf = {"config": data_connector_config},
             parent=self,
