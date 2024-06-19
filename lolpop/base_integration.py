@@ -255,17 +255,30 @@ class BaseIntegration:
 
     #helper function for lookup up config key
     def _get_config(self, key, default_value=None):
-        key = key.lower()
-        value = utils.lower_conf(self.config).get(key, None)
+        lkey = key.lower()
 
+        #check if key is found in locals() -- i.e. it's passed into the function, class, etc. 
+        # this should override all else. 
+        locals_dict = {x.lower():y for x,y in locals().items()}
+        value = locals_dict.get(lkey, None)
+        if value is None: #check in kwargs
+            value = locals_dict.get("kwargs", {}).get(lkey, None)
+
+        #check in configuration
+        if value is None: 
+            value = utils.lower_conf(self.config).get(lkey, None)
+    
         #if value wasn't found, check in parent
         if value is None and self.parent is not None: 
             value = self.parent._get_config(key)
         
         #if no value found in parent, check environment
         if value is None: 
-            value = os.getenv(key,default=default_value)
-        
+            value = os.getenv(key)
+        if value is None:
+            value = os.getenv(key.upper())
+        if value is None: 
+            value = os.getenv(lkey, default=default_value)
         return value
         
     def _set_config(self, key, value): 
