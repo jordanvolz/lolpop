@@ -109,6 +109,7 @@ nav:
         - Google Cloud Storage: gcs_data_connector.md
         - Local: local_data_connector.md
         - Postgres: postgres_data_connector.md
+        - MySQL: mysql_data_connector.md
         - Redshift: redshift_data_connector.md
         - S3: s3_data_connector.md
         - Snowflake: snowflake_data_connector.md

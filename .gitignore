@@ -131,6 +131,9 @@ dmypy.json
 #vscode settings
 .vscode/
 
+# macOS
+.DS_Store
+
 #hidden files
 *.hidden
 
